@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>FitAccess - White-Label Gym Access & Subscription SaaS</title>
-  <meta name="theme-color" content="#06b6d4">
+  <meta name="theme-color" content="#14b8a6">
   <meta name="description" content="FitAccess SaaS para gestión de gimnasios, socios, pagos y control de acceso con Firebase.">
   <link rel="manifest" href="./manifest.json">
   <style>
@@ -17,38 +17,41 @@
 :root {
   /* Brand Customizable Variables */
   --gym-name: "FitAccess Club";
-  --primary-color: #06b6d4;
-  --secondary-color: #3b82f6;
-  --primary-glow: rgba(6, 182, 212, 0.35);
-  --secondary-glow: rgba(59, 130, 246, 0.35);
-  
+  --primary-color: #14b8a6;
+  --secondary-color: #6366f1;
+  --primary-glow: rgba(20, 184, 166, 0.32);
+  --secondary-glow: rgba(99, 102, 241, 0.32);
+  --accent-warm: #fb923c;
+  --accent-warm-glow: rgba(251, 146, 60, 0.35);
+
   /* Glassmorphism Palette */
-  --bg-main: #060913;
-  --bg-gradient: radial-gradient(circle at top center, #0f172a 0%, #060913 100%);
-  --card-bg: rgba(15, 23, 42, 0.85);
-  --card-bg-hover: rgba(30, 41, 59, 0.9);
-  --glass-border: rgba(255, 255, 255, 0.12);
-  --glass-border-light: rgba(255, 255, 255, 0.2);
-  
+  --bg-main: #0a0e17;
+  --bg-gradient: radial-gradient(circle at 15% 0%, #14203a 0%, #0a0e17 45%, #090c14 100%);
+  --card-bg: rgba(20, 27, 43, 0.72);
+  --card-bg-hover: rgba(28, 37, 58, 0.82);
+  --glass-border: rgba(255, 255, 255, 0.09);
+  --glass-border-light: rgba(255, 255, 255, 0.18);
+
   /* Text & Status Palette */
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --text-dim: #64748b;
-  
-  --status-green: #10b981;
-  --status-green-glow: rgba(16, 185, 129, 0.4);
-  --status-yellow: #f59e0b;
-  --status-yellow-glow: rgba(245, 158, 11, 0.4);
-  --status-red: #ef4444;
-  --status-red-glow: rgba(239, 68, 68, 0.4);
-  
+  --text-main: #f7f9fc;
+  --text-muted: #9aa7c2;
+  --text-dim: #6b7794;
+
+  --status-green: #22c55e;
+  --status-green-glow: rgba(34, 197, 94, 0.35);
+  --status-yellow: #fbbf24;
+  --status-yellow-glow: rgba(251, 191, 36, 0.35);
+  --status-red: #f87171;
+  --status-red-glow: rgba(248, 113, 113, 0.35);
+
   /* Spacing & Borders */
-  --radius-sm: 10px;
-  --radius-md: 16px;
-  --radius-lg: 24px;
-  --radius-xl: 32px;
-  --shadow-lg: 0 20px 45px rgba(0, 0, 0, 0.6);
-  --shadow-glow: 0 0 30px var(--primary-glow);
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 26px;
+  --radius-xl: 34px;
+  --shadow-lg: 0 24px 60px -12px rgba(4, 8, 18, 0.65), 0 4px 16px rgba(4, 8, 18, 0.35);
+  --shadow-soft: 0 10px 30px -8px rgba(4, 8, 18, 0.5);
+  --shadow-glow: 0 0 36px var(--primary-glow);
 }
 
 * {
@@ -63,15 +66,20 @@ body {
   background-attachment: fixed;
   color: var(--text-main);
   font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
   min-height: 100vh;
   overflow-x: hidden;
-  line-height: 1.5;
+  line-height: 1.55;
+  letter-spacing: -0.01em;
 }
+
+h1, h2, h3 { letter-spacing: -0.02em; }
 
 /* Scrollbars */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.14); border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--primary-color); }
 
 /* Ambient Glow System */
@@ -85,18 +93,19 @@ body {
 .glow-orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(100px);
-  opacity: 0.15;
+  filter: blur(110px);
+  opacity: 0.16;
   transition: background 0.5s ease;
 }
-.glow-orb-1 { width: 450px; height: 450px; background: var(--primary-color); top: -100px; left: -100px; }
-.glow-orb-2 { width: 400px; height: 400px; background: var(--secondary-color); bottom: -50px; right: -50px; }
+.glow-orb-1 { width: 480px; height: 480px; background: var(--primary-color); top: -120px; left: -120px; }
+.glow-orb-2 { width: 420px; height: 420px; background: var(--secondary-color); bottom: -60px; right: -60px; }
+.glow-orb-3 { width: 320px; height: 320px; background: var(--accent-warm); opacity: 0.08; top: 40%; left: 50%; }
 
 /* Friendly Onboarding Guidance Bar */
 .friendly-banner {
-  background: linear-gradient(90deg, rgba(6, 182, 212, 0.15) 0%, rgba(59, 130, 246, 0.15) 100%);
+  background: linear-gradient(90deg, rgba(20, 184, 166, 0.14) 0%, rgba(99, 102, 241, 0.14) 100%);
   border-bottom: 1px solid var(--glass-border);
-  padding: 10px 44px 10px 20px;
+  padding: 11px 46px 11px 20px;
   text-align: center;
   font-size: 0.85rem;
   font-weight: 600;
@@ -114,7 +123,7 @@ body {
   top: 50%;
   right: 14px;
   transform: translateY(-50%);
-  background: rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.07);
   border: 1px solid var(--glass-border);
   color: var(--text-muted);
   width: 28px;
@@ -126,8 +135,9 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.2s ease;
 }
-.friendly-banner-close:hover { color: var(--text-main); background: rgba(255,255,255,0.16); }
+.friendly-banner-close:hover { color: var(--text-main); background: rgba(255,255,255,0.14); transform: translateY(-50%) scale(1.06); }
 
 /* Toast Notification Overlay */
 .toast-notification {
@@ -135,15 +145,15 @@ body {
   bottom: 24px;
   right: 24px;
   z-index: 10000;
-  background: rgba(16, 185, 129, 0.95);
-  color: #000;
+  background: linear-gradient(135deg, #2dd4bf 0%, #22c55e 100%);
+  color: #052e26;
   padding: 16px 26px;
   border-radius: var(--radius-md);
   font-size: 1rem;
   font-weight: 800;
-  box-shadow: 0 12px 35px rgba(0,0,0,0.5);
+  box-shadow: 0 16px 40px -8px rgba(34, 197, 94, 0.5);
   display: none;
-  animation: slideUp 0.3s ease;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 @keyframes slideUp {
   from { transform: translateY(20px); opacity: 0; }
@@ -155,9 +165,9 @@ body {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: rgba(3, 8, 15, 0.92);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(6, 9, 16, 0.82);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -166,38 +176,38 @@ body {
 }
 
 .login-card, .modal-card {
-  background: var(--card-bg);
+  background: linear-gradient(180deg, rgba(28, 37, 58, 0.92) 0%, rgba(18, 24, 39, 0.92) 100%);
   border: 1px solid var(--glass-border-light);
   border-radius: var(--radius-xl);
-  padding: 32px 28px;
+  padding: 34px 30px;
   width: 100%;
   max-width: 520px;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 40px var(--primary-glow);
+  box-shadow: 0 30px 70px -10px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255,255,255,0.03) inset, 0 0 50px var(--primary-glow);
   position: relative;
   max-height: 90vh;
   overflow-y: auto;
 }
 
 .login-brand-logo {
-  width: 75px;
-  height: 75px;
-  border-radius: 20px;
+  width: 76px;
+  height: 76px;
+  border-radius: 22px;
   object-fit: cover;
   border: 3px solid var(--primary-color);
-  box-shadow: 0 0 25px var(--primary-glow);
+  box-shadow: 0 0 28px var(--primary-glow);
   margin-bottom: 14px;
 }
 
 .quick-login-chip {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.06);
   border: 1px solid var(--glass-border);
-  padding: 12px 16px;
+  padding: 13px 16px;
   border-radius: var(--radius-sm);
   color: var(--text-main);
   font-size: 0.9rem;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   text-align: left;
   display: flex;
   align-items: center;
@@ -205,8 +215,10 @@ body {
 }
 .quick-login-chip:hover {
   background: var(--primary-color);
-  color: #000;
-  box-shadow: 0 4px 15px var(--primary-glow);
+  color: #06251f;
+  border-color: var(--primary-color);
+  box-shadow: 0 6px 18px var(--primary-glow);
+  transform: translateY(-1px);
 }
 
 /* App Header & Navbar */
@@ -214,9 +226,9 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(6, 9, 19, 0.92);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  background: rgba(9, 13, 22, 0.85);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
   border-bottom: 1px solid var(--glass-border);
   padding: 14px 24px;
   display: flex;
@@ -254,18 +266,18 @@ body {
 }
 
 .gym-logo-img {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
   object-fit: cover;
   background: var(--card-bg);
   border: 2px solid var(--primary-color);
-  box-shadow: 0 0 15px var(--primary-glow);
+  box-shadow: 0 0 16px var(--primary-glow);
 }
 
 .brand-name {
   font-size: 1.35rem;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: -0.5px;
   background: linear-gradient(135deg, #ffffff 0%, var(--primary-color) 100%);
   -webkit-background-clip: text;
@@ -273,20 +285,22 @@ body {
 }
 
 .brand-tag {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   padding: 3px 10px;
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--glass-border);
   color: var(--text-muted);
   font-weight: 700;
   text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .user-profile-pill {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.06);
   padding: 6px 14px;
   border-radius: 20px;
   border: 1px solid var(--glass-border);
@@ -297,7 +311,7 @@ body {
 /* View Switcher Navigation */
 .view-nav {
   display: flex;
-  background: rgba(15, 23, 42, 0.8);
+  background: rgba(255, 255, 255, 0.03);
   padding: 5px;
   border-radius: var(--radius-md);
   border: 1px solid var(--glass-border);
@@ -311,9 +325,9 @@ body {
   padding: 10px 18px;
   font-size: 0.9rem;
   font-weight: 700;
-  border-radius: 10px;
+  border-radius: 12px;
   cursor: pointer;
-  transition: all 0.25s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -322,14 +336,14 @@ body {
 
 .nav-btn:hover {
   color: var(--text-main);
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.07);
 }
 
 .nav-btn.active {
-  background: var(--primary-color);
-  color: #000;
-  box-shadow: 0 4px 15px var(--primary-glow);
-  font-weight: 900;
+  background: linear-gradient(135deg, var(--primary-color) 0%, #0d9488 100%);
+  color: #06251f;
+  box-shadow: 0 6px 18px -2px var(--primary-glow);
+  font-weight: 800;
 }
 
 /* Main Layout Panels */
@@ -354,9 +368,9 @@ body {
 
 /* Predictive Insights & Smart Automation Cards */
 .predictive-card {
-  background: linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(15, 23, 42, 0.9) 100%);
-  border: 2px solid var(--primary-color);
-  box-shadow: 0 0 30px var(--primary-glow);
+  background: linear-gradient(135deg, rgba(20, 184, 166, 0.14) 0%, rgba(20, 27, 43, 0.92) 60%);
+  border: 1px solid rgba(20, 184, 166, 0.45);
+  box-shadow: 0 0 34px var(--primary-glow), var(--shadow-soft);
   border-radius: var(--radius-lg);
   padding: 20px 24px;
   margin-bottom: 22px;
@@ -398,8 +412,8 @@ body {
 /* Cards & Glassmorphic Elements */
 .glass-card {
   background: var(--card-bg);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(16px) saturate(130%);
+  -webkit-backdrop-filter: blur(16px) saturate(130%);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
   padding: 26px;
@@ -407,6 +421,15 @@ body {
   margin-bottom: 22px;
   position: relative;
   overflow: hidden;
+  transition: border-color 0.25s ease, transform 0.25s ease;
+}
+
+.glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.18) 50%, transparent 100%);
 }
 
 .glass-card-header {
@@ -417,23 +440,24 @@ body {
 }
 
 .card-title {
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   font-weight: 800;
   display: flex;
   align-items: center;
   gap: 12px;
   color: var(--text-main);
+  letter-spacing: -0.01em;
 }
 
 /* Member Digital Card View */
 .digital-credential-card {
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%);
-  border: 2px solid var(--glass-border-light);
+  background: linear-gradient(160deg, rgba(32, 42, 64, 0.95) 0%, rgba(16, 21, 34, 0.98) 100%);
+  border: 1px solid var(--glass-border-light);
   border-radius: var(--radius-xl);
   padding: 32px;
   text-align: center;
   position: relative;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  box-shadow: 0 28px 65px -12px rgba(0, 0, 0, 0.65), inset 0 1px 1px rgba(255, 255, 255, 0.14);
 }
 
 .credential-header {
@@ -454,13 +478,13 @@ body {
   height: 100px;
   border-radius: 50%;
   object-fit: cover;
-  border: 4px solid var(--primary-color);
-  box-shadow: 0 0 25px var(--primary-glow);
+  border: 3px solid var(--primary-color);
+  box-shadow: 0 0 26px var(--primary-glow);
   margin: 0 auto 16px auto;
   display: block;
 }
 
-.member-name { font-size: 1.55rem; font-weight: 900; margin-bottom: 4px; }
+.member-name { font-size: 1.5rem; font-weight: 800; margin-bottom: 4px; letter-spacing: -0.01em; }
 .member-meta { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 22px; }
 
 .qr-box {
@@ -468,7 +492,7 @@ body {
   padding: 18px;
   border-radius: var(--radius-md);
   display: inline-block;
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.45);
   margin-bottom: 14px;
 }
 
@@ -493,30 +517,30 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 16px;
+  padding: 7px 15px;
   border-radius: 30px;
-  font-size: 0.85rem;
-  font-weight: 800;
+  font-size: 0.82rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
 }
 
 .badge-green {
-  background: rgba(16, 185, 129, 0.18);
+  background: rgba(34, 197, 94, 0.15);
   color: var(--status-green);
-  border: 1px solid rgba(16, 185, 129, 0.4);
+  border: 1px solid rgba(34, 197, 94, 0.35);
 }
 
 .badge-yellow {
-  background: rgba(245, 158, 11, 0.18);
+  background: rgba(251, 191, 36, 0.15);
   color: var(--status-yellow);
-  border: 1px solid rgba(245, 158, 11, 0.4);
+  border: 1px solid rgba(251, 191, 36, 0.35);
 }
 
 .badge-red {
-  background: rgba(239, 68, 68, 0.18);
+  background: rgba(248, 113, 113, 0.15);
   color: var(--status-red);
-  border: 1px solid rgba(239, 68, 68, 0.4);
+  border: 1px solid rgba(248, 113, 113, 0.35);
 }
 
 /* Sub-tabs in Member View */
@@ -542,7 +566,7 @@ body {
 }
 
 .tab-link:hover { color: var(--text-main); }
-.tab-link.active { color: var(--primary-color); font-weight: 900; }
+.tab-link.active { color: var(--primary-color); font-weight: 800; }
 .tab-link.active::after {
   content: '';
   position: absolute;
@@ -550,7 +574,7 @@ body {
   left: 0;
   right: 0;
   height: 3px;
-  background: var(--primary-color);
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
   border-radius: 3px;
 }
 
@@ -577,7 +601,8 @@ body {
   background: #000;
   border-radius: var(--radius-lg);
   overflow: hidden;
-  border: 2px solid var(--glass-border);
+  border: 1px solid var(--glass-border-light);
+  box-shadow: var(--shadow-soft);
   min-height: 320px;
   display: flex;
   align-items: center;
@@ -623,31 +648,31 @@ body {
 .traffic-light-banner.active { display: block; }
 
 .traffic-banner-green {
-  background: radial-gradient(circle at center, rgba(16, 185, 129, 0.28) 0%, rgba(6, 9, 19, 0.95) 100%);
-  border: 2px solid var(--status-green);
-  box-shadow: 0 0 40px var(--status-green-glow);
+  background: radial-gradient(circle at center, rgba(34, 197, 94, 0.22) 0%, rgba(10, 14, 23, 0.96) 100%);
+  border: 1px solid var(--status-green);
+  box-shadow: 0 0 40px var(--status-green-glow), var(--shadow-soft);
 }
 
 .traffic-banner-yellow {
-  background: radial-gradient(circle at center, rgba(245, 158, 11, 0.28) 0%, rgba(6, 9, 19, 0.95) 100%);
-  border: 2px solid var(--status-yellow);
-  box-shadow: 0 0 40px var(--status-yellow-glow);
+  background: radial-gradient(circle at center, rgba(251, 191, 36, 0.22) 0%, rgba(10, 14, 23, 0.96) 100%);
+  border: 1px solid var(--status-yellow);
+  box-shadow: 0 0 40px var(--status-yellow-glow), var(--shadow-soft);
 }
 
 .traffic-banner-red {
-  background: radial-gradient(circle at center, rgba(239, 68, 68, 0.35) 0%, rgba(6, 9, 19, 0.95) 100%);
-  border: 2px solid var(--status-red);
-  box-shadow: 0 0 45px var(--status-red-glow);
+  background: radial-gradient(circle at center, rgba(248, 113, 113, 0.28) 0%, rgba(10, 14, 23, 0.96) 100%);
+  border: 1px solid var(--status-red);
+  box-shadow: 0 0 45px var(--status-red-glow), var(--shadow-soft);
   animation: redFlash 0.6s 2 ease-in-out;
 }
 
 @keyframes redFlash {
   0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.02); }
+  50% { transform: scale(1.015); }
 }
 
 .traffic-icon { font-size: 3.8rem; margin-bottom: 8px; }
-.traffic-title { font-size: 1.75rem; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
+.traffic-title { font-size: 1.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; }
 
 .traffic-banner-green .traffic-title { color: var(--status-green); }
 .traffic-banner-yellow .traffic-title { color: var(--status-yellow); }
@@ -657,7 +682,7 @@ body {
 
 /* Payment Box & Details Container */
 .payment-details-box {
-  background: rgba(15, 23, 42, 0.7);
+  background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
   padding: 18px;
@@ -678,11 +703,19 @@ body {
   font-size: 0.92rem;
 }
 
+.log-table tbody tr {
+  transition: background 0.15s ease;
+}
+.log-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
 .log-table th {
   color: var(--text-muted);
   font-weight: 700;
   text-transform: uppercase;
-  font-size: 0.78rem;
+  font-size: 0.76rem;
+  letter-spacing: 0.04em;
 }
 
 .config-grid {
@@ -695,11 +728,11 @@ body {
 }
 
 .form-group { margin-bottom: 20px; }
-.form-label { display: block; font-size: 0.9rem; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; }
+.form-label { display: block; font-size: 0.88rem; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; }
 
 .form-input, .form-select {
   width: 100%;
-  background: rgba(15, 23, 42, 0.85);
+  background: rgba(255, 255, 255, 0.03);
   border: 1.5px solid var(--glass-border);
   border-radius: var(--radius-sm);
   padding: 12px 16px;
@@ -707,13 +740,16 @@ body {
   font-size: 1rem;
   font-family: inherit;
   outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
   min-height: 48px;
 }
 
+.form-input:hover, .form-select:hover { border-color: var(--glass-border-light); }
+
 .form-input:focus, .form-select:focus {
   border-color: var(--primary-color);
-  box-shadow: 0 0 12px var(--primary-glow);
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 0 0 4px var(--primary-glow);
 }
 
 .color-picker-row {
@@ -732,15 +768,15 @@ body {
 }
 
 .btn {
-  background: var(--primary-color);
-  color: #000;
+  background: linear-gradient(135deg, var(--primary-color) 0%, #0d9488 100%);
+  color: #06251f;
   border: none;
   padding: 14px 24px;
   font-size: 1rem;
-  font-weight: 800;
+  font-weight: 700;
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -750,45 +786,48 @@ body {
 
 .btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px var(--primary-glow);
-  filter: brightness(1.1);
+  box-shadow: 0 10px 26px -4px var(--primary-glow);
+  filter: brightness(1.06);
 }
+.btn:active { transform: translateY(0); }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.07);
   color: var(--text-main);
-  border: 1px solid var(--glass-border);
+  border: 1px solid var(--glass-border-light);
 }
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.13);
   box-shadow: none;
+  border-color: rgba(255,255,255,0.28);
 }
 
 .btn-whatsapp {
-  background: rgba(37, 211, 102, 0.2);
+  background: rgba(37, 211, 102, 0.15);
   color: #25d366;
-  border: 1px solid rgba(37, 211, 102, 0.5);
-  font-weight: 800;
+  border: 1px solid rgba(37, 211, 102, 0.4);
+  font-weight: 700;
 }
 .btn-whatsapp:hover {
   background: #25d366;
-  color: #000;
-  box-shadow: 0 6px 20px rgba(37, 211, 102, 0.5);
+  color: #06251f;
+  box-shadow: 0 8px 22px -4px rgba(37, 211, 102, 0.5);
 }
 
 .btn-danger {
-  background: rgba(239, 68, 68, 0.2);
+  background: rgba(248, 113, 113, 0.15);
   color: var(--status-red);
-  border: 1px solid rgba(239, 68, 68, 0.5);
-  font-weight: 800;
+  border: 1px solid rgba(248, 113, 113, 0.4);
+  font-weight: 700;
 }
 .btn-danger:hover {
   background: var(--status-red);
-  color: #fff;
+  color: #2b0b0b;
+  box-shadow: 0 8px 22px -4px var(--status-red-glow);
 }
 
 .preset-chip {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--glass-border);
   padding: 10px 16px;
   border-radius: 20px;
@@ -796,12 +835,13 @@ body {
   font-size: 0.9rem;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
 .preset-chip:hover {
   background: var(--card-bg-hover);
   color: var(--text-main);
   border-color: var(--primary-color);
+  transform: translateY(-1px);
 }
 
   </style>
@@ -812,6 +852,7 @@ body {
   <div class="ambient-glow">
     <div class="glow-orb glow-orb-1"></div>
     <div class="glow-orb glow-orb-2"></div>
+    <div class="glow-orb glow-orb-3"></div>
   </div>
 
   <!-- Friendly Guidance & Mode Banner -->
@@ -845,11 +886,11 @@ body {
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
           <div class="form-group">
             <label class="form-label">Color Principal:</label>
-            <input type="color" id="reg-primary-color" class="color-input" value="#06b6d4" style="width: 100%;">
+            <input type="color" id="reg-primary-color" class="color-input" value="#14b8a6" style="width: 100%;">
           </div>
           <div class="form-group">
             <label class="form-label">Color Secundario:</label>
-            <input type="color" id="reg-secondary-color" class="color-input" value="#3b82f6" style="width: 100%;">
+            <input type="color" id="reg-secondary-color" class="color-input" value="#6366f1" style="width: 100%;">
           </div>
         </div>
 
@@ -896,6 +937,20 @@ body {
         </div>
 
         <div class="form-group">
+          <label class="form-label">Email del socio (para su acceso a la app):</label>
+          <input type="email" id="new-m-email" class="form-input" placeholder="Ej: diego@correo.com">
+          <p style="font-size:.75rem;color:var(--text-muted);margin-top:4px;">Si completás el email, se crea automáticamente un usuario de acceso para el socio.</p>
+        </div>
+
+        <div class="form-group" id="new-m-password-group">
+          <label class="form-label">Contraseña inicial del socio:</label>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="new-m-password" class="form-input" placeholder="Mínimo 6 caracteres" minlength="6">
+            <button type="button" class="btn btn-secondary" style="white-space:nowrap;" onclick="FitApp.generateMemberPassword()">🎲 Generar</button>
+          </div>
+        </div>
+
+        <div class="form-group">
           <label class="form-label">Plan Seleccionado:</label>
           <select id="new-m-plan" class="form-select">
             <option value="Musculación & Cardio">Musculación & Cardio</option>
@@ -936,6 +991,78 @@ body {
 
         <button type="submit" class="btn" style="width: 100%; margin-top: 10px;">
           💾 Guardar y Asignar QR
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Editar Socio -->
+  <div id="modal-edit-member" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+        <h3 class="card-title">✏️ Editar Socio</h3>
+        <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;" onclick="FitApp.hideEditMemberModal()">✕ Cerrar</button>
+      </div>
+
+      <form id="form-edit-member">
+        <input type="hidden" id="edit-m-id">
+        <div class="form-group">
+          <label class="form-label">Nombre y Apellido Completo:</label>
+          <input type="text" id="edit-m-name" class="form-input" required>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div class="form-group">
+            <label class="form-label">DNI / Documento:</label>
+            <input type="text" id="edit-m-dni" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Teléfono WhatsApp:</label>
+            <input type="tel" id="edit-m-phone" class="form-input" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Email del socio:</label>
+          <input type="email" id="edit-m-email" class="form-input" placeholder="Ej: diego@correo.com">
+          <p style="font-size:.75rem;color:var(--text-muted);margin-top:4px;">Cambiar este campo solo actualiza el dato de contacto. Para cambiar el email de acceso o la contraseña, usá "🔑 Restablecer contraseña" desde la tabla.</p>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Plan Seleccionado:</label>
+          <select id="edit-m-plan" class="form-select">
+            <option value="Musculación & Cardio">Musculación & Cardio</option>
+            <option value="Crossfit Total">Crossfit Total</option>
+            <option value="Funcional & Pilates">Funcional & Pilates</option>
+            <option value="Pase Libre Total (VIP)">Pase Libre Total (VIP)</option>
+          </select>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div class="form-group">
+            <label class="form-label">Estado de Cuota:</label>
+            <select id="edit-m-cuota" class="form-select">
+              <option value="al_dia">Al Día</option>
+              <option value="vencido">Vencido</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Vencimiento Cuota:</label>
+            <input type="date" id="edit-m-duedate" class="form-input" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Apto Médico:</label>
+          <select id="edit-m-apto" class="form-select">
+            <option value="vigente">Vigente</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="vencido">Vencido</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn" style="width: 100%; margin-top: 10px;">
+          💾 Guardar Cambios
         </button>
       </form>
     </div>
@@ -1035,7 +1162,7 @@ body {
         </label>
         <select id="demo-member-select" class="form-select" style="max-width: 340px; font-size: 0.9rem;">
           <option value="SOC-1001">Carlos Tevez (Cuota OK | Apto OK) -> Verde</option>
-          <option value="SOC-1002">Lucía Fernández (Cuota por Vencer < 3 días) -> Amarillo</option>
+          <option value="SOC-1002">Lucía Fernández (Cuota por Vencer &lt; 3 días) -> Amarillo</option>
           <option value="SOC-1003">Marcos Rojo (Cuota Vencida) -> Rojo</option>
           <option value="PAS-2001">Sofía Martínez (Apto Vencido) -> Rojo</option>
         </select>
@@ -1241,7 +1368,7 @@ body {
               🟢 Simular Carlos Tevez (Cuota OK + Apto OK) -> VERDE
             </button>
             <button class="btn" style="background: rgba(245, 158, 11, 0.2); border: 1px solid var(--status-yellow); color: var(--status-yellow); justify-content: flex-start;" onclick="FitApp.evaluateAccess('SOC-1002')">
-              🟡 Simular Lucía Fernández (Cuota por Vencer < 3 días) -> AMARILLO
+              🟡 Simular Lucía Fernández (Cuota por Vencer &lt; 3 días) -> AMARILLO
             </button>
             <button class="btn" style="background: rgba(239, 68, 68, 0.2); border: 1px solid var(--status-red); color: var(--status-red); justify-content: flex-start;" onclick="FitApp.evaluateAccess('SOC-1003')">
               🔴 Simular Marcos Rojo (Cuota Vencida) -> ROJO + COBRO
@@ -1348,7 +1475,7 @@ body {
             <div class="form-group">
               <label class="form-label">Color Primario (`--primary-color`):</label>
               <div class="color-picker-row">
-                <input type="color" id="cfg-primary-color" class="color-input" value="#06b6d4">
+                <input type="color" id="cfg-primary-color" class="color-input" value="#14b8a6">
                 <span style="font-size: 0.88rem; color: var(--text-muted);">Botones primarios, QR, bordes y brillos</span>
               </div>
             </div>
@@ -1356,7 +1483,7 @@ body {
             <div class="form-group">
               <label class="form-label">Color Secundario (`--secondary-color`):</label>
               <div class="color-picker-row">
-                <input type="color" id="cfg-secondary-color" class="color-input" value="#3b82f6">
+                <input type="color" id="cfg-secondary-color" class="color-input" value="#6366f1">
                 <span style="font-size: 0.88rem; color: var(--text-muted);">Degradados de marca y acentos</span>
               </div>
             </div>
@@ -1404,11 +1531,18 @@ body {
 
       <!-- Member Roster Management Table -->
       <div class="glass-card" style="margin-top: 24px;">
-        <div class="glass-card-header">
+        <div class="glass-card-header" style="flex-wrap: wrap; gap: 12px;">
           <h3 class="card-title">👥 Gestión Rápida de Socios</h3>
-          <button class="btn btn-secondary" style="padding: 8px 14px; font-size: 0.82rem;" onclick="FitApp.exportMembersCSV()">
-            📥 Exportar Socios CSV
-          </button>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+            <input type="text" id="member-search" class="form-input" placeholder="🔍 Buscar por nombre, DNI, ID o email…" style="min-width:220px; padding:8px 12px; font-size:.85rem;">
+            <label class="btn btn-secondary" style="padding: 8px 14px; font-size: 0.82rem; cursor:pointer; margin:0;">
+              📤 Importar CSV
+              <input type="file" id="import-members-csv" accept=".csv" style="display:none;" onchange="FitApp.importMembersCSV(event)">
+            </label>
+            <button class="btn btn-secondary" style="padding: 8px 14px; font-size: 0.82rem;" onclick="FitApp.exportMembersCSV()">
+              📥 Exportar Socios CSV
+            </button>
+          </div>
         </div>
 
         <div style="overflow-x: auto;">
@@ -1444,8 +1578,8 @@ body {
 const PRESET_THEMES = {
   cyber: {
     gymName: "FitAccess Cyber",
-    primary: "#06b6d4",
-    accent: "#3b82f6",
+    primary: "#14b8a6",
+    accent: "#6366f1",
     logo: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=120&auto=format&fit=crop&q=80"
   },
   iron: {
@@ -1457,7 +1591,7 @@ const PRESET_THEMES = {
   velox: {
     gymName: "Velox Studio & Crossfit",
     primary: "#10b981",
-    accent: "#06b6d4",
+    accent: "#14b8a6",
     logo: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=120&auto=format&fit=crop&q=80"
   },
   gold: {
@@ -1471,8 +1605,8 @@ const PRESET_THEMES = {
 const WhiteLabelEngine = {
   config: {
     gymName: "FitAccess Club",
-    primaryColor: "#06b6d4",
-    secondaryColor: "#3b82f6",
+    primaryColor: "#14b8a6",
+    secondaryColor: "#6366f1",
     gymLogo: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=120&auto=format&fit=crop&q=80",
     aptoMedicoMandatory: true,
     dailyPassesEnabled: true,
@@ -1504,8 +1638,8 @@ const WhiteLabelEngine = {
   registerGymBusiness(data) {
     this.saveConfig({
       gymName: data.gymName || "Mi Gimnasio",
-      primaryColor: data.primaryColor || "#06b6d4",
-      secondaryColor: data.secondaryColor || "#3b82f6",
+      primaryColor: data.primaryColor || "#14b8a6",
+      secondaryColor: data.secondaryColor || "#6366f1",
       gymLogo: data.gymLogo || "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=120&auto=format&fit=crop&q=80"
     });
   },
@@ -1517,7 +1651,7 @@ const WhiteLabelEngine = {
     root.style.setProperty("--primary-color", this.config.primaryColor);
     root.style.setProperty("--primary-glow", this.hexToRgba(this.config.primaryColor, 0.35));
     
-    const secondary = this.config.secondaryColor || this.config.accentColor || "#3b82f6";
+    const secondary = this.config.secondaryColor || this.config.accentColor || "#6366f1";
     root.style.setProperty("--brand-secondary", secondary);
     root.style.setProperty("--secondary-color", secondary);
     root.style.setProperty("--accent-color", secondary);
@@ -1770,12 +1904,17 @@ const FitApp = {
     // Búsqueda de socios en tiempo real
     const searchInput = document.getElementById("member-search");
     if (searchInput) {
-      searchInput.addEventListener("input", () => this.renderMembersTable());
+      searchInput.addEventListener("input", () => this.renderAdminTables());
     }
     // Formulario agregar socio
     const addForm = document.getElementById("form-add-member");
     if (addForm) {
       addForm.addEventListener("submit", (e) => { e.preventDefault(); this.saveNewMember(); });
+    }
+    // Formulario editar socio
+    const editForm = document.getElementById("form-edit-member");
+    if (editForm) {
+      editForm.addEventListener("submit", (e) => { e.preventDefault(); this.saveEditedMember(); });
     }
     // Color pickers white-label
     const primaryPicker = document.getElementById("config-primary-color");
@@ -2015,15 +2154,24 @@ const FitApp = {
     }
   },
 
+  nextMemberId() {
+    let max = 1000;
+    this.members.forEach(m => {
+      const match = /^SOC-(\d+)$/.exec(m.id || "");
+      if (match) max = Math.max(max, parseInt(match[1], 10));
+    });
+    return `SOC-${max + 1}`;
+  },
+
   addNewMember(formData) {
-    const newIdNumber = 1000 + this.members.length + 1;
-    const newId = `SOC-${newIdNumber}`;
+    const newId = this.nextMemberId();
 
     const newMember = {
       id: newId,
       name: formData.name,
       dni: formData.dni,
       phone: formData.phone || "+54 11 5555-0000",
+      email: formData.email || null,
       plan: formData.plan || "Musculación & Cardio",
       photo: formData.photo || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
       subscriptionStatus: formData.subscriptionStatus || "al_dia",
@@ -2036,8 +2184,60 @@ const FitApp = {
     this.members.push(newMember);
     this.saveMembers();
     this.renderAdminTables();
-    this.hideAddMemberModal();
-    this.showToast(`¡Socio ${newMember.name} registrado con éxito (ID: ${newMember.id})!`);
+    return newMember;
+  },
+
+  generateMemberPassword() {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+    let pass = "";
+    for (let i = 0; i < 10; i++) pass += chars[Math.floor(Math.random() * chars.length)];
+    const field = document.getElementById("new-m-password");
+    if (field) field.value = pass;
+    return pass;
+  },
+
+  async saveNewMember() {
+    const formData = {
+      name: document.getElementById("new-m-name").value.trim(),
+      dni: document.getElementById("new-m-dni").value.trim(),
+      phone: document.getElementById("new-m-phone").value.trim(),
+      plan: document.getElementById("new-m-plan").value,
+      subscriptionStatus: document.getElementById("new-m-cuota").value,
+      dueDate: document.getElementById("new-m-duedate").value,
+      aptoMedico: document.getElementById("new-m-apto").value,
+      email: document.getElementById("new-m-email")?.value.trim() || ""
+    };
+    const password = document.getElementById("new-m-password")?.value.trim() || "";
+
+    const dupDni = this.members.find(x => x.dni === formData.dni);
+    if (dupDni) {
+      this.showToast(`Ya existe un socio con DNI ${formData.dni} (${dupDni.name}). Revisá antes de crear uno nuevo.`);
+      return;
+    }
+
+    const newMember = this.addNewMember(formData);
+
+    // Si se cargó un email, además del registro del socio se crea su usuario de acceso.
+    if (formData.email) {
+      if (typeof FirebaseSaaS === "undefined" || !FirebaseSaaS.enabled) {
+        this.hideAddMemberModal();
+        this.showToast(`Socio ${newMember.name} registrado. Conectá Firebase para crear su acceso con email.`);
+        return;
+      }
+      const finalPassword = password || this.generateMemberPassword() || Math.random().toString(36).slice(-10);
+      try {
+        await FirebaseSaaS.createMemberAccount(newMember.id, formData.email, finalPassword);
+        this.hideAddMemberModal();
+        this.showToast(`¡Socio ${newMember.name} registrado! Acceso creado: ${formData.email} / ${finalPassword}`);
+      } catch (err) {
+        this.hideAddMemberModal();
+        const msg = FirebaseSaaS.authError ? FirebaseSaaS.authError(err) : (err.message || err);
+        this.showToast(`Socio guardado, pero no se pudo crear su acceso: ${msg}`);
+      }
+    } else {
+      this.hideAddMemberModal();
+      this.showToast(`¡Socio ${newMember.name} registrado con éxito (ID: ${newMember.id})!`);
+    }
   },
 
   deleteMember(memberId) {
@@ -2048,6 +2248,210 @@ const FitApp = {
       this.renderAdminTables();
       this.showToast(`Socio ${m.name} eliminado.`);
     }
+  },
+
+  // ----------------------------------------------------
+  // TABLAS DEL PANEL ADMIN (socios + aptos médicos)
+  // ----------------------------------------------------
+  escapeHtml(str) {
+    if (str === null || str === undefined) return "";
+    return String(str).replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+  },
+
+  renderAdminTables() {
+    this.renderAdminMembersTable();
+    this.renderAdminAptosTable();
+  },
+
+  renderAdminMembersTable() {
+    const tbody = document.getElementById("admin-members-tbody");
+    if (!tbody) return;
+    const q = (document.getElementById("member-search")?.value || "").trim().toLowerCase();
+    const list = this.members.filter(m => {
+      if (!q) return true;
+      return (m.name || "").toLowerCase().includes(q)
+        || (m.dni || "").toLowerCase().includes(q)
+        || (m.id || "").toLowerCase().includes(q)
+        || (m.email || "").toLowerCase().includes(q);
+    });
+
+    if (!list.length) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color: var(--text-muted);">No se encontraron socios.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = list.map(m => {
+      const cuotaBadge = m.subscriptionStatus === "al_dia" ? "badge-green" : "badge-red";
+      const cuotaLabel = m.subscriptionStatus === "al_dia" ? "Al Día" : "Vencido";
+      const aptoBadge = m.aptoMedico === "vigente" ? "badge-green" : (m.aptoMedico === "pendiente" ? "badge-yellow" : "badge-red");
+      const aptoLabel = m.aptoMedico === "vigente" ? "Vigente" : (m.aptoMedico === "pendiente" ? "Pendiente" : "Vencido");
+      const resetBtn = m.email
+        ? `<button class="btn btn-secondary" style="padding:5px 8px;font-size:.72rem;" title="Restablecer contraseña" onclick="FitApp.resetMemberPassword('${m.id}')">🔑</button>`
+        : "";
+      return `
+        <tr>
+          <td><img src="${this.escapeHtml(m.photo)}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;" alt=""></td>
+          <td><strong>${this.escapeHtml(m.name)}</strong><br><span style="color:var(--text-dim); font-size:.75rem;">${this.escapeHtml(m.dni)} · ${this.escapeHtml(m.id)}</span></td>
+          <td>${this.escapeHtml(m.plan)}</td>
+          <td><span class="status-badge ${cuotaBadge}">${cuotaLabel}</span></td>
+          <td><span class="status-badge ${aptoBadge}">${aptoLabel}</span></td>
+          <td style="white-space:nowrap; display:flex; gap:6px;">
+            <button class="btn btn-secondary" style="padding:5px 8px;font-size:.72rem;" title="Editar" onclick="FitApp.openEditMemberModal('${m.id}')">✏️</button>
+            ${resetBtn}
+            <button class="btn btn-secondary" style="padding:5px 8px;font-size:.72rem;color:var(--status-red);" title="Eliminar" onclick="FitApp.deleteMember('${m.id}')">🗑️</button>
+          </td>
+        </tr>`;
+    }).join("");
+  },
+
+  renderAdminAptosTable() {
+    const tbody = document.getElementById("admin-aptos-tbody");
+    if (!tbody) return;
+    if (!this.members.length) {
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--text-muted);">Sin socios registrados.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = this.members.map(m => {
+      const badge = m.aptoMedico === "vigente" ? "badge-green" : (m.aptoMedico === "pendiente" ? "badge-yellow" : "badge-red");
+      const label = m.aptoMedico === "vigente" ? "Vigente" : (m.aptoMedico === "pendiente" ? "Pendiente" : "Vencido");
+      const fileLabel = m.aptoFile ? "📎 " + this.escapeHtml(m.aptoFile) : "Sin archivo";
+      const actionBtn = m.aptoMedico === "vigente"
+        ? `<button class="btn btn-secondary" style="padding:5px 10px;font-size:.72rem;" onclick="FitApp.setAptoStatus('${m.id}','vencido')">Marcar vencido</button>`
+        : `<button class="btn" style="padding:5px 10px;font-size:.72rem;" onclick="FitApp.setAptoStatus('${m.id}','vigente')">✔️ Aprobar</button>`;
+      return `<tr><td>${this.escapeHtml(m.name)}</td><td><span class="status-badge ${badge}">${label}</span></td><td>${fileLabel}</td><td>${actionBtn}</td></tr>`;
+    }).join("");
+  },
+
+  setAptoStatus(memberId, status) {
+    const m = this.findMember(memberId);
+    if (!m) return;
+    m.aptoMedico = status;
+    this.saveMembers();
+    this.renderAdminTables();
+    this.showToast(`Apto médico de ${m.name} actualizado a "${status === "vigente" ? "Vigente" : "Vencido"}".`);
+  },
+
+  // ----------------------------------------------------
+  // EDICIÓN DE SOCIO
+  // ----------------------------------------------------
+  openEditMemberModal(memberId) {
+    const m = this.findMember(memberId);
+    if (!m) return;
+    document.getElementById("edit-m-id").value = m.id;
+    document.getElementById("edit-m-name").value = m.name || "";
+    document.getElementById("edit-m-dni").value = m.dni || "";
+    document.getElementById("edit-m-phone").value = m.phone || "";
+    document.getElementById("edit-m-email").value = m.email || "";
+    document.getElementById("edit-m-plan").value = m.plan || "Musculación & Cardio";
+    document.getElementById("edit-m-cuota").value = m.subscriptionStatus || "al_dia";
+    document.getElementById("edit-m-duedate").value = m.dueDate || "";
+    document.getElementById("edit-m-apto").value = m.aptoMedico || "vigente";
+    const modal = document.getElementById("modal-edit-member");
+    if (modal) { modal.style.zIndex = "20000"; modal.style.display = "flex"; }
+  },
+
+  hideEditMemberModal() {
+    const modal = document.getElementById("modal-edit-member");
+    if (modal) modal.style.display = "none";
+  },
+
+  saveEditedMember() {
+    const id = document.getElementById("edit-m-id").value;
+    const m = this.findMember(id);
+    if (!m) return;
+
+    const newDni = document.getElementById("edit-m-dni").value.trim();
+    const dup = this.members.find(x => x.dni === newDni && x.id !== id);
+    if (dup) {
+      this.showToast(`Ya existe otro socio con DNI ${newDni} (${dup.name}).`);
+      return;
+    }
+
+    const newEmail = document.getElementById("edit-m-email").value.trim();
+    const emailChanged = (m.email || "") !== newEmail;
+
+    m.name = document.getElementById("edit-m-name").value.trim();
+    m.dni = newDni;
+    m.phone = document.getElementById("edit-m-phone").value.trim();
+    m.email = newEmail || null;
+    m.plan = document.getElementById("edit-m-plan").value;
+    m.subscriptionStatus = document.getElementById("edit-m-cuota").value;
+    m.dueDate = document.getElementById("edit-m-duedate").value;
+    m.aptoMedico = document.getElementById("edit-m-apto").value;
+
+    this.saveMembers();
+    this.renderAdminTables();
+    this.hideEditMemberModal();
+
+    if (emailChanged && newEmail) {
+      this.showToast(`Datos de ${m.name} actualizados. El email de acceso NO se actualiza solo: usá "🔑 Restablecer contraseña" o creá un nuevo acceso si hace falta.`);
+    } else {
+      this.showToast(`Datos de ${m.name} actualizados.`);
+    }
+  },
+
+  async resetMemberPassword(memberId) {
+    const m = this.findMember(memberId);
+    if (!m || !m.email) return;
+    if (typeof FirebaseSaaS === "undefined" || !FirebaseSaaS.enabled) {
+      this.showToast("Conectá Firebase para poder restablecer contraseñas.");
+      return;
+    }
+    try {
+      await FirebaseSaaS.sendMemberPasswordReset(m.email);
+      this.showToast(`Te enviamos un email a ${m.email} para que ${m.name} restablezca su contraseña.`);
+    } catch (err) {
+      const msg = FirebaseSaaS.authError ? FirebaseSaaS.authError(err) : (err.message || err);
+      this.showToast(`No se pudo enviar el email: ${msg}`);
+    }
+  },
+
+  // ----------------------------------------------------
+  // IMPORTACIÓN MASIVA DE SOCIOS POR CSV
+  // Formato esperado (con encabezado): name,dni,phone,email,plan
+  // El email es opcional; si está presente y Firebase está activo,
+  // se crea también el acceso del socio con una contraseña generada.
+  // ----------------------------------------------------
+  importMembersCSV(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const text = String(e.target.result || "");
+      const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      if (!lines.length) { this.showToast("El archivo CSV está vacío."); event.target.value = ""; return; }
+
+      const header = lines[0].toLowerCase();
+      const startIdx = header.includes("name") || header.includes("nombre") ? 1 : 0;
+      const rows = lines.slice(startIdx).map(l => l.split(",").map(v => v.trim()));
+
+      let created = 0, skipped = 0, accountsCreated = 0, accountErrors = 0;
+      for (const cols of rows) {
+        const [name, dni, phone, email, plan] = cols;
+        if (!name || !dni) { skipped++; continue; }
+        if (this.members.find(x => x.dni === dni)) { skipped++; continue; }
+
+        const newMember = this.addNewMember({ name, dni, phone, email, plan });
+        created++;
+
+        if (email && typeof FirebaseSaaS !== "undefined" && FirebaseSaaS.enabled) {
+          try {
+            const pass = Math.random().toString(36).slice(-10);
+            await FirebaseSaaS.createMemberAccount(newMember.id, email, pass);
+            accountsCreated++;
+          } catch (err) {
+            accountErrors++;
+          }
+        }
+      }
+
+      event.target.value = "";
+      let msg = `Importación completa: ${created} socios creados, ${skipped} omitidos (duplicados o incompletos).`;
+      if (accountsCreated) msg += ` ${accountsCreated} accesos creados.`;
+      if (accountErrors) msg += ` ${accountErrors} accesos no se pudieron crear (revisá emails duplicados).`;
+      this.showToast(msg);
+    };
+    reader.readAsText(file);
   },
 
   // ----------------------------------------------------
@@ -2212,7 +2616,7 @@ const FitApp = {
 
     if (method === "mercadopago") {
       box.innerHTML = `
-        <div style="background: rgba(6, 182, 212, 0.15); border: 1px solid var(--primary-color); padding: 14px; border-radius: var(--radius-md); text-align: center;">
+        <div style="background: rgba(20, 184, 166, 0.15); border: 1px solid var(--primary-color); padding: 14px; border-radius: var(--radius-md); text-align: center;">
           <div style="font-weight: 800; color: var(--primary-color); margin-bottom: 6px;">🔷 Mercado Pago Checkout Directo</div>
           <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">Págalo de forma segura en hasta 12 cuotas con tarjeta o dinero en cuenta.</div>
           <button class="btn" style="width:100%; font-weight:800;" onclick="FitApp.processSelectedPayment()">
@@ -2222,7 +2626,7 @@ const FitApp = {
       `;
     } else if (method === "transferencia") {
       box.innerHTML = `
-        <div style="background: rgba(59, 130, 246, 0.15); border: 1px solid var(--secondary-color); padding: 14px; border-radius: var(--radius-md);">
+        <div style="background: rgba(99, 102, 241, 0.15); border: 1px solid var(--secondary-color); padding: 14px; border-radius: var(--radius-md);">
           <div style="font-weight: 800; color: var(--secondary-color); margin-bottom: 8px;">🏦 Transferencia Bancaria Directa</div>
           <div style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.6;">
             <strong>CBU:</strong> 0000003100012345678901<br>
@@ -2284,6 +2688,19 @@ const FitApp = {
     this.currentUser = null;
     localStorage.removeItem("fitaccess_current_user");
     this.showLoginModal();
+  },
+
+  switchView(view) {
+    document.querySelectorAll(".view-panel").forEach(panel => panel.classList.remove("active"));
+    document.querySelectorAll(".nav-btn").forEach(btn => btn.classList.remove("active"));
+
+    const panel = document.getElementById(`view-${view}`);
+    if (panel) panel.classList.add("active");
+
+    const navBtn = document.getElementById(`nav-${view}`);
+    if (navBtn) navBtn.classList.add("active");
+
+    this.currentView = view;
   },
 
   showLoginModal() {
@@ -2730,6 +3147,11 @@ document.addEventListener("DOMContentLoaded", () => FitApp.init());
           this.app = initializeApp(FIREBASE_CONFIG);
           this.auth = getAuth(this.app);
           this.db = getFirestore(this.app);
+          // App secundaria: se usa solo para crear cuentas de socios sin
+          // desloguear al administrador (createUserWithEmailAndPassword
+          // inicia sesión automáticamente con la cuenta nueva).
+          this.secondaryApp = initializeApp(FIREBASE_CONFIG, "MemberCreation");
+          this.secondaryAuth = getAuth(this.secondaryApp);
           this.initialized = true;
           this.status("Conectando…");
           this.patchAuthUI();
@@ -2806,7 +3228,7 @@ document.addEventListener("DOMContentLoaded", () => FitApp.init());
             // Siempre asegurar que existan los documentos en Firestore (merge:true preserva datos existentes)
             this.setAuthStatus("Configurando perfil en Firestore…");
             await setDoc(doc(this.db, "gyms", gymId), {
-              gymName:"FitAccess Demo", primaryColor:"#06b6d4", secondaryColor:"#3b82f6",
+              gymName:"FitAccess Demo", primaryColor:"#14b8a6", secondaryColor:"#6366f1",
               gymLogo:"https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=120&auto=format&fit=crop&q=80",
               aptoMedicoMandatory:true, dailyPassesEnabled:true, gracePeriodDays:3,
               ownerUid:uid, demo:true, createdAt:serverTimestamp()
@@ -2882,8 +3304,8 @@ document.addEventListener("DOMContentLoaded", () => FitApp.init());
           const data = snap.data();
           WhiteLabelEngine.saveConfig({
             gymName: data.gymName || "Mi Gimnasio",
-            primaryColor: data.primaryColor || "#06b6d4",
-            secondaryColor: data.secondaryColor || "#3b82f6",
+            primaryColor: data.primaryColor || "#14b8a6",
+            secondaryColor: data.secondaryColor || "#6366f1",
             gymLogo: data.gymLogo || WhiteLabelEngine.config.gymLogo,
             aptoMedicoMandatory: data.aptoMedicoMandatory !== false,
             dailyPassesEnabled: data.dailyPassesEnabled !== false,
@@ -2950,20 +3372,27 @@ document.addEventListener("DOMContentLoaded", () => FitApp.init());
         });
       },
 
+      async sendMemberPasswordReset(email) {
+        if (!this.enabled) throw new Error("Firebase no configurado.");
+        await sendPasswordResetEmail(this.auth, email);
+      },
+
       async createMemberAccount(memberId, email, password) {
         if (!this.enabled) throw new Error("Firebase no configurado.");
         const adminUser = this.auth.currentUser;
         const member = FitApp.findMember(memberId);
         if (!adminUser || !member) throw new Error("Socio no encontrado.");
-        // Admin creates auth account. The browser session switches to the new account,
-        // so for production invitations use a backend/Cloud Function instead.
-        const cred = await createUserWithEmailAndPassword(this.auth, email, password);
+        // Se crea la cuenta con la app SECUNDARIA para que la sesión del
+        // administrador (this.auth) no se vea afectada.
+        const cred = await createUserWithEmailAndPassword(this.secondaryAuth, email, password);
         await setDoc(doc(this.db, "users", cred.user.uid), {
           name: member.name, email, role: "socio", memberId,
           gymId: this.gymId, gymName: WhiteLabelEngine.config.gymName,
           createdAt: serverTimestamp()
         });
         await setDoc(doc(this.db, "gyms", this.gymId, "members", memberId), { userId: cred.user.uid }, { merge:true });
+        // Cerramos sesión en la app secundaria; la del admin sigue intacta.
+        await signOut(this.secondaryAuth);
         return cred.user;
       },
 
@@ -3049,7 +3478,7 @@ document.addEventListener("DOMContentLoaded", () => FitApp.init());
             <label class="form-label">Nombre del gimnasio</label><input id="new-gym-name" class="form-input" required placeholder="Ej. Iron Fitness">
             <label class="form-label">Email administrador</label><input id="new-gym-email" type="email" class="form-input" required placeholder="admin@gimnasio.com">
             <label class="form-label">Contraseña</label><input id="new-gym-password" type="password" class="form-input" minlength="6" required placeholder="Mínimo 6 caracteres">
-            <div style="display:flex;gap:10px;"><div style="flex:1"><label class="form-label">Color principal</label><input id="new-gym-primary" type="color" value="#06b6d4" style="width:100%;height:42px;border:0;border-radius:10px;background:transparent"></div><div style="flex:1"><label class="form-label">Color secundario</label><input id="new-gym-secondary" type="color" value="#3b82f6" style="width:100%;height:42px;border:0;border-radius:10px;background:transparent"></div></div>
+            <div style="display:flex;gap:10px;"><div style="flex:1"><label class="form-label">Color principal</label><input id="new-gym-primary" type="color" value="#14b8a6" style="width:100%;height:42px;border:0;border-radius:10px;background:transparent"></div><div style="flex:1"><label class="form-label">Color secundario</label><input id="new-gym-secondary" type="color" value="#6366f1" style="width:100%;height:42px;border:0;border-radius:10px;background:transparent"></div></div>
             <button class="btn" type="submit" style="width:100%;margin-top:5px;">🚀 Crear gimnasio</button>
           </form>
           <button id="back-to-login" class="btn btn-secondary" style="width:100%;margin-top:10px;">← Volver al ingreso</button>
