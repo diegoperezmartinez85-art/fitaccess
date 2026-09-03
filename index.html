@@ -1,0 +1,3168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>FitAccess - White-Label Gym Access & Subscription SaaS</title>
+  <meta name="theme-color" content="#06b6d4">
+  <meta name="description" content="FitAccess SaaS para gestión de gimnasios, socios, pagos y control de acceso con Firebase.">
+  <link rel="manifest" href="./manifest.json">
+  <style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+
+/* ==========================================================================
+   FITACCESS SAAS - ULTRA-FRIENDLY & ACCESSIBLE STYLESHEET (THEME ENGINE)
+   ========================================================================== */
+
+:root {
+  /* Brand Customizable Variables */
+  --gym-name: "FitAccess Club";
+  --primary-color: #06b6d4;
+  --secondary-color: #3b82f6;
+  --primary-glow: rgba(6, 182, 212, 0.35);
+  --secondary-glow: rgba(59, 130, 246, 0.35);
+  
+  /* Glassmorphism Palette */
+  --bg-main: #060913;
+  --bg-gradient: radial-gradient(circle at top center, #0f172a 0%, #060913 100%);
+  --card-bg: rgba(15, 23, 42, 0.85);
+  --card-bg-hover: rgba(30, 41, 59, 0.9);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-border-light: rgba(255, 255, 255, 0.2);
+  
+  /* Text & Status Palette */
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+  
+  --status-green: #10b981;
+  --status-green-glow: rgba(16, 185, 129, 0.4);
+  --status-yellow: #f59e0b;
+  --status-yellow-glow: rgba(245, 158, 11, 0.4);
+  --status-red: #ef4444;
+  --status-red-glow: rgba(239, 68, 68, 0.4);
+  
+  /* Spacing & Borders */
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+  --shadow-lg: 0 20px 45px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 30px var(--primary-glow);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background: var(--bg-gradient);
+  background-attachment: fixed;
+  color: var(--text-main);
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.5;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--primary-color); }
+
+/* Ambient Glow System */
+.ambient-glow {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.glow-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.15;
+  transition: background 0.5s ease;
+}
+.glow-orb-1 { width: 450px; height: 450px; background: var(--primary-color); top: -100px; left: -100px; }
+.glow-orb-2 { width: 400px; height: 400px; background: var(--secondary-color); bottom: -50px; right: -50px; }
+
+/* Friendly Onboarding Guidance Bar */
+.friendly-banner {
+  background: linear-gradient(90deg, rgba(6, 182, 212, 0.15) 0%, rgba(59, 130, 246, 0.15) 100%);
+  border-bottom: 1px solid var(--glass-border);
+  padding: 10px 44px 10px 20px;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  position: relative;
+}
+
+.friendly-banner-close {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  transform: translateY(-50%);
+  background: rgba(255,255,255,0.08);
+  border: 1px solid var(--glass-border);
+  color: var(--text-muted);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 0.85rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.friendly-banner-close:hover { color: var(--text-main); background: rgba(255,255,255,0.16); }
+
+/* Toast Notification Overlay */
+.toast-notification {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 10000;
+  background: rgba(16, 185, 129, 0.95);
+  color: #000;
+  padding: 16px 26px;
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  font-weight: 800;
+  box-shadow: 0 12px 35px rgba(0,0,0,0.5);
+  display: none;
+  animation: slideUp 0.3s ease;
+}
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Modals (Login, Add Member, Register Gym Business) */
+.login-overlay, .modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(3, 8, 15, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.login-card, .modal-card {
+  background: var(--card-bg);
+  border: 1px solid var(--glass-border-light);
+  border-radius: var(--radius-xl);
+  padding: 32px 28px;
+  width: 100%;
+  max-width: 520px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 40px var(--primary-glow);
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.login-brand-logo {
+  width: 75px;
+  height: 75px;
+  border-radius: 20px;
+  object-fit: cover;
+  border: 3px solid var(--primary-color);
+  box-shadow: 0 0 25px var(--primary-glow);
+  margin-bottom: 14px;
+}
+
+.quick-login-chip {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--glass-border);
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  color: var(--text-main);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.quick-login-chip:hover {
+  background: var(--primary-color);
+  color: #000;
+  box-shadow: 0 4px 15px var(--primary-glow);
+}
+
+/* App Header & Navbar */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(6, 9, 19, 0.92);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--glass-border);
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 900px) {
+  .app-header {
+    padding: 12px 16px;
+    justify-content: center;
+  }
+  .brand-container { flex: 1 1 100%; justify-content: center; }
+  .app-header > div:last-child {
+    flex: 1 1 100%;
+    justify-content: center;
+  }
+  .view-nav {
+    order: 1;
+    flex: 1 1 100%;
+    justify-content: center;
+    overflow-x: auto;
+  }
+  .nav-btn { flex: 1; justify-content: center; white-space: nowrap; padding: 10px 8px; font-size: 0.82rem; }
+  #btn-preview-socio { display: none; }
+  .user-profile-pill { font-size: 0.78rem; }
+}
+
+.brand-container {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.gym-logo-img {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: var(--card-bg);
+  border: 2px solid var(--primary-color);
+  box-shadow: 0 0 15px var(--primary-glow);
+}
+
+.brand-name {
+  font-size: 1.35rem;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, #ffffff 0%, var(--primary-color) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.brand-tag {
+  font-size: 0.75rem;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.user-profile-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--glass-border);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* View Switcher Navigation */
+.view-nav {
+  display: flex;
+  background: rgba(15, 23, 42, 0.8);
+  padding: 5px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-border);
+  gap: 6px;
+}
+
+.nav-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 10px 18px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+}
+
+.nav-btn:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.nav-btn.active {
+  background: var(--primary-color);
+  color: #000;
+  box-shadow: 0 4px 15px var(--primary-glow);
+  font-weight: 900;
+}
+
+/* Main Layout Panels */
+.app-container {
+  position: relative;
+  z-index: 1;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 24px 18px 80px 18px;
+}
+
+.view-panel {
+  display: none;
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.view-panel.active { display: block; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Predictive Insights & Smart Automation Cards */
+.predictive-card {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(15, 23, 42, 0.9) 100%);
+  border: 2px solid var(--primary-color);
+  box-shadow: 0 0 30px var(--primary-glow);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  margin-bottom: 22px;
+}
+
+.predictive-title {
+  font-size: 1rem;
+  font-weight: 900;
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.predictive-text {
+  font-size: 0.95rem;
+  color: var(--text-main);
+  line-height: 1.5;
+}
+
+.crowd-progress-bar {
+  width: 100%;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.crowd-progress-fill {
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.5s ease;
+}
+
+/* Cards & Glassmorphic Elements */
+.glass-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: 26px;
+  box-shadow: var(--shadow-lg);
+  margin-bottom: 22px;
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-main);
+}
+
+/* Member Digital Card View */
+.digital-credential-card {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%);
+  border: 2px solid var(--glass-border-light);
+  border-radius: var(--radius-xl);
+  padding: 32px;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+}
+
+.credential-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 22px;
+  border-bottom: 1px solid var(--glass-border);
+  padding-bottom: 14px;
+}
+
+.credential-logo-name { text-align: left; }
+.credential-gym { font-size: 1.2rem; font-weight: 900; color: var(--primary-color); }
+.credential-subtitle { font-size: 0.8rem; color: var(--text-muted); }
+
+.member-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid var(--primary-color);
+  box-shadow: 0 0 25px var(--primary-glow);
+  margin: 0 auto 16px auto;
+  display: block;
+}
+
+.member-name { font-size: 1.55rem; font-weight: 900; margin-bottom: 4px; }
+.member-meta { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 22px; }
+
+.qr-box {
+  background: #ffffff;
+  padding: 18px;
+  border-radius: var(--radius-md);
+  display: inline-block;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5);
+  margin-bottom: 14px;
+}
+
+.qr-code-canvas {
+  width: 180px !important;
+  height: 180px !important;
+  display: block;
+}
+
+.qr-timer {
+  font-size: 0.85rem;
+  color: var(--primary-color);
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* Badges & Status Pills */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 30px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-green {
+  background: rgba(16, 185, 129, 0.18);
+  color: var(--status-green);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.badge-yellow {
+  background: rgba(245, 158, 11, 0.18);
+  color: var(--status-yellow);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.badge-red {
+  background: rgba(239, 68, 68, 0.18);
+  color: var(--status-red);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+/* Sub-tabs in Member View */
+.tab-row {
+  display: flex;
+  border-bottom: 1px solid var(--glass-border);
+  margin-bottom: 22px;
+  gap: 14px;
+  overflow-x: auto;
+}
+
+.tab-link {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 12px 6px;
+  cursor: pointer;
+  position: relative;
+  white-space: nowrap;
+  transition: color 0.2s;
+}
+
+.tab-link:hover { color: var(--text-main); }
+.tab-link.active { color: var(--primary-color); font-weight: 900; }
+.tab-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--primary-color);
+  border-radius: 3px;
+}
+
+/* Reception Scanner & Traffic Light Controls */
+.scanner-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+}
+
+@media (max-width: 900px) {
+  .scanner-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+  .scanner-video-box { min-height: 240px; }
+  .login-card, .modal-card { padding: 24px 18px; }
+  .traffic-icon { font-size: 2.6rem; }
+  .traffic-title { font-size: 1.3rem; }
+}
+
+.scanner-video-box {
+  position: relative;
+  background: #000;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 2px solid var(--glass-border);
+  min-height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scanner-video { width: 100%; height: 100%; object-fit: cover; }
+
+.scanner-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.scan-region {
+  width: 230px;
+  height: 230px;
+  border: 4px dashed var(--primary-color);
+  border-radius: var(--radius-md);
+  box-shadow: 0 0 35px var(--primary-glow);
+  animation: pulseScan 2s infinite ease-in-out;
+}
+
+@keyframes pulseScan {
+  0%, 100% { border-color: var(--primary-color); }
+  50% { border-color: rgba(255, 255, 255, 0.9); }
+}
+
+/* Traffic Light Banner UI System */
+.traffic-light-banner {
+  padding: 26px;
+  border-radius: var(--radius-lg);
+  text-align: center;
+  margin-bottom: 22px;
+  transition: all 0.3s ease;
+  display: none;
+}
+
+.traffic-light-banner.active { display: block; }
+
+.traffic-banner-green {
+  background: radial-gradient(circle at center, rgba(16, 185, 129, 0.28) 0%, rgba(6, 9, 19, 0.95) 100%);
+  border: 2px solid var(--status-green);
+  box-shadow: 0 0 40px var(--status-green-glow);
+}
+
+.traffic-banner-yellow {
+  background: radial-gradient(circle at center, rgba(245, 158, 11, 0.28) 0%, rgba(6, 9, 19, 0.95) 100%);
+  border: 2px solid var(--status-yellow);
+  box-shadow: 0 0 40px var(--status-yellow-glow);
+}
+
+.traffic-banner-red {
+  background: radial-gradient(circle at center, rgba(239, 68, 68, 0.35) 0%, rgba(6, 9, 19, 0.95) 100%);
+  border: 2px solid var(--status-red);
+  box-shadow: 0 0 45px var(--status-red-glow);
+  animation: redFlash 0.6s 2 ease-in-out;
+}
+
+@keyframes redFlash {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+.traffic-icon { font-size: 3.8rem; margin-bottom: 8px; }
+.traffic-title { font-size: 1.75rem; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
+
+.traffic-banner-green .traffic-title { color: var(--status-green); }
+.traffic-banner-yellow .traffic-title { color: var(--status-yellow); }
+.traffic-banner-red .traffic-title { color: var(--status-red); }
+
+.traffic-desc { font-size: 1.05rem; color: var(--text-main); margin-top: 6px; }
+
+/* Payment Box & Details Container */
+.payment-details-box {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  margin-top: 16px;
+}
+
+/* Log Tables & Forms */
+.log-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+
+.log-table th, .log-table td {
+  padding: 14px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--glass-border);
+  font-size: 0.92rem;
+}
+
+.log-table th {
+  color: var(--text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+}
+
+.config-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+@media (max-width: 900px) {
+  .config-grid { grid-template-columns: 1fr; }
+}
+
+.form-group { margin-bottom: 20px; }
+.form-label { display: block; font-size: 0.9rem; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; }
+
+.form-input, .form-select {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1.5px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  color: var(--text-main);
+  font-size: 1rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  min-height: 48px;
+}
+
+.form-input:focus, .form-select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 12px var(--primary-glow);
+}
+
+.color-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.color-input {
+  width: 54px;
+  height: 48px;
+  border-radius: 10px;
+  border: 1px solid var(--glass-border);
+  cursor: pointer;
+  background: none;
+}
+
+.btn {
+  background: var(--primary-color);
+  color: #000;
+  border: none;
+  padding: 14px 24px;
+  font-size: 1rem;
+  font-weight: 800;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 48px;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px var(--primary-glow);
+  filter: brightness(1.1);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text-main);
+  border: 1px solid var(--glass-border);
+}
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.22);
+  box-shadow: none;
+}
+
+.btn-whatsapp {
+  background: rgba(37, 211, 102, 0.2);
+  color: #25d366;
+  border: 1px solid rgba(37, 211, 102, 0.5);
+  font-weight: 800;
+}
+.btn-whatsapp:hover {
+  background: #25d366;
+  color: #000;
+  box-shadow: 0 6px 20px rgba(37, 211, 102, 0.5);
+}
+
+.btn-danger {
+  background: rgba(239, 68, 68, 0.2);
+  color: var(--status-red);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  font-weight: 800;
+}
+.btn-danger:hover {
+  background: var(--status-red);
+  color: #fff;
+}
+
+.preset-chip {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--glass-border);
+  padding: 10px 16px;
+  border-radius: 20px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.preset-chip:hover {
+  background: var(--card-bg-hover);
+  color: var(--text-main);
+  border-color: var(--primary-color);
+}
+
+  </style>
+</head>
+<body>
+
+  <!-- Ambient Glow Effects -->
+  <div class="ambient-glow">
+    <div class="glow-orb glow-orb-1"></div>
+    <div class="glow-orb glow-orb-2"></div>
+  </div>
+
+  <!-- Friendly Guidance & Mode Banner -->
+  <div id="friendly-banner" class="friendly-banner">
+    <span>💡 <strong>Modo Demostración:</strong> probá la app desde cualquier perspectiva:</span>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+      <button class="quick-login-chip" style="padding: 4px 10px; font-size: 0.78rem;" onclick="FitApp.switchView('socio')">👤 Vista Socio</button>
+      <button class="quick-login-chip" style="padding: 4px 10px; font-size: 0.78rem;" onclick="FitApp.switchView('reception')">📹 Control Recepción</button>
+      <button class="quick-login-chip" style="padding: 4px 10px; font-size: 0.78rem;" onclick="FitApp.switchView('admin')">⚙️ Panel Admin</button>
+    </div>
+    <button class="friendly-banner-close" title="Ocultar" onclick="FitApp.dismissFriendlyBanner()">✕</button>
+  </div>
+
+  <!-- Toast Notification Bar -->
+  <div id="toast-alert" class="toast-notification">¡Operación realizada con éxito!</div>
+
+  <!-- Modal: Registrar / Configurar Nuevo Gimnasio (Tenant Business Setup) -->
+  <div id="modal-register-gym" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+        <h3 class="card-title">🏢 Registrar Mi Gimnasio en 1-Paso</h3>
+        <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;" onclick="FitApp.hideRegisterGymModal()">✕ Cerrar</button>
+      </div>
+
+      <form id="form-register-gym">
+        <div class="form-group">
+          <label class="form-label">Nombre de tu Gimnasio:</label>
+          <input type="text" id="reg-gym-name" class="form-input" placeholder="Ej: Olympus Fitness Club" required>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div class="form-group">
+            <label class="form-label">Color Principal:</label>
+            <input type="color" id="reg-primary-color" class="color-input" value="#06b6d4" style="width: 100%;">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Color Secundario:</label>
+            <input type="color" id="reg-secondary-color" class="color-input" value="#3b82f6" style="width: 100%;">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Logo de tu Gimnasio (Imagen o Archivo):</label>
+          <input type="file" id="reg-logo-file" accept="image/*" class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">o URL del Logo:</label>
+          <input type="url" id="reg-logo-url" class="form-input" value="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=120&auto=format&fit=crop&q=80">
+        </div>
+
+        <button type="submit" class="btn" style="width: 100%; margin-top: 10px;">
+          🚀 Activar Mi Gimnasio & Aplicar Marca
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Registrar Nuevo Socio (Alta en Vivo) -->
+  <div id="modal-add-member" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+        <h3 class="card-title">➕ Registrar Nuevo Socio</h3>
+        <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;" onclick="FitApp.hideAddMemberModal()">✕ Cerrar</button>
+      </div>
+
+      <form id="form-add-member">
+        <div class="form-group">
+          <label class="form-label">Nombre y Apellido Completo:</label>
+          <input type="text" id="new-m-name" class="form-input" placeholder="Ej: Diego Maradona" required>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div class="form-group">
+            <label class="form-label">DNI / Documento:</label>
+            <input type="text" id="new-m-dni" class="form-input" placeholder="Ej: 22333444" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Teléfono WhatsApp:</label>
+            <input type="tel" id="new-m-phone" class="form-input" placeholder="Ej: +54 11 5555-9999" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Plan Seleccionado:</label>
+          <select id="new-m-plan" class="form-select">
+            <option value="Musculación & Cardio">Musculación & Cardio</option>
+            <option value="Crossfit Total">Crossfit Total</option>
+            <option value="Funcional & Pilates">Funcional & Pilates</option>
+            <option value="Pase Libre Total (VIP)">Pase Libre Total (VIP)</option>
+          </select>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div class="form-group">
+            <label class="form-label">Estado de Cuota:</label>
+            <select id="new-m-cuota" class="form-select">
+              <option value="al_dia">Al Día</option>
+              <option value="vencido">Vencido</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Vencimiento Cuota:</label>
+            <input type="date" id="new-m-duedate" class="form-input" value="2026-10-01" required>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div class="form-group">
+            <label class="form-label">Apto Médico:</label>
+            <select id="new-m-apto" class="form-select">
+              <option value="vigente">Vigente</option>
+              <option value="pendiente">Pendiente</option>
+              <option value="vencido">Vencido</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Foto de Perfil (Opcional):</label>
+            <input type="file" id="new-m-photo" accept="image/*" class="form-input">
+          </div>
+        </div>
+
+        <button type="submit" class="btn" style="width: 100%; margin-top: 10px;">
+          💾 Guardar y Asignar QR
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Firebase Authentication / SaaS Login -->
+  <div id="login-modal-overlay" class="login-overlay">
+    <div class="login-card" id="firebase-login-card">
+      <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=120&auto=format&fit=crop&q=80" alt="Gym Logo" class="gym-logo-img login-brand-logo">
+      <h2 class="brand-name-text" style="font-size: 1.7rem; font-weight: 900; margin-bottom: 4px;">FitAccess Club</h2>
+      <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 18px;">Gestión de gimnasio, socios y control de acceso</p>
+
+      <div id="firebase-config-warning" style="display:none; background:rgba(245,158,11,.12); border:1px solid var(--status-yellow); color:var(--text-main); padding:12px; border-radius:12px; margin-bottom:14px; font-size:.82rem; line-height:1.45;">
+        ⚙️ <strong>Firebase todavía no está configurado.</strong><br>Completá <code>FIREBASE_CONFIG</code> dentro de este HTML con los datos de tu proyecto Firebase para activar el modo SaaS online.
+      </div>
+
+      <form id="firebase-login-form" style="display:flex; flex-direction:column; gap:10px;">
+        <label class="form-label">Email</label>
+        <input id="firebase-email" class="form-input" type="email" autocomplete="email" placeholder="tu@email.com" required>
+        <label class="form-label">Contraseña</label>
+        <input id="firebase-password" class="form-input" type="password" autocomplete="current-password" placeholder="Mínimo 6 caracteres" required>
+        <button class="btn" type="submit" style="width:100%; margin-top:4px;">🔐 Ingresar</button>
+      </form>
+
+      <button id="firebase-forgot-password" class="btn btn-secondary" style="width:100%; margin-top:10px;">¿Olvidaste tu contraseña?</button>
+      <button id="firebase-register-gym" class="btn btn-secondary" style="width:100%; margin-top:10px; font-weight:800;">🏢 Crear mi gimnasio</button>
+      <button id="firebase-test-user" class="btn" style="width:100%; margin-top:10px; font-weight:900;">🧪 Crear / entrar con usuario de prueba</button>
+      <div id="firebase-test-credentials" style="display:none; margin-top:10px; padding:12px; border:1px dashed var(--primary-color); border-radius:12px; background:rgba(6,182,212,.08); font-size:.82rem; line-height:1.55;">
+        <strong>Usuario de prueba FitAccess</strong><br>Email: <code>demo@fitaccess.app</code><br>Contraseña: <code>FitAccess123!</code><br>Gimnasio: <strong>FitAccess Demo</strong>
+      </div>
+      <div id="firebase-auth-status" style="margin-top:12px; font-size:.82rem; color:var(--text-muted); text-align:center; min-height:20px;"></div>
+      <div style="border-top:1px dashed var(--glass-border); margin-top:14px; padding-top:12px; text-align:center; font-size:.75rem; color:var(--text-dim);">
+        Acceso seguro con Firebase Authentication · Datos sincronizados en la nube
+      </div>
+    </div>
+  </div>
+
+  <!-- Header Navigation & White-Label Brand Bar -->
+  <header class="app-header">
+    <div class="brand-container">
+      <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=120&auto=format&fit=crop&q=80" alt="Gym Logo" class="gym-logo-img">
+      <div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span class="brand-name brand-name-text">FitAccess Club</span>
+          <span class="brand-tag">SaaS White-Label</span>
+        </div>
+        <div style="font-size: 0.75rem; color: var(--text-muted);">Control de Ingreso & Gestión de Socios</div>
+      </div>
+    </div>
+
+    <div id="firebase-sync-status" style="position:fixed; bottom:14px; left:14px; z-index:9998; padding:7px 10px; border-radius:999px; font-size:.72rem; font-weight:800; background:rgba(15,23,42,.9); border:1px solid var(--glass-border); color:var(--text-muted); pointer-events:none;">☁️ Conectando…</div>
+
+    <!-- Right Header Tools & Role Navigation Switcher -->
+    <div style="display: flex; align-items: center; gap: 12px;">
+      
+      <!-- Role Navigation Bar -->
+      <nav class="view-nav">
+        <button class="nav-btn active" id="nav-socio" onclick="FitApp.switchView('socio')">
+          👤 Carnet Socio
+        </button>
+        <button class="nav-btn" id="nav-reception" onclick="FitApp.switchView('reception')">
+          📹 Recepción / Scanner
+        </button>
+        <button class="nav-btn" id="nav-admin" onclick="FitApp.switchView('admin')">
+          ⚙️ Admin
+        </button>
+      </nav>
+
+      <!-- Quick Socio Preview Toggle Button for Reception/Admin -->
+      <button id="btn-preview-socio" class="btn btn-secondary" style="padding: 8px 14px; font-size: 0.85rem;" onclick="FitApp.switchView('socio')">
+        👁️ Vista Socio
+      </button>
+
+      <!-- User Profile Info Pill & Logout -->
+      <div id="user-profile-info" class="user-profile-pill">
+        👤 <strong>Usuario</strong>
+      </div>
+      <button class="btn btn-secondary" style="padding: 8px 12px; font-size: 0.8rem;" onclick="FitApp.logout()">
+        🚪 Salir
+      </button>
+
+    </div>
+  </header>
+
+  <!-- Main Views Container -->
+  <main class="app-container">
+
+    <!-- ========================================================
+         VIEW 1: MEMBER VIEW (PWA CARNET DIGITAL)
+         ======================================================== -->
+    <section id="view-socio" class="view-panel active">
+      
+      <!-- Demo Selector Bar -->
+      <div style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 15px; background: var(--card-bg); padding: 14px 20px; border-radius: var(--radius-md); border: 1px solid var(--glass-border); flex-wrap: wrap;">
+        <label for="demo-member-select" style="font-size: 0.9rem; font-weight: 700; color: var(--text-main);">
+          🧪 Cambiar Socio de Prueba:
+        </label>
+        <select id="demo-member-select" class="form-select" style="max-width: 340px; font-size: 0.9rem;">
+          <option value="SOC-1001">Carlos Tevez (Cuota OK | Apto OK) -> Verde</option>
+          <option value="SOC-1002">Lucía Fernández (Cuota por Vencer < 3 días) -> Amarillo</option>
+          <option value="SOC-1003">Marcos Rojo (Cuota Vencida) -> Rojo</option>
+          <option value="PAS-2001">Sofía Martínez (Apto Vencido) -> Rojo</option>
+        </select>
+      </div>
+
+      <div style="max-width: 500px; margin: 0 auto;">
+        
+        <!-- Predictive Insights Container for Member -->
+        <div id="member-predictive-insights"></div>
+
+        <!-- Digital Credential Card -->
+        <div class="digital-credential-card">
+          
+          <div class="credential-header">
+            <div class="credential-logo-name">
+              <div class="credential-gym brand-name-text">FitAccess Club</div>
+              <div class="credential-subtitle">Credencial Digital de Socio</div>
+            </div>
+            <span class="status-badge badge-green" style="font-size: 0.72rem;">PWA Activa</span>
+          </div>
+
+          <img id="m-avatar" src="" alt="Foto Socio" class="member-avatar">
+          <h2 id="m-name" class="member-name">Carlos Tevez</h2>
+          <div id="m-id" class="member-meta">Socio N°: SOC-1001 | DNI: 34889123</div>
+          <div id="m-plan" style="font-size: 0.95rem; font-weight: 800; color: var(--primary-color); margin-bottom: 18px;">Musculación & Cardio (VIP)</div>
+
+          <!-- Dynamic 30s QR Code Container -->
+          <div class="qr-box">
+            <div id="qr-canvas-container"></div>
+          </div>
+          <div class="qr-timer">
+            ⏱️ Renueva en <span id="qr-countdown-seconds">30</span>s (Código QR dinámico)
+          </div>
+
+          <!-- Status Indicators -->
+          <div style="display: flex; justify-content: center; gap: 12px; margin-top: 22px; flex-wrap: wrap;">
+            <span id="m-cuota-badge" class="status-badge badge-green">Cuota al Día</span>
+            <span id="m-apto-badge" class="status-badge badge-green">Apto Médico Vigente</span>
+          </div>
+        </div>
+
+        <!-- Member Management Sub-Tabs -->
+        <div class="glass-card" style="margin-top: 24px;">
+          <div class="tab-row">
+            <button class="tab-link active" onclick="document.querySelectorAll('.socio-tab').forEach(t => t.style.display='none'); document.getElementById('stab-pagos').style.display='block'; document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active')); this.classList.add('active');">
+              💳 Vencimiento & Pagos
+            </button>
+            <button class="tab-link" onclick="document.querySelectorAll('.socio-tab').forEach(t => t.style.display='none'); document.getElementById('stab-apto').style.display='block'; document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active')); this.classList.add('active');">
+              🩺 Apto Médico
+            </button>
+            <button class="tab-link" onclick="document.querySelectorAll('.socio-tab').forEach(t => t.style.display='none'); document.getElementById('stab-perfil').style.display='block'; document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active')); this.classList.add('active');">
+              ⚙️ Mi Perfil & Foto
+            </button>
+          </div>
+
+          <!-- Sub-tab 1: Multi-Payment Gateway Flow -->
+          <div id="stab-pagos" class="socio-tab" style="display: block;">
+            <div style="margin-bottom: 14px;">
+              <div style="font-size: 0.85rem; color: var(--text-muted);">Próximo Vencimiento de Cuota:</div>
+              <div id="due-date-display" style="font-size: 1.15rem; font-weight: 800; color: var(--text-main);">2026-09-25</div>
+            </div>
+            <div style="margin-bottom: 18px;">
+              <div style="font-size: 0.85rem; color: var(--text-muted);">Estado Actual:</div>
+              <div id="payment-status-display" style="font-size: 1rem; font-weight: 700;">Al día</div>
+            </div>
+
+            <!-- Payment Method Selector -->
+            <div class="form-group">
+              <label class="form-label">Seleccionar Método de Pago ($18.500):</label>
+              <select id="payment-method-select" class="form-select">
+                <option value="mercadopago">🔷 Mercado Pago (Tarjeta / Débito / QR)</option>
+                <option value="transferencia">🏦 Transferencia Bancaria (CBU / Alias)</option>
+                <option value="efectivo">💵 Efectivo en Caja (Voucher)</option>
+              </select>
+            </div>
+
+            <!-- Dynamic Payment Gateway Details Container -->
+            <div id="payment-method-details" class="payment-details-box"></div>
+          </div>
+
+          <!-- Sub-tab 2: Apto Médico -->
+          <div id="stab-apto" class="socio-tab" style="display: none;">
+            <div style="margin-bottom: 14px;">
+              <div style="font-size: 0.85rem; color: var(--text-muted);">Estado del Certificado:</div>
+              <div id="apto-status-display" style="font-size: 1.1rem; font-weight: 900; color: var(--status-green);">VIGENTE</div>
+              <div style="font-size: 0.82rem; color: var(--text-muted);">Vencimiento: <span id="apto-due-display">2027-03-15</span></div>
+            </div>
+
+            <form id="form-apto-upload" style="border-top: 1px dashed var(--glass-border); padding-top: 16px; margin-top: 16px;">
+              <div class="form-group">
+                <label class="form-label">Subir nuevo Apto Médico (PDF / Imagen):</label>
+                <input type="file" accept="image/*,application/pdf" class="form-input" required>
+              </div>
+              <button type="submit" class="btn btn-secondary" style="width: 100%;">
+                📤 Enviar para Validación
+              </button>
+            </form>
+          </div>
+
+          <!-- Sub-tab 3: Member Self-Service Profile & Avatar Upload -->
+          <div id="stab-perfil" class="socio-tab" style="display: none;">
+            <form id="form-profile-edit">
+              <div class="form-group">
+                <label class="form-label">Nombre y Apellido:</label>
+                <input type="text" id="input-profile-name" class="form-input" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Número de DNI:</label>
+                <input type="text" id="input-profile-dni" class="form-input" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Teléfono de Contacto:</label>
+                <input type="tel" id="input-profile-phone" class="form-input" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Cambiar Foto de Perfil (Avatar Base64):</label>
+                <input type="file" id="input-profile-photo" accept="image/*" class="form-input">
+              </div>
+              <button type="submit" class="btn" style="width: 100%;">
+                💾 Guardar Cambios de Perfil
+              </button>
+            </form>
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================================
+         VIEW 2: RECEPTION / ACCESS CONTROL & SCANNER
+         ======================================================== -->
+    <section id="view-reception" class="view-panel">
+      
+      <!-- Stats Dashboard Bar -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+        <div class="glass-card" style="padding: 18px; margin-bottom: 0;">
+          <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Total Socios</div>
+          <div id="stat-total-socios" style="font-size: 2rem; font-weight: 900; color: var(--primary-color);">4</div>
+        </div>
+        <div class="glass-card" style="padding: 18px; margin-bottom: 0;">
+          <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Cuotas al Día</div>
+          <div id="stat-cuotas-ok" style="font-size: 2rem; font-weight: 900; color: var(--status-green);">3</div>
+        </div>
+        <div class="glass-card" style="padding: 18px; margin-bottom: 0;">
+          <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Aptos Pendientes</div>
+          <div id="stat-aptos-pending" style="font-size: 2rem; font-weight: 900; color: var(--status-yellow);">1</div>
+        </div>
+        <div class="glass-card" style="padding: 18px; margin-bottom: 0;">
+          <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Ingresos Hoy</div>
+          <div id="stat-ingresos-hoy" style="font-size: 2rem; font-weight: 900; color: var(--secondary-color);">0</div>
+        </div>
+      </div>
+
+      <!-- Traffic Light Banner Display System -->
+      <div id="traffic-light-banner" class="traffic-light-banner">
+        <div id="traffic-icon" class="traffic-icon">✅</div>
+        <div id="traffic-title" class="traffic-title">ACCESO PERMITIDO</div>
+        <div id="traffic-desc" class="traffic-desc">Socio al día y Apto Médico vigente.</div>
+        <div id="traffic-member-detail"></div>
+      </div>
+
+      <div class="scanner-grid">
+        
+        <!-- Left: Camera Scanner & Manual Lookup -->
+        <div class="glass-card">
+          <div class="glass-card-header">
+            <h3 class="card-title">📹 Escáner de Acceso Recepción</h3>
+            <span class="status-badge badge-green">Cámara en Vivo</span>
+          </div>
+
+          <!-- Video Stream Box -->
+          <div class="scanner-video-box">
+            <video id="scanner-video" class="scanner-video" autoplay muted playsinline></video>
+            <div class="scanner-overlay">
+              <div class="scan-region"></div>
+              <div id="scanner-status-text" style="font-size: 0.85rem; margin-top: 14px; background: rgba(0,0,0,0.75); padding: 6px 14px; border-radius: 20px; color: #fff; font-weight: 700;">
+                Apunte el código QR de la app del socio
+              </div>
+            </div>
+          </div>
+
+          <!-- Manual DNI / ID Search Bar -->
+          <div style="margin-top: 20px; display: flex; gap: 12px;">
+            <input type="text" id="input-manual-search" class="form-input" placeholder="Buscar por DNI, N° Socio o Nombre...">
+            <button id="btn-manual-search" class="btn">
+              🔍 Validar
+            </button>
+          </div>
+        </div>
+
+        <!-- Right: Fast Scan Test Triggers -->
+        <div class="glass-card">
+          <div class="glass-card-header">
+            <h3 class="card-title">⚡ Pruebas Rápidas de Semáforo</h3>
+          </div>
+          <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 18px;">
+            Hacé clic en cualquiera de los botones para simular un escaneo inmediato y verificar las respuestas visuales y sonoras:
+          </p>
+
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <button class="btn" style="background: rgba(16, 185, 129, 0.2); border: 1px solid var(--status-green); color: var(--status-green); justify-content: flex-start;" onclick="FitApp.evaluateAccess('SOC-1001')">
+              🟢 Simular Carlos Tevez (Cuota OK + Apto OK) -> VERDE
+            </button>
+            <button class="btn" style="background: rgba(245, 158, 11, 0.2); border: 1px solid var(--status-yellow); color: var(--status-yellow); justify-content: flex-start;" onclick="FitApp.evaluateAccess('SOC-1002')">
+              🟡 Simular Lucía Fernández (Cuota por Vencer < 3 días) -> AMARILLO
+            </button>
+            <button class="btn" style="background: rgba(239, 68, 68, 0.2); border: 1px solid var(--status-red); color: var(--status-red); justify-content: flex-start;" onclick="FitApp.evaluateAccess('SOC-1003')">
+              🔴 Simular Marcos Rojo (Cuota Vencida) -> ROJO + COBRO
+            </button>
+            <button class="btn btn-secondary" style="justify-content: flex-start;" onclick="FitApp.evaluateAccess('PAS-2001')">
+              🔴 Simular Sofía Martínez (Apto Médico Vencido) -> ROJO
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Log Table of Recent Check-ins -->
+      <div class="glass-card" style="margin-top: 24px;">
+        <div class="glass-card-header">
+          <h3 class="card-title">📋 Historial de Ingresos Recientes</h3>
+          <div style="display: flex; gap: 10px;">
+            <button class="btn btn-secondary" style="padding: 8px 14px; font-size: 0.82rem;" onclick="FitApp.exportLogsCSV()">
+              📥 Exportar Registro CSV
+            </button>
+            <button class="btn btn-secondary" style="padding: 8px 12px; font-size: 0.82rem;" onclick="FitApp.logs=[]; FitApp.saveLogs(); FitApp.renderLogTable();">
+              Limpiar
+            </button>
+          </div>
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table class="log-table">
+            <thead>
+              <tr>
+                <th>Hora</th>
+                <th>Socio</th>
+                <th>Estado Semáforo</th>
+                <th>Detalle de Resultado</th>
+              </tr>
+            </thead>
+            <tbody id="log-tbody">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================================
+         VIEW 3: TENANT ADMIN CONFIG & WHITE-LABEL ENGINE
+         ======================================================== -->
+    <section id="view-admin" class="view-panel">
+      
+      <!-- Database Management Action Bar -->
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 22px; background: var(--card-bg); padding: 16px 24px; border-radius: var(--radius-lg); border: 1px solid var(--glass-border); flex-wrap: wrap;">
+        <div style="display: flex; gap: 12px;">
+          <button class="btn" style="font-weight: 800;" onclick="FitApp.showAddMemberModal()">
+            ➕ Registrar Nuevo Socio
+          </button>
+          <button class="btn btn-secondary" style="font-weight: 800;" onclick="FitApp.showRegisterGymModal()">
+            🏢 Configurar Gimnasio
+          </button>
+        </div>
+        
+        <div style="display: flex; gap: 12px;">
+          <button class="btn btn-secondary" style="font-size: 0.88rem;" onclick="FitApp.exportDatabaseJSON()">
+            💾 Backup BD (.json)
+          </button>
+          <label class="btn btn-secondary" style="font-size: 0.88rem; cursor: pointer;">
+            📂 Restaurar BD (.json)
+            <input type="file" accept=".json" style="display:none;" onchange="FitApp.importDatabaseJSON(this)">
+          </label>
+        </div>
+      </div>
+
+      <!-- Business Predictive Analytics Container -->
+      <div id="business-predictive-dashboard"></div>
+
+      <div class="config-grid">
+        
+        <!-- White-Label Customizer Panel -->
+        <div class="glass-card">
+          <div class="glass-card-header">
+            <h3 class="card-title">🎨 Personalización de Marca (White-Label)</h3>
+            <button class="btn btn-secondary" style="padding: 8px 14px; font-size: 0.82rem;" onclick="WhiteLabelEngine.exportConfigJSON()">
+              📥 Exportar JSON
+            </button>
+          </div>
+
+          <!-- Preset Theme Chips -->
+          <div style="margin-bottom: 22px;">
+            <label class="form-label">Presets de Gimnasio Preconfigurados:</label>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
+              <button class="preset-chip" onclick="WhiteLabelEngine.applyPreset('cyber'); location.reload();">💎 Cyber Fit</button>
+              <button class="preset-chip" onclick="WhiteLabelEngine.applyPreset('iron'); location.reload();">🔥 Iron Heavy</button>
+              <button class="preset-chip" onclick="WhiteLabelEngine.applyPreset('velox'); location.reload();">⚡ Velox Crossfit</button>
+              <button class="preset-chip" onclick="WhiteLabelEngine.applyPreset('gold'); location.reload();">👑 Gold Luxury</button>
+            </div>
+          </div>
+
+          <form id="form-white-label">
+            <div class="form-group">
+              <label class="form-label">Nombre Comercial del Gimnasio (Tenant):</label>
+              <input type="text" id="cfg-gym-name" class="form-input" value="FitAccess Club" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Color Primario (`--primary-color`):</label>
+              <div class="color-picker-row">
+                <input type="color" id="cfg-primary-color" class="color-input" value="#06b6d4">
+                <span style="font-size: 0.88rem; color: var(--text-muted);">Botones primarios, QR, bordes y brillos</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Color Secundario (`--secondary-color`):</label>
+              <div class="color-picker-row">
+                <input type="color" id="cfg-secondary-color" class="color-input" value="#3b82f6">
+                <span style="font-size: 0.88rem; color: var(--text-muted);">Degradados de marca y acentos</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Subir Archivo de Imagen de Logo (Base64):</label>
+              <input type="file" id="cfg-logo-file" accept="image/*" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">o URL Directa del Logo:</label>
+              <input type="url" id="cfg-gym-logo" class="form-input" value="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=120&auto=format&fit=crop&q=80" required>
+            </div>
+
+            <button type="submit" class="btn" style="width: 100%; margin-top: 10px;">
+              💾 Guardar y Aplicar Marca
+            </button>
+          </form>
+        </div>
+
+        <!-- Medical Certificate Approval Queue -->
+        <div class="glass-card">
+          <div class="glass-card-header">
+            <h3 class="card-title">🩺 Cola de Aprobación de Aptos Médicos</h3>
+          </div>
+
+          <div style="overflow-x: auto;">
+            <table class="log-table">
+              <thead>
+                <tr>
+                  <th>Socio</th>
+                  <th>Estado</th>
+                  <th>Archivo</th>
+                  <th>Acción</th>
+                </tr>
+              </thead>
+              <tbody id="admin-aptos-tbody">
+                <!-- Rendered via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Member Roster Management Table -->
+      <div class="glass-card" style="margin-top: 24px;">
+        <div class="glass-card-header">
+          <h3 class="card-title">👥 Gestión Rápida de Socios</h3>
+          <button class="btn btn-secondary" style="padding: 8px 14px; font-size: 0.82rem;" onclick="FitApp.exportMembersCSV()">
+            📥 Exportar Socios CSV
+          </button>
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table class="log-table">
+            <thead>
+              <tr>
+                <th>Foto</th>
+                <th>Socio / DNI</th>
+                <th>Plan</th>
+                <th>Estado Cuota</th>
+                <th>Apto Médico</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody id="admin-members-tbody">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Core Scripts -->
+  <script>
+/**
+ * FITACCESS - WHITE-LABEL CUSTOMIZATION ENGINE
+ * Dynamically updates CSS variables, logos, titles, and tenant presets.
+ */
+
+const PRESET_THEMES = {
+  cyber: {
+    gymName: "FitAccess Cyber",
+    primary: "#06b6d4",
+    accent: "#3b82f6",
+    logo: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=120&auto=format&fit=crop&q=80"
+  },
+  iron: {
+    gymName: "Iron Heavy Gym",
+    primary: "#e11d48",
+    accent: "#f97316",
+    logo: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=120&auto=format&fit=crop&q=80"
+  },
+  velox: {
+    gymName: "Velox Studio & Crossfit",
+    primary: "#10b981",
+    accent: "#06b6d4",
+    logo: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=120&auto=format&fit=crop&q=80"
+  },
+  gold: {
+    gymName: "Gold Fitness Luxury",
+    primary: "#eab308",
+    accent: "#f97316",
+    logo: "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=120&auto=format&fit=crop&q=80"
+  }
+};
+
+const WhiteLabelEngine = {
+  config: {
+    gymName: "FitAccess Club",
+    primaryColor: "#06b6d4",
+    secondaryColor: "#3b82f6",
+    gymLogo: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=120&auto=format&fit=crop&q=80",
+    aptoMedicoMandatory: true,
+    dailyPassesEnabled: true,
+    gracePeriodDays: 3
+  },
+
+  init() {
+    this.loadFromStorage();
+    this.applyTheme();
+  },
+
+  loadFromStorage() {
+    const saved = localStorage.getItem("fitaccess_tenant_config");
+    if (saved) {
+      try {
+        this.config = { ...this.config, ...JSON.parse(saved) };
+      } catch (e) {
+        console.error("Error loading theme config:", e);
+      }
+    }
+  },
+
+  saveConfig(newConfig) {
+    this.config = { ...this.config, ...newConfig };
+    localStorage.setItem("fitaccess_tenant_config", JSON.stringify(this.config));
+    this.applyTheme();
+  },
+
+  registerGymBusiness(data) {
+    this.saveConfig({
+      gymName: data.gymName || "Mi Gimnasio",
+      primaryColor: data.primaryColor || "#06b6d4",
+      secondaryColor: data.secondaryColor || "#3b82f6",
+      gymLogo: data.gymLogo || "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=120&auto=format&fit=crop&q=80"
+    });
+  },
+
+  applyTheme() {
+    const root = document.documentElement;
+    root.style.setProperty("--gym-name", `"${this.config.gymName}"`);
+    root.style.setProperty("--brand-primary", this.config.primaryColor);
+    root.style.setProperty("--primary-color", this.config.primaryColor);
+    root.style.setProperty("--primary-glow", this.hexToRgba(this.config.primaryColor, 0.35));
+    
+    const secondary = this.config.secondaryColor || this.config.accentColor || "#3b82f6";
+    root.style.setProperty("--brand-secondary", secondary);
+    root.style.setProperty("--secondary-color", secondary);
+    root.style.setProperty("--accent-color", secondary);
+    root.style.setProperty("--accent-glow", this.hexToRgba(secondary, 0.35));
+
+    const brandNames = document.querySelectorAll(".brand-name-text");
+    brandNames.forEach(el => el.textContent = this.config.gymName);
+
+    const logoImgs = document.querySelectorAll(".gym-logo-img");
+    logoImgs.forEach(el => {
+      if (el) el.src = this.config.gymLogo;
+    });
+
+    document.title = `${this.config.gymName} - Access SaaS`;
+  },
+
+  applyPreset(presetKey) {
+    if (PRESET_THEMES[presetKey]) {
+      const preset = PRESET_THEMES[presetKey];
+      this.saveConfig({
+        gymName: preset.gymName,
+        primaryColor: preset.primary,
+        secondaryColor: preset.accent,
+        gymLogo: preset.logo
+      });
+      return true;
+    }
+    return false;
+  },
+
+  handleLogoFileUpload(fileInput) {
+    if (fileInput.files && fileInput.files[0]) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const base64Logo = e.target.result;
+        this.saveConfig({ gymLogo: base64Logo });
+        const logoInput = document.getElementById("cfg-gym-logo");
+        if (logoInput) logoInput.value = base64Logo;
+      };
+      reader.readAsDataURL(fileInput.files[0]);
+    }
+  },
+
+  exportConfigJSON() {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.config, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `${this.config.gymName.toLowerCase().replace(/\s+/g, '_')}_config.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  },
+
+  hexToRgba(hex, alpha = 1) {
+    let c = hex.replace('#', '');
+    if (c.length === 3) {
+      c = c.split('').map(x => x + x).join('');
+    }
+    const num = parseInt(c, 16);
+    return `rgba(${(num >> 16) & 255}, ${(num >> 8) & 255}, ${num & 255}, ${alpha})`;
+  }
+};
+
+window.WhiteLabelEngine = WhiteLabelEngine;
+
+  </script>
+  <script>
+/**
+ * FITACCESS - CAMERA & SCANNER ENGINE
+ * Handles video stream capture, continuous frame processing loop, and manual lookup triggers.
+ */
+
+const FitScanner = {
+  videoElement: null,
+  stream: null,
+  isScanning: false,
+  lastDecoded: null,
+  canvasContext: null,
+  canvasElement: null,
+  scanInterval: null,
+
+  init() {
+    this.videoElement = document.getElementById("scanner-video");
+    if (!this.canvasElement) {
+      this.canvasElement = document.createElement("canvas");
+      this.canvasContext = this.canvasElement.getContext("2d", { willReadFrequently: true });
+    }
+  },
+
+  async startCamera() {
+    this.init();
+    if (!this.videoElement) return;
+
+    try {
+      if (this.stream) {
+        this.stopCamera();
+      }
+      this.stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment", width: { ideal: 640 }, height: { ideal: 480 } }
+      });
+      this.videoElement.srcObject = this.stream;
+      this.videoElement.setAttribute("playsinline", true);
+      this.videoElement.play();
+      this.isScanning = true;
+      this.startFrameLoop();
+    } catch (err) {
+      console.warn("Camera stream unavailable. Switching to manual search mode.", err);
+      const overlayText = document.getElementById("scanner-status-text");
+      if (overlayText) {
+        overlayText.textContent = "Cámara no disponible. Ingrese DNI / N° Socio o presione botones de prueba.";
+      }
+    }
+  },
+
+  stopCamera() {
+    if (this.stream) {
+      this.stream.getTracks().forEach(track => track.stop());
+      this.stream = null;
+    }
+    if (this.scanInterval) {
+      clearInterval(this.scanInterval);
+      this.scanInterval = null;
+    }
+    this.isScanning = false;
+  },
+
+  startFrameLoop() {
+    if (this.scanInterval) clearInterval(this.scanInterval);
+
+    this.scanInterval = setInterval(() => {
+      if (!this.isScanning || !this.videoElement || this.videoElement.readyState !== this.videoElement.HAVE_ENOUGH_DATA) {
+        return;
+      }
+
+      this.canvasElement.width = this.videoElement.videoWidth;
+      this.canvasElement.height = this.videoElement.videoHeight;
+      this.canvasContext.drawImage(this.videoElement, 0, 0, this.canvasElement.width, this.canvasElement.height);
+
+      if (window.jsQR) {
+        const imageData = this.canvasContext.getImageData(0, 0, this.canvasElement.width, this.canvasElement.height);
+        const code = window.jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "attemptBoth" });
+        if (code && code.data && code.data !== this.lastDecoded) {
+          this.lastDecoded = code.data;
+          this.handleDecoded(code.data);
+          setTimeout(() => { this.lastDecoded = null; }, 1500);
+        }
+      }
+    }, 250);
+  },
+
+  async handleDecoded(raw) {
+    try {
+      const data = JSON.parse(raw);
+      if (data.type === "fitaccess_qr" && window.FirebaseSaaS) {
+        await window.FirebaseSaaS.validateQR(data);
+        return;
+      }
+    } catch (_) {}
+    if (window.FitApp) window.FitApp.evaluateAccess(raw);
+  },
+
+  simulateScan(memberId) {
+    if (window.FitApp) window.FitApp.evaluateAccess(memberId);
+  }
+};
+
+window.FitScanner = FitScanner;
+
+  </script>
+  <script>
+/**
+ * FITACCESS - COMPLETE SaaS APPLICATION ENGINE WITH PREDICTIVE INTELLIGENCE
+ */
+
+// Initial Seed Database Members
+const INITIAL_MEMBERS = [
+  {
+    id: "SOC-1001",
+    name: "Carlos Tevez",
+    dni: "34889123",
+    phone: "+54 11 5555-1234",
+    plan: "Musculación & Cardio (VIP)",
+    photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+    subscriptionStatus: "al_dia",
+    dueDate: "2026-09-25",
+    aptoMedico: "vigente",
+    aptoDueDate: "2027-03-15",
+    aptoFile: "apto_carlos_tevez.pdf"
+  },
+  {
+    id: "SOC-1002",
+    name: "Lucía Fernández",
+    dni: "40123987",
+    phone: "+54 11 5555-5678",
+    plan: "Musculación & Funcional",
+    photo: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80",
+    subscriptionStatus: "al_dia",
+    dueDate: "2026-09-03", // Vence en <3 días -> AMARILLO (Riesgo de Mora)
+    aptoMedico: "vigente",
+    aptoDueDate: "2026-11-30",
+    aptoFile: "apto_lucia.pdf"
+  },
+  {
+    id: "SOC-1003",
+    name: "Marcos Rojo",
+    dni: "36554112",
+    phone: "+54 11 5555-9012",
+    plan: "Crossfit Total",
+    photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+    subscriptionStatus: "vencido", // -> ROJO (Moroso)
+    dueDate: "2026-08-15",
+    aptoMedico: "vigente",
+    aptoDueDate: "2026-11-30",
+    aptoFile: "apto_marcos.pdf"
+  },
+  {
+    id: "PAS-2001",
+    name: "Sofía Martínez",
+    dni: "42998765",
+    phone: "+54 11 5555-3456",
+    plan: "Pase Libre Total",
+    photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
+    subscriptionStatus: "al_dia",
+    dueDate: "2026-09-20",
+    aptoMedico: "vencido", // -> ROJO (Apto Vencido)
+    aptoDueDate: "2026-08-01",
+    aptoFile: null
+  }
+];
+
+const FitApp = {
+  members: [],
+  logs: [],
+  currentUser: null,
+  currentActiveMember: null,
+  qrRefreshTimer: null,
+  qrCountdown: 30,
+
+  init() {
+    this.loadData();
+    WhiteLabelEngine.init();
+    this.setupEventListeners();
+    this.startQRTimer();
+    this.updateStatsCounters();
+    this.renderPredictiveDashboards();
+    this.initFriendlyBanner();
+  },
+
+  setupEventListeners() {
+    // Búsqueda de socios en tiempo real
+    const searchInput = document.getElementById("member-search");
+    if (searchInput) {
+      searchInput.addEventListener("input", () => this.renderMembersTable());
+    }
+    // Formulario agregar socio
+    const addForm = document.getElementById("form-add-member");
+    if (addForm) {
+      addForm.addEventListener("submit", (e) => { e.preventDefault(); this.saveNewMember(); });
+    }
+    // Color pickers white-label
+    const primaryPicker = document.getElementById("config-primary-color");
+    if (primaryPicker) primaryPicker.addEventListener("input", (e) => document.documentElement.style.setProperty("--primary-color", e.target.value));
+    const secondaryPicker = document.getElementById("config-secondary-color");
+    if (secondaryPicker) secondaryPicker.addEventListener("input", (e) => document.documentElement.style.setProperty("--secondary-color", e.target.value));
+    // Escape cierra modales
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") this.closeAllModals?.(); });
+  },
+
+  initFriendlyBanner() {
+    const banner = document.getElementById("friendly-banner");
+    if (!banner) return;
+    if (localStorage.getItem("fitaccess_hide_demo_banner") === "1") {
+      banner.style.display = "none";
+    }
+  },
+
+  dismissFriendlyBanner() {
+    const banner = document.getElementById("friendly-banner");
+    if (banner) banner.style.display = "none";
+    localStorage.setItem("fitaccess_hide_demo_banner", "1");
+  },
+
+  loadData() {
+    const savedMembers = localStorage.getItem("fitaccess_members");
+    if (savedMembers) {
+      try { this.members = JSON.parse(savedMembers); } catch (e) { this.members = INITIAL_MEMBERS; }
+    } else {
+      this.members = INITIAL_MEMBERS;
+      this.saveMembers();
+    }
+
+    const savedLogs = localStorage.getItem("fitaccess_logs");
+    if (savedLogs) {
+      try { this.logs = JSON.parse(savedLogs); } catch (e) { this.logs = []; }
+    }
+
+    const savedUser = localStorage.getItem("fitaccess_current_user");
+    if (savedUser) {
+      try {
+        this.currentUser = JSON.parse(savedUser);
+        this.applyRBAC();
+      } catch (e) {
+        this.showLoginModal();
+      }
+    } else {
+      this.showLoginModal();
+    }
+  },
+
+  saveMembers() {
+    localStorage.setItem("fitaccess_members", JSON.stringify(this.members));
+    this.updateStatsCounters();
+    this.updateMemberSelectDropdown();
+    this.renderPredictiveDashboards();
+  },
+
+  saveLogs() {
+    localStorage.setItem("fitaccess_logs", JSON.stringify(this.logs));
+    this.updateStatsCounters();
+    this.renderPredictiveDashboards();
+  },
+
+  showToast(message) {
+    const toast = document.getElementById("toast-alert");
+    if (toast) {
+      toast.textContent = message;
+      toast.style.display = "block";
+      setTimeout(() => { toast.style.display = "none"; }, 3000);
+    } else {
+      alert(message);
+    }
+  },
+
+  updateMemberSelectDropdown() {
+    const select = document.getElementById("demo-member-select");
+    if (!select) return;
+
+    select.innerHTML = this.members.map(m => {
+      let statusText = "Verde";
+      if (m.subscriptionStatus === "vencido") statusText = "Rojo (Cuota Vencida)";
+      else if (m.aptoMedico === "vencido") statusText = "Rojo (Apto Vencido)";
+      return `<option value="${m.id}">${m.name} (${m.plan}) -> ${statusText}</option>`;
+    }).join("");
+  },
+
+  // ----------------------------------------------------
+  // PREDICTIVE INTELLIGENCE & AUTOMATION ENGINE
+  // ----------------------------------------------------
+  renderPredictiveDashboards() {
+    this.renderMemberPredictiveCard();
+    this.renderBusinessPredictiveDashboard();
+  },
+
+  renderMemberPredictiveCard() {
+    const cardContainer = document.getElementById("member-predictive-insights");
+    if (!cardContainer || !this.currentActiveMember) return;
+
+    const m = this.currentActiveMember;
+    const today = new Date();
+    const dueDate = new Date(m.dueDate);
+    const daysUntilDue = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+
+    let alertHtml = "";
+    if (daysUntilDue <= 3 && daysUntilDue >= 0) {
+      alertHtml = `
+        <div style="margin-top: 10px; background: rgba(245, 158, 11, 0.2); border: 1px solid var(--status-yellow); padding: 10px; border-radius: 8px; font-size: 0.85rem; color: var(--status-yellow);">
+          ⚠️ <strong>Predicción de Cuota:</strong> Tu cuota vence en ${daysUntilDue} días. ¡Renovala hoy en 1-clic para mantener tu beneficio sin interrupciones!
+        </div>
+      `;
+    } else if (daysUntilDue < 0) {
+      alertHtml = `
+        <div style="margin-top: 10px; background: rgba(239, 68, 68, 0.2); border: 1px solid var(--status-red); padding: 10px; border-radius: 8px; font-size: 0.85rem; color: var(--status-red);">
+          🚨 <strong>Acceso Interrumpido:</strong> Tu cuota se encuentra vencida. Aboná tu cuota online para rehabilitar tu QR de inmediato.
+        </div>
+      `;
+    }
+
+    cardContainer.innerHTML = `
+      <div class="predictive-card">
+        <div class="predictive-title">🤖 Asistente Predictivo Inteligente</div>
+        <div class="predictive-text">
+          💡 <strong>Mejor Horario para Entrenar Hoy:</strong> 14:00 hs (Aforo bajo estimado: ~25%). Evitá la hora pico de las 19:00 hs.
+        </div>
+        <div class="crowd-progress-bar">
+          <div class="crowd-progress-fill" style="width: 25%; background: var(--status-green);"></div>
+        </div>
+        ${alertHtml}
+      </div>
+    `;
+  },
+
+  renderBusinessPredictiveDashboard() {
+    const bizContainer = document.getElementById("business-predictive-dashboard");
+    if (!bizContainer) return;
+
+    const today = new Date();
+    const churnRiskMembers = this.members.filter(m => {
+      const dueDate = new Date(m.dueDate);
+      const daysUntilDue = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+      return daysUntilDue <= 7 || m.subscriptionStatus === "vencido";
+    });
+
+    const riskItemsHtml = churnRiskMembers.map(m => {
+      const isExpired = m.subscriptionStatus === "vencido";
+      const badgeClass = isExpired ? "badge-red" : "badge-yellow";
+      const statusLabel = isExpired ? "Moroso (Vencido)" : "Por Vencer (Riesgo Churn)";
+      return `
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed var(--glass-border); flex-wrap: wrap; gap: 10px;">
+          <div>
+            <strong>${m.name}</strong> (${m.id}) <span class="status-badge ${badgeClass}" style="font-size:0.68rem; margin-left:6px;">${statusLabel}</span><br>
+            <span style="font-size:0.78rem; color:var(--text-muted);">Vencimiento: ${m.dueDate} | Tel: ${m.phone}</span>
+          </div>
+          <button class="btn btn-whatsapp" style="padding: 6px 12px; font-size: 0.78rem;" onclick="FitApp.sendWhatsAppReminder('${m.id}')">
+            📲 Recordatorio WhatsApp (1-Clic)
+          </button>
+        </div>
+      `;
+    }).join("");
+
+    bizContainer.innerHTML = `
+      <div class="predictive-card" style="margin-bottom: 24px;">
+        <div class="predictive-title">📊 Analítica Predictiva & Retención de Gimnasio</div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px;">
+          <div style="background: rgba(15,23,42,0.6); padding: 14px; border-radius: 12px; border: 1px solid var(--glass-border);">
+            <div style="font-size:0.8rem; color:var(--text-muted); font-weight:600;">🔥 Pico de Aforo Estimado Hoy:</div>
+            <div style="font-size: 1.2rem; font-weight: 800; color: var(--status-yellow); margin-top:4px;">18:30 - 20:00 hs (85% Capacidad)</div>
+            <div class="crowd-progress-bar" style="margin-top: 8px;">
+              <div class="crowd-progress-fill" style="width: 85%; background: var(--status-yellow);"></div>
+            </div>
+          </div>
+          
+          <div style="background: rgba(15,23,42,0.6); padding: 14px; border-radius: 12px; border: 1px solid var(--glass-border);">
+            <div style="font-size:0.8rem; color:var(--text-muted); font-weight:600;">⚠️ Socios en Riesgo de Mora / Abandono:</div>
+            <div style="font-size: 1.2rem; font-weight: 800; color: var(--status-red); margin-top:4px;">${churnRiskMembers.length} Socios Identificados</div>
+          </div>
+        </div>
+
+        <div style="margin-top: 18px;">
+          <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 10px;">
+            ⚡ Automatización de Retención Directa por WhatsApp:
+          </div>
+          ${riskItemsHtml || '<div style="font-size:0.85rem; color:var(--text-muted);">Sin socios en riesgo de morosidad en este momento.</div>'}
+        </div>
+      </div>
+    `;
+  },
+
+  sendWhatsAppReminder(memberId) {
+    const member = this.findMember(memberId);
+    if (!member) return;
+
+    const gymName = WhiteLabelEngine.config.gymName;
+    const cleanPhone = (member.phone || "").replace(/[^\d]/g, "");
+    const message = `Hola ${member.name}! 👋 Te escribimos desde *${gymName}*. Te recordamos que tu cuota vence el *${member.dueDate}*. ¡Renovala hoy online o en recepción para seguir entrenando sin interrupciones! 💪🏋️‍♂️`;
+
+    const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, "_blank");
+    this.showToast(`📲 Recordatorio de WhatsApp generado para ${member.name}.`);
+  },
+
+  // ----------------------------------------------------
+  // GYM BUSINESS REGISTRATION WIZARD (Tenant Onboarding)
+  // ----------------------------------------------------
+  showRegisterGymModal() {
+    const modal = document.getElementById("modal-register-gym");
+    if (modal) {
+      modal.style.zIndex = "20000";
+      modal.style.display = "flex";
+    }
+  },
+
+  hideRegisterGymModal() {
+    const modal = document.getElementById("modal-register-gym");
+    if (modal) {
+      modal.style.display = "none";
+    }
+  },
+
+  // ----------------------------------------------------
+  // NEW MEMBER REGISTRATION
+  // ----------------------------------------------------
+  showAddMemberModal() {
+    const modal = document.getElementById("modal-add-member");
+    if (modal) {
+      modal.style.zIndex = "20000";
+      modal.style.display = "flex";
+    }
+  },
+
+  hideAddMemberModal() {
+    const modal = document.getElementById("modal-add-member");
+    if (modal) {
+      modal.style.display = "none";
+    }
+  },
+
+  addNewMember(formData) {
+    const newIdNumber = 1000 + this.members.length + 1;
+    const newId = `SOC-${newIdNumber}`;
+
+    const newMember = {
+      id: newId,
+      name: formData.name,
+      dni: formData.dni,
+      phone: formData.phone || "+54 11 5555-0000",
+      plan: formData.plan || "Musculación & Cardio",
+      photo: formData.photo || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
+      subscriptionStatus: formData.subscriptionStatus || "al_dia",
+      dueDate: formData.dueDate || "2026-10-01",
+      aptoMedico: formData.aptoMedico || "vigente",
+      aptoDueDate: formData.aptoDueDate || "2027-03-01",
+      aptoFile: formData.aptoFile || null
+    };
+
+    this.members.push(newMember);
+    this.saveMembers();
+    this.renderAdminTables();
+    this.hideAddMemberModal();
+    this.showToast(`¡Socio ${newMember.name} registrado con éxito (ID: ${newMember.id})!`);
+  },
+
+  deleteMember(memberId) {
+    const m = this.findMember(memberId);
+    if (m && confirm(`¿Está seguro de eliminar a ${m.name} (${m.id}) del sistema?`)) {
+      this.members = this.members.filter(x => x.id !== memberId);
+      this.saveMembers();
+      this.renderAdminTables();
+      this.showToast(`Socio ${m.name} eliminado.`);
+    }
+  },
+
+  // ----------------------------------------------------
+  // FULL DATABASE BACKUP & RESTORE (JSON)
+  // ----------------------------------------------------
+  exportDatabaseJSON() {
+    const backupData = {
+      timestamp: new Date().toISOString(),
+      gymName: WhiteLabelEngine.config.gymName,
+      members: this.members,
+      logs: this.logs,
+      tenantConfig: WhiteLabelEngine.config
+    };
+
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `Backup_FitAccess_BD_${new Date().toISOString().split('T')[0]}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    this.showToast("💾 Respaldo completo de base de datos generado y descargado.");
+  },
+
+  importDatabaseJSON(fileInput) {
+    if (fileInput.files && fileInput.files[0]) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (imported.members && Array.isArray(imported.members)) {
+            this.members = imported.members;
+            if (imported.logs) this.logs = imported.logs;
+            if (imported.tenantConfig) WhiteLabelEngine.saveConfig(imported.tenantConfig);
+            this.saveMembers();
+            this.saveLogs();
+            this.renderAdminTables();
+            this.renderLogTable();
+            this.showToast("📂 Base de datos restaurada con éxito desde archivo JSON.");
+          } else {
+            alert("El archivo seleccionado no tiene un formato de base de datos válido.");
+          }
+        } catch (err) {
+          alert("Error al leer el archivo JSON de respaldo.");
+        }
+      };
+      reader.readAsText(fileInput.files[0]);
+    }
+  },
+
+  // ----------------------------------------------------
+  // CSV SPREADSHEET GENERATORS
+  // ----------------------------------------------------
+  exportMembersCSV() {
+    if (!this.members || this.members.length === 0) {
+      alert("No hay socios registrados para exportar.");
+      return;
+    }
+
+    const headers = ["ID", "Nombre", "DNI", "Telefono", "Plan", "EstadoCuota", "Vencimiento", "AptoMedico"];
+    const rows = this.members.map(m => [
+      `"${m.id}"`,
+      `"${m.name.replace(/"/g, '""')}"`,
+      `"${m.dni}"`,
+      `"${m.phone || ''}"`,
+      `"${m.plan}"`,
+      `"${m.subscriptionStatus}"`,
+      `"${m.dueDate}"`,
+      `"${m.aptoMedico}"`
+    ]);
+
+    const csvContent = "\uFEFF" + [headers.join(","), ...rows.map(r => r.join(","))].join("\r\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "Planilla_Socios_FitAccess.csv";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    this.showToast("📊 Planilla de Socios exportada con éxito.");
+  },
+
+  exportLogsCSV() {
+    if (!this.logs || this.logs.length === 0) {
+      alert("No hay registros de ingreso para exportar.");
+      return;
+    }
+
+    const headers = ["FechaHora", "ID_Socio", "Nombre", "EstadoAcceso", "Detalle"];
+    const rows = this.logs.map(l => [
+      `"${l.time}"`,
+      `"${l.memberId}"`,
+      `"${l.memberName.replace(/"/g, '""')}"`,
+      `"${l.status}"`,
+      `"${l.reason.replace(/"/g, '""')}"`
+    ]);
+
+    const csvContent = "\uFEFF" + [headers.join(","), ...rows.map(r => r.join(","))].join("\r\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "Registro_Ingresos_FitAccess.csv";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    this.showToast("📊 Registro de Ingresos exportado con éxito.");
+  },
+
+  // ----------------------------------------------------
+  // MEMBER PROFILE & AVATAR UPLOAD
+  // ----------------------------------------------------
+  loadProfileToForm() {
+    if (!this.currentActiveMember) return;
+    const m = this.currentActiveMember;
+
+    const inputName = document.getElementById("input-profile-name");
+    const inputDni = document.getElementById("input-profile-dni");
+    const inputPhone = document.getElementById("input-profile-phone");
+
+    if (inputName) inputName.value = m.name;
+    if (inputDni) inputDni.value = m.dni;
+    if (inputPhone) inputPhone.value = m.phone || "";
+  },
+
+  saveProfileChanges() {
+    if (!this.currentActiveMember) return;
+    const m = this.currentActiveMember;
+
+    const inputName = document.getElementById("input-profile-name");
+    const inputDni = document.getElementById("input-profile-dni");
+    const inputPhone = document.getElementById("input-profile-phone");
+    const photoInput = document.getElementById("input-profile-photo");
+
+    if (inputName && inputName.value.trim()) m.name = inputName.value.trim();
+    if (inputDni && inputDni.value.trim()) m.dni = inputDni.value.trim();
+    if (inputPhone && inputPhone.value.trim()) m.phone = inputPhone.value.trim();
+
+    if (photoInput && photoInput.files && photoInput.files[0]) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        m.photo = e.target.result;
+        this.saveMembers();
+        this.renderMemberView(m.id);
+        this.renderAdminTables();
+        this.showToast("¡Datos y foto actualizados con éxito!");
+      };
+      reader.readAsDataURL(photoInput.files[0]);
+    } else {
+      this.saveMembers();
+      this.renderMemberView(m.id);
+      this.renderAdminTables();
+      this.showToast("¡Datos actualizados con éxito!");
+    }
+  },
+
+  // ----------------------------------------------------
+  // MULTI-PAYMENT GATEWAY FLOW
+  // ----------------------------------------------------
+  renderPaymentDetails(method) {
+    const box = document.getElementById("payment-method-details");
+    if (!box) return;
+
+    if (method === "mercadopago") {
+      box.innerHTML = `
+        <div style="background: rgba(6, 182, 212, 0.15); border: 1px solid var(--primary-color); padding: 14px; border-radius: var(--radius-md); text-align: center;">
+          <div style="font-weight: 800; color: var(--primary-color); margin-bottom: 6px;">🔷 Mercado Pago Checkout Directo</div>
+          <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">Págalo de forma segura en hasta 12 cuotas con tarjeta o dinero en cuenta.</div>
+          <button class="btn" style="width:100%; font-weight:800;" onclick="FitApp.processSelectedPayment()">
+            🚀 Pagar $18.500 con Mercado Pago
+          </button>
+        </div>
+      `;
+    } else if (method === "transferencia") {
+      box.innerHTML = `
+        <div style="background: rgba(59, 130, 246, 0.15); border: 1px solid var(--secondary-color); padding: 14px; border-radius: var(--radius-md);">
+          <div style="font-weight: 800; color: var(--secondary-color); margin-bottom: 8px;">🏦 Transferencia Bancaria Directa</div>
+          <div style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.6;">
+            <strong>CBU:</strong> 0000003100012345678901<br>
+            <strong>Alias:</strong> FITACCESS.CLUB<br>
+            <strong>Titular:</strong> FitAccess Gym SaaS SRL
+          </div>
+          <div style="margin-top: 10px;">
+            <label class="form-label" style="font-size: 0.78rem;">Adjuntar Comprobante:</label>
+            <input type="file" class="form-input" style="font-size: 0.8rem;">
+          </div>
+          <button class="btn btn-secondary" style="width:100%; margin-top: 10px;" onclick="FitApp.processSelectedPayment()">
+            📤 Informar Transferencia ($18.500)
+          </button>
+        </div>
+      `;
+    } else if (method === "efectivo") {
+      box.innerHTML = `
+        <div style="background: rgba(245, 158, 11, 0.15); border: 1px solid var(--status-yellow); padding: 14px; border-radius: var(--radius-md); text-align: center;">
+          <div style="font-weight: 800; color: var(--status-yellow); margin-bottom: 6px;">💵 Pago en Efectivo en Caja</div>
+          <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">Presentar el voucher en caja al ingresar a las instalaciones.</div>
+          <button class="btn" style="width:100%; background: var(--status-yellow); color:#000;" onclick="FitApp.processSelectedPayment()">
+            🎟️ Generar Voucher de Caja ($18.500)
+          </button>
+        </div>
+      `;
+    }
+  },
+
+  processSelectedPayment() {
+    if (!this.currentActiveMember) return;
+    const m = this.currentActiveMember;
+
+    m.subscriptionStatus = "al_dia";
+    const d = new Date();
+    d.setDate(d.getDate() + 30);
+    m.dueDate = d.toISOString().split("T")[0];
+
+    this.saveMembers();
+    this.renderMemberView(m.id);
+    this.renderAdminTables();
+    this.showToast("¡Pago procesado con éxito! Cuota renovada por 30 días.");
+  },
+
+  // ----------------------------------------------------
+  // RBAC AUTHENTICATION ENGINE
+  // ----------------------------------------------------
+  login(role, memberId = "SOC-1001") {
+    this.currentUser = {
+      role,
+      memberId,
+      name: role === 'socio' ? (this.findMember(memberId)?.name || 'Carlos Tevez') : (role === 'recepcion' ? 'Recepción Central' : 'Administrador Gym')
+    };
+    localStorage.setItem("fitaccess_current_user", JSON.stringify(this.currentUser));
+    this.hideLoginModal();
+    this.applyRBAC();
+  },
+
+  logout() {
+    this.currentUser = null;
+    localStorage.removeItem("fitaccess_current_user");
+    this.showLoginModal();
+  },
+
+  showLoginModal() {
+    const modal = document.getElementById("login-modal-overlay");
+    if (modal) modal.style.display = "flex";
+  },
+
+  hideLoginModal() {
+    const modal = document.getElementById("login-modal-overlay");
+    if (modal) modal.style.display = "none";
+  },
+
+  applyRBAC() {
+    if (!this.currentUser) return;
+
+    const userPill = document.getElementById("user-profile-info");
+    if (userPill) {
+      userPill.innerHTML = `👤 <strong>${this.currentUser.name}</strong> (${this.currentUser.role.toUpperCase()})`;
+    }
+
+    const navSocio = document.getElementById("nav-socio");
+    const navReception = document.getElementById("nav-reception");
+    const navAdmin = document.getElementById("nav-admin");
+    const btnPreviewSocio = document.getElementById("btn-preview-socio");
+
+    if (this.currentUser.role === "socio") {
+      if (navSocio) navSocio.style.display = "flex";
+      if (navReception) navReception.style.display = "none";
+      if (navAdmin) navAdmin.style.display = "none";
+      if (btnPreviewSocio) btnPreviewSocio.style.display = "none";
+      this.switchView("socio");
+      this.renderMemberView(this.currentUser.memberId || "SOC-1001");
+    } else if (this.currentUser.role === "recepcion") {
+      if (navSocio) navSocio.style.display = "none";
+      if (navReception) navReception.style.display = "flex";
+      if (navAdmin) navAdmin.style.display = "none";
+      if (btnPreviewSocio) btnPreviewSocio.style.display = "flex";
+      this.switchView("reception");
+    } else if (this.currentUser.role === "admin") {
+      if (navSocio) navSocio.style.display = "none";
+      if (navReception) navReception.style.display = "flex";
+      if (navAdmin) navAdmin.style.display = "flex";
+      if (btnPreviewSocio) btnPreviewSocio.style.display = "flex";
+      this.switchView("admin");
+    }
+
+    this.renderAdminTables();
+    this.renderLogTable();
+    this.renderPredictiveDashboards();
+  },
+
+  findMember(idOrDni) {
+    if (!idOrDni) return null;
+    const query = idOrDni.trim().toLowerCase();
+    return this.members.find(m => 
+      m.id.toLowerCase() === query || 
+      m.dni.toLowerCase() === query ||
+      m.name.toLowerCase().includes(query)
+    );
+  },
+
+  // ----------------------------------------------------
+  // TRAFFIC LIGHT ACCESS EVALUATION ENGINE
+  // ----------------------------------------------------
+  evaluateAccess(memberIdOrDni) {
+    const member = this.findMember(memberIdOrDni);
+
+    if (!member) {
+      this.triggerTrafficLight("red", "Socio No Encontrado", "El código o DNI escaneado no existe en el sistema.", null);
+      this.playSound("red");
+      return null;
+    }
+
+    const today = new Date();
+    const dueDate = new Date(member.dueDate);
+    const aptoDueDate = member.aptoDueDate ? new Date(member.aptoDueDate) : null;
+
+    const daysUntilCuotaDue = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+    const daysUntilAptoDue = aptoDueDate ? Math.ceil((aptoDueDate - today) / (1000 * 60 * 60 * 24)) : -1;
+
+    const isCuotaExpired = member.subscriptionStatus === "vencido" || daysUntilCuotaDue < 0;
+    const isAptoMissingOrExpired = member.aptoMedico !== "vigente" || (aptoDueDate && daysUntilAptoDue < 0);
+
+    if (isCuotaExpired || isAptoMissingOrExpired) {
+      let reasonStr = [];
+      if (isCuotaExpired) reasonStr.push(`Cuota Vencida (${member.dueDate})`);
+      if (isAptoMissingOrExpired) reasonStr.push(`Apto Médico Vencido o Pendiente`);
+
+      const result = {
+        color: "red",
+        title: "ACCESO DENEGADO",
+        desc: `${member.name} (${member.id}): ${reasonStr.join(" | ")}. Favor de pasar por Recepción.`,
+        member,
+        canCobrar: isCuotaExpired
+      };
+
+      this.triggerTrafficLight(result.color, result.title, result.desc, member, result.canCobrar);
+      this.playSound("red");
+      this.addLog(member, "RED", reasonStr.join(" | "));
+      return result;
+    }
+
+    const isCuotaImminent = daysUntilCuotaDue <= 3;
+    const isAptoImminent = daysUntilAptoDue <= 7 && daysUntilAptoDue >= 0;
+
+    if (isCuotaImminent || isAptoImminent) {
+      let warnStr = [];
+      if (isCuotaImminent) warnStr.push(`Cuota vence en ${daysUntilCuotaDue} día(s)`);
+      if (isAptoImminent) warnStr.push(`Apto vence en ${daysUntilAptoDue} día(s)`);
+
+      const result = {
+        color: "yellow",
+        title: "ACCESO CON ADVERTENCIA",
+        desc: `¡Bienvenido/a ${member.name}! ${warnStr.join(" | ")}. Regularizar a la brevedad.`,
+        member
+      };
+
+      this.triggerTrafficLight(result.color, result.title, result.desc, member);
+      this.playSound("yellow");
+      this.addLog(member, "YELLOW", warnStr.join(" | "));
+      return result;
+    }
+
+    const result = {
+      color: "green",
+      title: "ACCESO PERMITIDO",
+      desc: `¡Bienvenido/a ${member.name}! Cuota y Apto Médico al día. Plan: ${member.plan}`,
+      member
+    };
+
+    this.triggerTrafficLight(result.color, result.title, result.desc, member);
+    this.playSound("green");
+    this.addLog(member, "GREEN", "Acceso Exitoso");
+    return result;
+  },
+
+  triggerTrafficLight(color, title, desc, member, showCobrarBtn = false) {
+    const banner = document.getElementById("traffic-light-banner");
+    const iconEl = document.getElementById("traffic-icon");
+    const titleEl = document.getElementById("traffic-title");
+    const descEl = document.getElementById("traffic-desc");
+    const memberDetailEl = document.getElementById("traffic-member-detail");
+
+    if (!banner) return;
+    banner.className = `traffic-light-banner active traffic-banner-${color}`;
+
+    const icons = { green: "✅", yellow: "⚠️", red: "⛔" };
+    iconEl.textContent = icons[color] || "ℹ️";
+    titleEl.textContent = title;
+    descEl.textContent = desc;
+
+    if (member) {
+      let quickActionHtml = "";
+      if (showCobrarBtn) {
+        quickActionHtml = `
+          <button class="btn" style="margin-top: 14px; background:#fff; color:#000; font-weight:800;" onclick="FitApp.quickCobrarCuota('${member.id}')">
+            💳 Cobrar Cuota Instantánea ($18.500)
+          </button>
+        `;
+      }
+
+      memberDetailEl.innerHTML = `
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; margin-top: 15px;">
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <img src="${member.photo}" style="width:60px; height:60px; border-radius:50%; object-fit:cover; border:2px solid #fff;">
+            <div style="text-align: left;">
+              <div style="font-weight: 800; font-size: 1.1rem;">${member.name}</div>
+              <div style="font-size: 0.85rem; opacity: 0.8;">DNI: ${member.dni} | ID: ${member.id}</div>
+              <div style="font-size: 0.8rem; font-weight: 700; color: var(--primary-color);">${member.plan}</div>
+            </div>
+          </div>
+          ${quickActionHtml}
+        </div>
+      `;
+    } else {
+      memberDetailEl.innerHTML = "";
+    }
+  },
+
+  quickCobrarCuota(memberId) {
+    const member = this.findMember(memberId);
+    if (member) {
+      member.subscriptionStatus = "al_dia";
+      const d = new Date();
+      d.setDate(d.getDate() + 30);
+      member.dueDate = d.toISOString().split("T")[0];
+      this.saveMembers();
+      this.showToast(`¡Cuota cobrada con éxito a ${member.name}! Vencimiento extendido al ${member.dueDate}.`);
+      this.evaluateAccess(memberId);
+    }
+  },
+
+  addLog(member, status, reason) {
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const logItem = {
+      id: Date.now(),
+      time: timeStr,
+      memberName: member ? member.name : "Desconocido",
+      memberId: member ? member.id : "-",
+      status,
+      reason
+    };
+    this.logs.unshift(logItem);
+    if (this.logs.length > 20) this.logs.pop();
+    this.saveLogs();
+    this.renderLogTable();
+  },
+
+  renderLogTable() {
+    const tbody = document.getElementById("log-tbody");
+    if (!tbody) return;
+
+    if (this.logs.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--text-muted);">Sin ingresos registrados hoy.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = this.logs.map(log => {
+      const badgeClass = log.status === "GREEN" ? "badge-green" : (log.status === "YELLOW" ? "badge-yellow" : "badge-red");
+      return `
+        <tr>
+          <td><strong>${log.time}</strong></td>
+          <td>${log.memberName} <span style="font-size: 0.75rem; color: var(--text-muted);">(${log.memberId})</span></td>
+          <td><span class="status-badge ${badgeClass}">${log.status}</span></td>
+          <td>${log.reason}</td>
+        </tr>
+      `;
+    }).join("");
+  },
+
+  updateStatsCounters() {
+    const totalMembers = this.members.length;
+    const activeCuotas = this.members.filter(m => m.subscriptionStatus === "al_dia").length;
+    const pendingAptos = this.members.filter(m => m.aptoMedico !== "vigente").length;
+    const todayLogs = this.logs.length;
+
+    const elTotal = document.getElementById("stat-total-socios");
+    const elCuotas = document.getElementById("stat-cuotas-ok");
+    const elAptos = document.getElementById("stat-aptos-pending");
+    const elLogs = document.getElementById("stat-ingresos-hoy");
+
+    if (elTotal) elTotal.textContent = totalMembers;
+    if (elCuotas) elCuotas.textContent = activeCuotas;
+    if (elAptos) elAptos.textContent = pendingAptos;
+    if (elLogs) elLogs.textContent = todayLogs;
+  },
+
+  // 30-Second Dynamic QR Code Countdown
+  startQRTimer() {
+    if (this.qrRefreshTimer) clearInterval(this.qrRefreshTimer);
+    this.qrCountdown = 30;
+
+    this.qrRefreshTimer = setInterval(() => {
+      this.qrCountdown--;
+      const timerEl = document.getElementById("qr-countdown-seconds");
+      if (timerEl) timerEl.textContent = this.qrCountdown;
+
+      if (this.qrCountdown <= 0) {
+        this.qrCountdown = 30;
+        if (this.currentActiveMember) {
+          this.generateMemberQR(this.currentActiveMember);
+        }
+      }
+    }, 1000);
+  },
+
+  // Web Audio API Sound Synthesizer
+  playSound(type) {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      if (type === "green") {
+        osc.frequency.setValueAtTime(880, ctx.currentTime);
+        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.15);
+      } else if (type === "yellow") {
+        osc.frequency.setValueAtTime(600, ctx.currentTime);
+        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.15);
+        setTimeout(() => {
+          const osc2 = ctx.createOscillator();
+          const gain2 = ctx.createGain();
+          osc2.connect(gain2);
+          gain2.connect(ctx.destination);
+          osc2.frequency.setValueAtTime(600, ctx.currentTime);
+          gain2.gain.setValueAtTime(0.2, ctx.currentTime);
+          osc2.start();
+          osc2.stop(ctx.currentTime + 0.15);
+        }, 180);
+      } else if (type === "red") {
+        osc.type = "sawtooth";
+        osc.frequency.setValueAtTime(220, ctx.currentTime);
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.4);
+      }
+    } catch (e) {
+      console.log("Audio play blocked by browser policy.");
+    }
+  },
+
+  renderMemberView(memberId) {
+    const member = this.findMember(memberId) || this.members[0];
+    this.currentActiveMember = member;
+
+    document.getElementById("m-name").textContent = member.name;
+    document.getElementById("m-id").textContent = `Socio N°: ${member.id} | DNI: ${member.dni}`;
+    document.getElementById("m-plan").textContent = member.plan;
+    document.getElementById("m-avatar").src = member.photo;
+
+    const cuotaBadge = document.getElementById("m-cuota-badge");
+    if (member.subscriptionStatus === "al_dia") {
+      cuotaBadge.className = "status-badge badge-green";
+      cuotaBadge.textContent = "Cuota al Día";
+    } else {
+      cuotaBadge.className = "status-badge badge-red";
+      cuotaBadge.textContent = `Cuota Vencida (${member.dueDate})`;
+    }
+
+    const aptoBadge = document.getElementById("m-apto-badge");
+    if (member.aptoMedico === "vigente") {
+      aptoBadge.className = "status-badge badge-green";
+      aptoBadge.textContent = "Apto Médico Vigente";
+    } else if (member.aptoMedico === "vencido") {
+      aptoBadge.className = "status-badge badge-red";
+      aptoBadge.textContent = "Apto Médico Vencido";
+    } else {
+      aptoBadge.className = "status-badge badge-yellow";
+      aptoBadge.textContent = "Apto Médico Pendiente";
+    }
+
+    this.generateMemberQR(member);
+
+    document.getElementById("due-date-display").textContent = member.dueDate;
+    document.getElementById("payment-status-display").textContent = member.subscriptionStatus === "al_dia" ? "Al día (Sin deuda)" : "Vencido - Saldo pendiente: $18.500";
+    
+    document.getElementById("apto-status-display").textContent = member.aptoMedico.toUpperCase();
+    document.getElementById("apto-due-display").textContent = member.aptoDueDate || "No registrado";
+
+    this.loadProfileToForm();
+    this.renderPaymentDetails("mercadopago");
+    this.renderPredictiveDashboards();
+  },
+
+  generateQRCode(text) {
+    const container = document.getElementById("qr-canvas-container");
+    if (!container) return;
+    container.innerHTML = "";
+
+    const payload = typeof text === "string" ? text : JSON.stringify(text);
+    if (window.QRCode) {
+      const holder = document.createElement("div");
+      holder.style.display = "inline-flex";
+      holder.style.padding = "10px";
+      holder.style.background = "#fff";
+      holder.style.borderRadius = "12px";
+      container.appendChild(holder);
+      new QRCode(holder, {
+        text: payload,
+        width: 170,
+        height: 170,
+        colorDark: "#060913",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    } else {
+      const fallback = document.createElement("div");
+      fallback.style.padding = "20px";
+      fallback.style.color = "var(--status-yellow)";
+      fallback.textContent = "Cargando generador QR…";
+      container.appendChild(fallback);
+    }
+  }
+};
+
+window.FitApp = FitApp;
+document.addEventListener("DOMContentLoaded", () => FitApp.init());
+
+  </script>
+
+  <!-- =====================================================================
+       FITACCESS FIREBASE SAAS LAYER
+       Configure FIREBASE_CONFIG with your Firebase Web App credentials.
+       Uses Firebase Authentication + Cloud Firestore.
+       ===================================================================== -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js" defer></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+    import {
+      getAuth, onAuthStateChanged, signInWithEmailAndPassword,
+      createUserWithEmailAndPassword, sendPasswordResetEmail, signOut,
+      updateProfile
+    } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+    import {
+      getFirestore, doc, getDoc, setDoc, addDoc, collection,
+      onSnapshot, query, orderBy, limit, serverTimestamp,
+      writeBatch, where, getDocs
+    } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+
+    // ================================================================
+    // 1) PEGÁ ACÁ LA CONFIGURACIÓN DE TU APP WEB DE FIREBASE
+    // ================================================================
+    const FIREBASE_CONFIG = {
+      apiKey: "AIzaSyCP9yrMupXvWzFLr9nyyPe_L-mO74zb26s",
+      authDomain: "fitaccess-5ad19.firebaseapp.com",
+      projectId: "fitaccess-5ad19",
+      storageBucket: "fitaccess-5ad19.firebasestorage.app",
+      messagingSenderId: "785293497210",
+      appId: "1:785293497210:web:679df9f9352534d9373cc3"
+    };
+
+    const firebaseConfigured = Object.values(FIREBASE_CONFIG).every(v => v && !String(v).includes("REEMPLAZAR"));
+    const FirebaseSaaS = {
+      enabled: firebaseConfigured,
+      app: null, auth: null, db: null,
+      gymId: null, profile: null,
+      unsubMembers: null, unsubLogs: null,
+      initialized: false, pendingProfileCreation: false,
+
+      status(text, ok=false) {
+        const el = document.getElementById("firebase-sync-status");
+        if (!el) return;
+        el.textContent = ok ? `☁️ ${text}` : `⚠️ ${text}`;
+        el.style.color = ok ? "var(--status-green)" : "var(--status-yellow)";
+      },
+
+      async init() {
+        if (!this.enabled) {
+          this.status("Modo configuración");
+          const warn = document.getElementById("firebase-config-warning");
+          if (warn) warn.style.display = "block";
+          this.patchAuthUI();
+          return;
+        }
+        try {
+          this.app = initializeApp(FIREBASE_CONFIG);
+          this.auth = getAuth(this.app);
+          this.db = getFirestore(this.app);
+          this.initialized = true;
+          this.status("Conectando…");
+          this.patchAuthUI();
+          onAuthStateChanged(this.auth, async (user) => {
+            if (!user) {
+              if (this.pendingProfileCreation) return;
+              this.cleanupListeners();
+              this.gymId = null;
+              this.profile = null;
+              FitApp.currentUser = null;
+              FitApp.showLoginModal();
+              this.status("Sin sesión");
+              return;
+            }
+            await this.loadProfile(user);
+          });
+        } catch (e) {
+          console.error("Firebase init error", e);
+          this.status("Error Firebase");
+          this.setAuthStatus("No se pudo conectar con Firebase: " + (e.message || e));
+        }
+      },
+
+      patchAuthUI() {
+        const form = document.getElementById("firebase-login-form");
+        const forgot = document.getElementById("firebase-forgot-password");
+        const reg = document.getElementById("firebase-register-gym");
+        const testUser = document.getElementById("firebase-test-user");
+        const testCredentials = document.getElementById("firebase-test-credentials");
+        if (form) form.onsubmit = async (e) => {
+          e.preventDefault();
+          const email = document.getElementById("firebase-email").value.trim();
+          const password = document.getElementById("firebase-password").value;
+          if (!this.enabled) {
+            if (email === "demo@fitaccess.app" && password === "FitAccess123!") { this.setAuthStatus("Modo demo local: ingreso correcto."); FitApp.login("admin"); }
+            else this.setAuthStatus("Firebase no está configurado. Usá demo@fitaccess.app / FitAccess123! para la demo local.");
+            return;
+          }
+          try {
+            this.setAuthStatus("Ingresando…");
+            await signInWithEmailAndPassword(this.auth, email, password);
+            this.setAuthStatus("Sesión iniciada.");
+          } catch (err) { this.setAuthStatus(this.authError(err)); }
+        };
+        if (forgot) forgot.onclick = async () => {
+          const email = document.getElementById("firebase-email")?.value.trim();
+          if (!email) return this.setAuthStatus("Ingresá tu email primero.");
+          if (!this.enabled) return this.setAuthStatus("Primero configurá FIREBASE_CONFIG.");
+          try { await sendPasswordResetEmail(this.auth, email); this.setAuthStatus("Te enviamos un email para restablecer la contraseña."); }
+          catch (err) { this.setAuthStatus(this.authError(err)); }
+        };
+        if (reg) reg.onclick = () => this.openGymRegistration();
+        if (testUser) testUser.onclick = async () => {
+          if (!this.enabled || !this.initialized) return this.setAuthStatus("Primero configurá FIREBASE_CONFIG y habilitá Authentication > Correo electrónico/contraseña.");
+          const email = "demo@fitaccess.app", password = "FitAccess123!", gymId = "gym_demo_fitaccess";
+          try {
+            testUser.disabled = true;
+            this.setAuthStatus("Creando / comprobando usuario de prueba…");
+            let uid;
+            try {
+              // Intentar crear usuario nuevo
+              const cred = await createUserWithEmailAndPassword(this.auth, email, password);
+              uid = cred.user.uid;
+              await updateProfile(cred.user, {displayName:"Administrador Demo"});
+            } catch (err) {
+              if (err?.code === "auth/email-already-in-use") {
+                // Usuario ya existe → hacer login para obtener el uid
+                const cred = await signInWithEmailAndPassword(this.auth, email, password);
+                uid = cred.user.uid;
+              } else {
+                throw err;
+              }
+            }
+            // Siempre asegurar que existan los documentos en Firestore (merge:true preserva datos existentes)
+            this.setAuthStatus("Configurando perfil en Firestore…");
+            await setDoc(doc(this.db, "gyms", gymId), {
+              gymName:"FitAccess Demo", primaryColor:"#06b6d4", secondaryColor:"#3b82f6",
+              gymLogo:"https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=120&auto=format&fit=crop&q=80",
+              aptoMedicoMandatory:true, dailyPassesEnabled:true, gracePeriodDays:3,
+              ownerUid:uid, demo:true, createdAt:serverTimestamp()
+            }, {merge:true});
+            await setDoc(doc(this.db, "users", uid), {
+              name:"Administrador Demo", email, role:"admin",
+              gymId, gymName:"FitAccess Demo", demo:true, createdAt:serverTimestamp()
+            }, {merge:true});
+            if (testCredentials) testCredentials.style.display = "block";
+            this.setAuthStatus("Usuario de prueba listo. Iniciando sesión…");
+            // Recargar perfil manualmente ya que onAuthStateChanged puede no dispararse si ya había sesión
+            const currentUser = this.auth.currentUser;
+            if (currentUser) await this.loadProfile(currentUser);
+          } catch (err) {
+            console.error(err); this.setAuthStatus(this.authError(err));
+            if (testCredentials) testCredentials.style.display = "block";
+          } finally { testUser.disabled = false; }
+        };
+      },
+
+      setAuthStatus(text) {
+        const el = document.getElementById("firebase-auth-status");
+        if (el) el.textContent = text;
+      },
+
+      authError(err) {
+        const map = {
+          "auth/invalid-credential":"Email o contraseña incorrectos.",
+          "auth/invalid-email":"El email no es válido.",
+          "auth/email-already-in-use":"Ese email ya está registrado.",
+          "auth/weak-password":"La contraseña debe tener al menos 6 caracteres.",
+          "auth/too-many-requests":"Demasiados intentos. Probá más tarde."
+        };
+        return map[err.code] || err.message || "Error de autenticación.";
+      },
+
+      async loadProfile(user) {
+        const snap = await getDoc(doc(this.db, "users", user.uid));
+        if (!snap.exists()) {
+          if (this.pendingProfileCreation) return;
+          this.setAuthStatus("Tu usuario existe, pero todavía no tiene un gimnasio/rol asignado.");
+          await signOut(this.auth);
+          return;
+        }
+        const profile = snap.data();
+        if (!profile.gymId || !["admin","recepcion","socio"].includes(profile.role)) {
+          this.setAuthStatus("Perfil incompleto. Pedile al administrador que te habilite.");
+          await signOut(this.auth);
+          return;
+        }
+        this.profile = profile;
+        this.gymId = profile.gymId;
+        FitApp.currentUser = {
+          role: profile.role,
+          memberId: profile.memberId || null,
+          name: profile.name || user.displayName || user.email,
+          uid: user.uid,
+          email: user.email,
+          gymId: this.gymId
+        };
+        localStorage.setItem("fitaccess_current_user", JSON.stringify(FitApp.currentUser));
+        await this.loadGymConfig();
+        this.subscribeMembers();
+        this.subscribeLogs();
+        FitApp.hideLoginModal();
+        FitApp.applyRBAC();
+        this.status(`Online · ${profile.gymName || "Gimnasio"}`, true);
+      },
+
+      async loadGymConfig() {
+        const snap = await getDoc(doc(this.db, "gyms", this.gymId));
+        if (snap.exists()) {
+          const data = snap.data();
+          WhiteLabelEngine.saveConfig({
+            gymName: data.gymName || "Mi Gimnasio",
+            primaryColor: data.primaryColor || "#06b6d4",
+            secondaryColor: data.secondaryColor || "#3b82f6",
+            gymLogo: data.gymLogo || WhiteLabelEngine.config.gymLogo,
+            aptoMedicoMandatory: data.aptoMedicoMandatory !== false,
+            dailyPassesEnabled: data.dailyPassesEnabled !== false,
+            gracePeriodDays: Number(data.gracePeriodDays || 3)
+          });
+        }
+      },
+
+      subscribeMembers() {
+        if (this.unsubMembers) this.unsubMembers();
+        const ref = collection(this.db, "gyms", this.gymId, "members");
+        this.unsubMembers = onSnapshot(ref, (snap) => {
+          FitApp.members = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          FitApp.updateStatsCounters();
+          FitApp.updateMemberSelectDropdown();
+          FitApp.renderAdminTables();
+          FitApp.renderPredictiveDashboards();
+          if (FitApp.currentUser?.role === "socio" && FitApp.currentUser.memberId) FitApp.renderMemberView(FitApp.currentUser.memberId);
+        }, (err) => { console.error(err); this.status("Error leyendo socios"); });
+      },
+
+      subscribeLogs() {
+        if (this.unsubLogs) this.unsubLogs();
+        const ref = query(collection(this.db, "gyms", this.gymId, "logs"), orderBy("createdAt", "desc"), limit(500));
+        this.unsubLogs = onSnapshot(ref, (snap) => {
+          FitApp.logs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          FitApp.updateStatsCounters();
+          FitApp.renderLogTable();
+          FitApp.renderPredictiveDashboards();
+        }, (err) => { console.error(err); this.status("Error leyendo accesos"); });
+      },
+
+      cleanupListeners() {
+        if (this.unsubMembers) this.unsubMembers();
+        if (this.unsubLogs) this.unsubLogs();
+        this.unsubMembers = this.unsubLogs = null;
+      },
+
+      async saveMembers() {
+        if (!this.enabled || !this.initialized || !this.gymId) return;
+        const batch = writeBatch(this.db);
+        FitApp.members.forEach(m => {
+          const ref = doc(this.db, "gyms", this.gymId, "members", String(m.id));
+          batch.set(ref, { ...m, updatedAt: serverTimestamp() }, { merge: true });
+        });
+        await batch.commit();
+      },
+
+      async saveLogs() {
+        // Logs are created one-by-one by addLog(); this method is kept as a compatibility hook.
+      },
+
+      async addLog(member, status, reason) {
+        if (!this.enabled || !this.initialized || !this.gymId) return;
+        const now = new Date();
+        await addDoc(collection(this.db, "gyms", this.gymId, "logs"), {
+          memberName: member ? member.name : "Desconocido",
+          memberId: member ? member.id : "-",
+          status, reason,
+          time: now.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit', second:'2-digit' }),
+          date: now.toISOString().slice(0,10),
+          createdAt: serverTimestamp(),
+          createdBy: this.auth.currentUser?.uid || null
+        });
+      },
+
+      async createMemberAccount(memberId, email, password) {
+        if (!this.enabled) throw new Error("Firebase no configurado.");
+        const adminUser = this.auth.currentUser;
+        const member = FitApp.findMember(memberId);
+        if (!adminUser || !member) throw new Error("Socio no encontrado.");
+        // Admin creates auth account. The browser session switches to the new account,
+        // so for production invitations use a backend/Cloud Function instead.
+        const cred = await createUserWithEmailAndPassword(this.auth, email, password);
+        await setDoc(doc(this.db, "users", cred.user.uid), {
+          name: member.name, email, role: "socio", memberId,
+          gymId: this.gymId, gymName: WhiteLabelEngine.config.gymName,
+          createdAt: serverTimestamp()
+        });
+        await setDoc(doc(this.db, "gyms", this.gymId, "members", memberId), { userId: cred.user.uid }, { merge:true });
+        return cred.user;
+      },
+
+      async createGymOwner({ gymName, email, password, primaryColor, secondaryColor }) {
+        if (!this.enabled) throw new Error("Firebase no configurado.");
+        this.pendingProfileCreation = true;
+        const cred = await createUserWithEmailAndPassword(this.auth, email, password);
+        const gymId = "gym_" + crypto.randomUUID().replaceAll("-", "").slice(0,16);
+        await setDoc(doc(this.db, "gyms", gymId), {
+          gymName, primaryColor, secondaryColor,
+          gymLogo: WhiteLabelEngine.config.gymLogo,
+          createdAt: serverTimestamp(), ownerUid: cred.user.uid,
+          aptoMedicoMandatory: true, dailyPassesEnabled: true, gracePeriodDays: 3
+        });
+        await setDoc(doc(this.db, "users", cred.user.uid), {
+          name: gymName + " · Administrador", email, role:"admin", gymId, gymName,
+          createdAt: serverTimestamp()
+        });
+        await updateProfile(cred.user, { displayName: gymName + " · Administrador" });
+        this.pendingProfileCreation = false;
+        await this.loadProfile(cred.user);
+        return { gymId, uid: cred.user.uid };
+      },
+
+      async validateQR(data) {
+        if (!this.enabled || !this.gymId) return;
+        if (data.gymId !== this.gymId) {
+          FitApp.triggerTrafficLight("red", "QR NO VÁLIDO", "El código pertenece a otro gimnasio.", null);
+          return;
+        }
+        const exp = Number(data.exp || 0);
+        if (!exp || Date.now() > exp) {
+          FitApp.triggerTrafficLight("red", "QR VENCIDO", "El código QR expiró. Pedile al socio que genere uno nuevo.", null);
+          FitApp.playSound("red");
+          return;
+        }
+        const tokenSnap = await getDoc(doc(this.db, "gyms", this.gymId, "qrTokens", String(data.token)));
+        if (!tokenSnap.exists()) {
+          FitApp.triggerTrafficLight("red", "QR NO VÁLIDO", "El código no existe o ya fue revocado.", null);
+          FitApp.playSound("red");
+          return;
+        }
+        const token = tokenSnap.data();
+        if (token.memberId !== data.memberId || Number(token.exp) < Date.now()) {
+          FitApp.triggerTrafficLight("red", "QR NO VÁLIDO", "No se pudo validar el código.", null);
+          FitApp.playSound("red");
+          return;
+        }
+        FitApp.evaluateAccess(token.memberId);
+      },
+
+      async issueQR(member) {
+        if (!this.enabled || !this.gymId || !member) return null;
+        const user = this.auth.currentUser;
+        if (!user) return null;
+        const token = crypto.randomUUID();
+        const exp = Date.now() + 30000;
+        await setDoc(doc(this.db, "gyms", this.gymId, "qrTokens", token), {
+          memberId: member.id, userId: member.userId || user.uid, exp,
+          createdAt: serverTimestamp()
+        });
+        return { type:"fitaccess_qr", gymId:this.gymId, memberId:member.id, token, exp };
+      },
+
+      async createInitialDemoMembersIfEmpty() {
+        const snap = await getDocs(query(collection(this.db,"gyms",this.gymId,"members"), limit(1)));
+        if (snap.empty && this.profile?.role === "admin") {
+          const batch = writeBatch(this.db);
+          INITIAL_MEMBERS.forEach(m => batch.set(doc(this.db,"gyms",this.gymId,"members",m.id), {...m, createdAt:serverTimestamp()}));
+          await batch.commit();
+        }
+      },
+
+      async openGymRegistration() {
+        if (!this.enabled) return this.setAuthStatus("Primero configurá FIREBASE_CONFIG.");
+        const card = document.getElementById("firebase-login-card");
+        if (!card) return;
+        card.innerHTML = `
+          <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=120&auto=format&fit=crop&q=80" class="gym-logo-img login-brand-logo" alt="FitAccess">
+          <h2 style="font-size:1.5rem;font-weight:900;margin-bottom:4px;">Crear mi gimnasio</h2>
+          <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:14px;">Se crea el gimnasio y tu usuario como Administrador.</p>
+          <form id="firebase-register-form" style="display:flex;flex-direction:column;gap:9px;">
+            <label class="form-label">Nombre del gimnasio</label><input id="new-gym-name" class="form-input" required placeholder="Ej. Iron Fitness">
+            <label class="form-label">Email administrador</label><input id="new-gym-email" type="email" class="form-input" required placeholder="admin@gimnasio.com">
+            <label class="form-label">Contraseña</label><input id="new-gym-password" type="password" class="form-input" minlength="6" required placeholder="Mínimo 6 caracteres">
+            <div style="display:flex;gap:10px;"><div style="flex:1"><label class="form-label">Color principal</label><input id="new-gym-primary" type="color" value="#06b6d4" style="width:100%;height:42px;border:0;border-radius:10px;background:transparent"></div><div style="flex:1"><label class="form-label">Color secundario</label><input id="new-gym-secondary" type="color" value="#3b82f6" style="width:100%;height:42px;border:0;border-radius:10px;background:transparent"></div></div>
+            <button class="btn" type="submit" style="width:100%;margin-top:5px;">🚀 Crear gimnasio</button>
+          </form>
+          <button id="back-to-login" class="btn btn-secondary" style="width:100%;margin-top:10px;">← Volver al ingreso</button>
+          <div id="firebase-register-status" style="margin-top:12px;text-align:center;font-size:.8rem;color:var(--text-muted)"></div>`;
+        document.getElementById("firebase-register-form").onsubmit = async (e) => {
+          e.preventDefault();
+          const status = document.getElementById("firebase-register-status");
+          try {
+            status.textContent = "Creando gimnasio…";
+            const result = await this.createGymOwner({
+              gymName: document.getElementById("new-gym-name").value.trim(),
+              email: document.getElementById("new-gym-email").value.trim(),
+              password: document.getElementById("new-gym-password").value,
+              primaryColor: document.getElementById("new-gym-primary").value,
+              secondaryColor: document.getElementById("new-gym-secondary").value
+            });
+            status.textContent = "Gimnasio creado. Iniciando sesión…";
+            this.gymId = result.gymId;
+          } catch (err) {
+            this.pendingProfileCreation = false;
+            status.textContent = this.authError(err);
+          }
+        };
+        document.getElementById("back-to-login").onclick = () => location.reload();
+      },
+
+      async logout() { if (this.auth) await signOut(this.auth); }
+    };
+
+    window.FirebaseSaaS = FirebaseSaaS;
+
+    // Monkey-patch only persistence/auth methods. UI/business logic stays in the original app.
+    const originalLoadData = FitApp.loadData.bind(FitApp);
+    const originalSaveMembers = FitApp.saveMembers.bind(FitApp);
+    const originalSaveLogs = FitApp.saveLogs.bind(FitApp);
+    const originalAddLog = FitApp.addLog.bind(FitApp);
+    const originalLogin = FitApp.login.bind(FitApp);
+    const originalLogout = FitApp.logout.bind(FitApp);
+
+    FitApp.loadData = function() {
+      if (!FirebaseSaaS.enabled) {
+        originalLoadData();
+        return;
+      }
+      this.members = [];
+      this.logs = [];
+      this.currentUser = null;
+      this.showLoginModal();
+    };
+
+    FitApp.saveMembers = function() {
+      if (FirebaseSaaS.enabled && FirebaseSaaS.initialized && FirebaseSaaS.gymId) {
+        FirebaseSaaS.saveMembers().catch(e => console.error("Cloud member save", e));
+      } else originalSaveMembers();
+      this.updateStatsCounters(); this.updateMemberSelectDropdown(); this.renderPredictiveDashboards();
+    };
+
+    FitApp.saveLogs = function() {
+      if (!FirebaseSaaS.enabled) originalSaveLogs();
+      this.updateStatsCounters(); this.renderPredictiveDashboards();
+    };
+
+    FitApp.addLog = function(member, status, reason) {
+      if (FirebaseSaaS.enabled && FirebaseSaaS.initialized && FirebaseSaaS.gymId) {
+        FirebaseSaaS.addLog(member, status, reason).catch(e => console.error("Cloud log", e));
+      } else originalAddLog(member, status, reason);
+    };
+
+    FitApp.login = function(role, memberId) {
+      if (FirebaseSaaS.enabled) {
+        FirebaseSaaS.setAuthStatus("Usá email y contraseña para iniciar sesión.");
+        return;
+      }
+      originalLogin(role, memberId);
+    };
+
+    FitApp.logout = function() {
+      if (FirebaseSaaS.enabled) return FirebaseSaaS.logout();
+      return originalLogout();
+    };
+
+    // Real QR issuer. Falls back to a normal QR containing member id only in demo mode.
+    FitApp.generateMemberQR = async function(member) {
+      if (FirebaseSaaS.enabled && FirebaseSaaS.initialized && FirebaseSaaS.gymId) {
+        try {
+          const payload = await FirebaseSaaS.issueQR(member);
+          if (payload) this.generateQRCode(JSON.stringify(payload));
+        } catch (e) { console.error("QR issue error", e); }
+      } else {
+        this.generateQRCode(JSON.stringify({ type:"fitaccess_demo", id:member.id, timestamp:Date.now() }));
+      }
+    };
+
+    // Ensure original init sees patched persistence methods.
+    const originalInit = FitApp.init.bind(FitApp);
+    FitApp.init = function() {
+      originalInit();
+      FirebaseSaaS.init();
+    };
+
+    // Make the old demo registration form harmless in SaaS mode.
+    document.addEventListener("DOMContentLoaded", () => {
+      const oldRegister = document.getElementById("form-register-gym");
+      if (oldRegister) oldRegister.style.display = "none";
+      const oldDemoButtons = document.querySelectorAll("#login-modal-overlay .quick-login-chip");
+      oldDemoButtons.forEach(b => b.style.display = "none");
+      const testCredentials = document.getElementById("firebase-test-credentials");
+      if (testCredentials) testCredentials.title = "Hacé clic para copiar las credenciales al formulario";
+      testCredentials?.addEventListener("click", () => {
+        const email = document.getElementById("firebase-email"); const password = document.getElementById("firebase-password");
+        if (email) email.value = "demo@fitaccess.app"; if (password) password.value = "FitAccess123!";
+      });
+    });
+  </script>
+</body>
+</html>
