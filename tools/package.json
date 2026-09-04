@@ -1,0 +1,12 @@
+{
+  "name": "fitaccess-tools",
+  "description": "Herramientas locales: admin CLI con Admin SDK y generador de iconos PWA",
+  "private": true,
+  "scripts": {
+    "icons": "node make-icons.js",
+    "admin": "node admin-cli.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.6.0"
+  }
+}

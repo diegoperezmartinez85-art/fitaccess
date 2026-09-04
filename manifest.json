@@ -1,21 +1,49 @@
 {
+  "id": "fitaccess-gym-saas",
   "name": "FitAccess White-Label Gym SaaS",
   "short_name": "FitAccess",
-  "start_url": "./index.html",
+  "description": "Control de acceso con QR, credencial digital de socios y gestión multi-gimnasio.",
+  "lang": "es-AR",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#060913",
-  "theme_color": "#06b6d4",
-  "description": "White-Label Gym Access Control, Membership PWA & Subscription SaaS System",
+  "orientation": "portrait",
+  "background_color": "#070a12",
+  "theme_color": "#14b8a6",
+  "categories": ["fitness", "business", "productivity"],
   "icons": [
     {
-      "src": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=192&auto=format&fit=crop&q=80",
+      "src": "./icons/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=512&auto=format&fit=crop&q=80",
+      "src": "./icons/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Mi carnet",
+      "short_name": "Carnet",
+      "description": "Abrir la credencial digital con el QR",
+      "url": "./?view=socio"
+    },
+    {
+      "name": "Recepción",
+      "short_name": "Escáner",
+      "description": "Abrir el escáner del molinete",
+      "url": "./?view=reception"
     }
   ]
 }
