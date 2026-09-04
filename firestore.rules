@@ -1,0 +1,217 @@
+rules_version = '2';
+
+// ============================================================================
+// FitAccess — Aislamiento multi-tenant en Firestore
+//
+// ----------------------------------------------------------------------------
+// QUÉ REEMPLAZA
+//
+// Las reglas anteriores eran:
+//
+//     match /gyms/{gymId} { allow read, write: if request.auth != null; }
+//     match /users/{userId} { allow read, write: if request.auth != null; }
+//     match /gyms/{gymId}/{collection=**} { allow read, write: if request.auth != null; }
+//
+// Eso significa "cualquiera que haya iniciado sesión puede leer y escribir toda
+// la base": cero aislamiento entre gimnasios, y `/users` escribible por el
+// propio usuario, o sea que cualquiera se podía poner role: "owner".
+//
+// ----------------------------------------------------------------------------
+// DOS FASES, UNA SOLA VERSIÓN DE REGLAS
+//
+// El rol y el gymId se resuelven así, en este orden:
+//
+//   1. Custom claims del token  → lo correcto, imposible de falsificar.
+//   2. Documento /users/{uid}   → puente para poder cerrar la base HOY,
+//                                 sin depender de Cloud Functions (que
+//                                 requieren el plan Blaze).
+//
+// El puente es seguro SÓLO porque /users es de lectura para el cliente:
+// lo escribe únicamente el backend (Admin SDK, vía tools/admin-cli.js o
+// functions/index.js). Si alguna vez permitís que el cliente escriba /users,
+// volvés a habilitar la escalada de privilegios.
+//
+// Cada lectura que usa el puente cuesta un `get()` extra (se factura como una
+// lectura). Cuando pases a claims, ese costo desaparece solo.
+//
+// Claims que firma el backend:
+//   { platform: true }                          → operador del SaaS
+//   { gymId, role, memberId?, branchId? }       → usuario de un gimnasio
+//   role ∈ owner | admin | recepcion | entrenador | socio
+// ============================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------------------------------------------------------- identidad
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function claims() {
+      return request.auth.token;
+    }
+
+    function claimRole() {
+      return signedIn() ? claims().get('role', '') : '';
+    }
+
+    function hasClaims() {
+      return claimRole() != '' || claims().get('platform', false) == true;
+    }
+
+    function userDocPath() {
+      return /databases/$(database)/documents/users/$(request.auth.uid);
+    }
+
+    function userDocExists() {
+      return signedIn() && exists(userDocPath());
+    }
+
+    function userDoc() {
+      return get(userDocPath()).data;
+    }
+
+    // Rol efectivo: claim si existe, si no el documento de perfil.
+    function myRole() {
+      return claimRole() != ''
+        ? claimRole()
+        : (userDocExists() ? userDoc().get('role', '') : '');
+    }
+
+    function myGym() {
+      return claims().get('gymId', '') != ''
+        ? claims().get('gymId', '')
+        : (userDocExists() ? userDoc().get('gymId', '') : '');
+    }
+
+    function myMemberId() {
+      return claims().get('memberId', '') != ''
+        ? claims().get('memberId', '')
+        : (userDocExists() ? userDoc().get('memberId', '') : '');
+    }
+
+    // Un usuario desactivado no puede hacer nada, aunque siga logueado.
+    function isEnabled() {
+      return hasClaims() ? true : (userDocExists() && userDoc().get('active', true) == true);
+    }
+
+    function isPlatform() {
+      return signedIn() && (
+        claims().get('platform', false) == true
+        || (!hasClaims() && userDocExists() && userDoc().get('platform', false) == true)
+      );
+    }
+
+    // ------------------------------------------------------------ tenant
+    // La condición central: el usuario pertenece a ESE gimnasio y a ningún otro.
+    function inTenant(gymId) {
+      return signedIn() && isEnabled() && myGym() == gymId;
+    }
+
+    function roleIn(gymId) {
+      return inTenant(gymId) ? myRole() : '';
+    }
+
+    function isGymStaff(gymId) {
+      return roleIn(gymId) in ['owner', 'admin', 'recepcion', 'entrenador'];
+    }
+
+    function isGymManager(gymId) {
+      return roleIn(gymId) in ['owner', 'admin'];
+    }
+
+    // El socio sólo alcanza su propia ficha, dentro de su propio gimnasio.
+    function isOwnMember(gymId, memberId) {
+      return roleIn(gymId) == 'socio' && myMemberId() == memberId;
+    }
+
+    function changedKeys() {
+      return request.resource.data.diff(resource.data).affectedKeys();
+    }
+
+    // ---------------------------------------------------------- /gyms/{gymId}
+    match /gyms/{gymId} {
+      // Cualquier usuario del tenant lee la ficha de su gimnasio: necesita el
+      // branding, los planes y las sedes para que la app funcione.
+      allow read: if isPlatform() || inTenant(gymId);
+
+      // Alta y baja de tenants: sólo la plataforma.
+      allow create, delete: if isPlatform();
+
+      // El dueño/admin edita su gimnasio, pero no su suscripción ni su estado:
+      // eso lo decide la plataforma cuando le pagan (o cuando no).
+      allow update: if isPlatform()
+        || (isGymManager(gymId) && !changedKeys().hasAny(['saas', 'active', 'slug']));
+
+      // --------------------------------------------- socios del gimnasio
+      // El padrón es del GIMNASIO, no de la sede: no hay filtro por branchId.
+      // Un socio con sede habitual en Palermo entra en Belgrano, y el staff de
+      // cualquier sede lo ve y le cobra.
+      match /members/{memberId} {
+        allow read: if isPlatform()
+          || isGymStaff(gymId)
+          || isOwnMember(gymId, memberId);
+
+        allow create, delete: if isPlatform() || isGymManager(gymId);
+
+        allow update: if isPlatform()
+          || isGymManager(gymId)
+          // Recepción cobra: puede mover cuota y vencimiento, nada más. No
+          // puede editar datos personales ni tocar el apto médico.
+          || (roleIn(gymId) == 'recepcion'
+              && changedKeys().hasOnly(['subscriptionStatus', 'dueDate', 'payments', 'lastCheckInAt']))
+          // El socio actualiza su contacto y sube su certificado. NO puede
+          // escribir aptoMedico ni dueDate: sube el archivo y el staff valida.
+          || (isOwnMember(gymId, memberId)
+              && changedKeys().hasOnly(['phone', 'email', 'photo', 'aptoFile', 'aptoRequestedAt']));
+      }
+
+      // ------------------------------------- registro de accesos (molinete)
+      match /accessLogs/{logId} {
+        allow read: if isPlatform() || isGymStaff(gymId);
+        // Se escribe una vez y no se edita: es evidencia operativa.
+        allow create: if roleIn(gymId) in ['owner', 'admin', 'recepcion'];
+        allow update: if false;
+        allow delete: if isPlatform() || isGymManager(gymId);
+      }
+
+      // ------------------------------------------------------- auditoría
+      match /audit/{eventId} {
+        allow read: if isPlatform() || isGymManager(gymId);
+        // Sólo el backend escribe auditoría. Si la pudiera escribir el cliente,
+        // no serviría como registro de nada.
+        allow write: if false;
+      }
+
+      // Nada más dentro de /gyms/{gymId}. Antes había un `{collection=**}`
+      // abierto: cualquier subcolección nueva quedaba accesible sin pensarlo.
+      match /{otra=**} {
+        allow read, write: if false;
+      }
+    }
+
+    // ------------------------------------------------------- /users/{uid}
+    // Perfil, rol y gymId. ⚠️ CRÍTICO: el cliente NO escribe acá. Si pudiera,
+    // cualquiera se pondría role: "owner" y las reglas de arriba lo creerían.
+    // Se escribe con el Admin SDK: tools/admin-cli.js o functions/index.js.
+    match /users/{uid} {
+      allow read: if isPlatform()
+        || request.auth.uid == uid
+        || (signedIn() && isGymManager(resource.data.gymId));
+
+      allow write: if false;
+    }
+
+    // Registro de operadores de la plataforma (bootstrap).
+    match /platformOperators/{uid} {
+      allow read: if isPlatform();
+      allow write: if false;
+    }
+
+    // Todo lo demás, cerrado.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

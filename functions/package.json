@@ -1,0 +1,13 @@
+{
+  "name": "fitaccess-functions",
+  "description": "Cloud Functions de FitAccess: alta de usuarios, roles y tenants con Admin SDK",
+  "main": "index.js",
+  "engines": {
+    "node": "20"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.6.0",
+    "firebase-functions": "^6.1.0"
+  },
+  "private": true
+}

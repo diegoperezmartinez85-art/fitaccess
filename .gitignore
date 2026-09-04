@@ -1,0 +1,36 @@
+# ⚠️ CLAVES — nunca deben llegar a un repo público
+# El JSON de una service account da acceso TOTAL a tu proyecto Firebase:
+# permite leer y escribir toda la base y firmar custom claims, salteándose las
+# reglas de Firestore. Si alguna vez se commitea, hay que revocarla en
+# Google Cloud Console → IAM → Cuentas de servicio → Claves.
+serviceAccountKey.json
+*-firebase-adminsdk-*.json
+service-account*.json
+.env
+.env.*
+!.env.example
+
+# Firebase CLI
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# Node
+node_modules/
+functions/node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# Backups exportados desde el panel (contienen datos personales de socios:
+# nombre, DNI, teléfono y certificados médicos)
+fitaccess_backup_*.json
+*_padron.csv
+*_ingresos.csv
+
+# Sistema operativo / editores
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
