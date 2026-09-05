@@ -8,405 +8,715 @@
   <meta name="description" content="FitAccess - Plataforma SaaS multi-gimnasio: control de acceso QR, cobros y credencial digital de socios.">
   <link rel="manifest" href="./manifest.json">
   <style>
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Bebas+Neue&display=swap');
 
 /* ==========================================================================
-   FITACCESS SAAS MULTI-TENANT - GLASSMORPHISM & THEME ENGINE
+   FITACCESS — SISTEMA VISUAL
+   Oscuro, con materiales por capas y acento configurable por gimnasio.
+   La marca de cada gym define --primary/--secondary en runtime, así que todo
+   lo demás se construye derivando de esas dos variables.
    ========================================================================== */
 
 :root {
+  /* Acento: lo sobreescribe el white-label de cada gimnasio */
   --primary-color: #14b8a6;
   --secondary-color: #6366f1;
   --primary-glow: rgba(20, 184, 166, 0.4);
   --secondary-glow: rgba(99, 102, 241, 0.4);
   --accent-warm: #fb923c;
 
-  --bg-main: #070a12;
-  --bg-gradient: radial-gradient(circle at 20% 0%, #111a2e 0%, #070a12 50%, #05070c 100%);
-  --card-bg: rgba(18, 25, 41, 0.78);
-  --card-bg-hover: rgba(26, 36, 60, 0.88);
-  --glass-border: rgba(255, 255, 255, 0.09);
-  --glass-border-light: rgba(255, 255, 255, 0.18);
+  /* Base: negro azulado, no gris. Da profundidad sin verse sucio. */
+  --ink-950: #04050a;
+  --ink-900: #070910;
+  --ink-800: #0b0e18;
+  --ink-700: #111524;
+  --ink-600: #181d2e;
 
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --text-dim: #64748b;
+  /* Superficies translúcidas apiladas */
+  --surface-1: rgba(255, 255, 255, 0.032);
+  --surface-2: rgba(255, 255, 255, 0.055);
+  --surface-3: rgba(255, 255, 255, 0.085);
+  --hairline: rgba(255, 255, 255, 0.075);
+  --hairline-2: rgba(255, 255, 255, 0.14);
+  --hairline-3: rgba(255, 255, 255, 0.22);
 
-  --status-green: #10b981;
-  --status-green-glow: rgba(16, 185, 129, 0.35);
+  /* Compatibilidad con nombres previos */
+  --bg-main: var(--ink-900);
+  --card-bg: var(--surface-1);
+  --card-bg-hover: var(--surface-2);
+  --glass-border: var(--hairline);
+  --glass-border-light: var(--hairline-2);
+
+  --text-main: #f5f7fb;
+  --text-muted: #98a2b7;
+  --text-dim: #5d6779;
+
+  --status-green: #22c55e;
+  --status-green-glow: rgba(34, 197, 94, 0.4);
   --status-yellow: #f59e0b;
-  --status-yellow-glow: rgba(245, 158, 11, 0.35);
+  --status-yellow-glow: rgba(245, 158, 11, 0.4);
   --status-red: #ef4444;
-  --status-red-glow: rgba(239, 68, 68, 0.35);
+  --status-red-glow: rgba(239, 68, 68, 0.4);
 
+  --radius-xs: 8px;
   --radius-sm: 12px;
-  --radius-md: 18px;
-  --radius-lg: 24px;
-  --radius-xl: 32px;
-  --shadow-lg: 0 24px 60px -12px rgba(0, 0, 0, 0.7), 0 4px 20px rgba(0, 0, 0, 0.4);
-  --shadow-soft: 0 10px 30px -8px rgba(0, 0, 0, 0.5);
+  --radius-md: 16px;
+  --radius-lg: 22px;
+  --radius-xl: 28px;
+  --radius-2xl: 36px;
+
+  /* Sombras: una difusa lejana + una cercana definida */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.4), 0 2px 8px -4px rgba(0,0,0,.5);
+  --shadow-md: 0 4px 12px -2px rgba(0,0,0,.5), 0 12px 32px -12px rgba(0,0,0,.7);
+  --shadow-lg: 0 8px 24px -4px rgba(0,0,0,.55), 0 32px 64px -24px rgba(0,0,0,.8);
+  --shadow-soft: var(--shadow-md);
+
+  /* Brillo interno superior: el truco que hace que una superficie oscura
+     parezca vidrio y no un rectángulo plano */
+  --sheen: inset 0 1px 0 rgba(255,255,255,.09);
+  --sheen-strong: inset 0 1px 0 rgba(255,255,255,.16);
+
+  --font-ui: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-display: 'Bebas Neue', 'Oswald', 'Arial Narrow', Impact, sans-serif;
+
+  --ease-out: cubic-bezier(.16, 1, .3, 1);
+  --ease-spring: cubic-bezier(.34, 1.56, .64, 1);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
+html { -webkit-text-size-adjust: 100%; }
+
 body {
-  background: var(--bg-gradient);
-  background-attachment: fixed;
+  background: var(--ink-900);
   color: var(--text-main);
-  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-ui);
+  font-size: 15px;
+  line-height: 1.55;
   min-height: 100vh;
   overflow-x: hidden;
-  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3, h4 { letter-spacing: -0.02em; }
+/* Fondo: dos halos de color + degradado, todo detrás del contenido */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: -2;
+  background:
+    radial-gradient(120% 80% at 15% -10%, color-mix(in srgb, var(--primary-color) 16%, transparent) 0%, transparent 55%),
+    radial-gradient(100% 70% at 100% 0%, color-mix(in srgb, var(--secondary-color) 13%, transparent) 0%, transparent 50%),
+    linear-gradient(180deg, var(--ink-800) 0%, var(--ink-900) 40%, var(--ink-950) 100%);
+}
 
-::-webkit-scrollbar { width: 8px; height: 8px; }
+/* Grano finísimo: le quita el aspecto plano al degradado */
+body::after {
+  content: '';
+  position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  opacity: .035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+h1, h2, h3, h4 { letter-spacing: -0.025em; line-height: 1.15; }
+
+/* Números y datos: ancho fijo para que no bailen al actualizarse */
+.tabular, .metric-value, .log-table td, .qr-timer { font-variant-numeric: tabular-nums; }
+
+::selection { background: var(--primary-color); color: #04121a; }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.14); border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: var(--primary-color); }
+::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 10px; border: 3px solid transparent; background-clip: content-box; }
+::-webkit-scrollbar-thumb:hover { background: var(--hairline-3); background-clip: content-box; }
 
-/* Ambient Glow */
-.ambient-glow { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
-.glow-orb { position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.18; transition: background 0.5s ease; }
-.glow-orb-1 { width: 500px; height: 500px; background: var(--primary-color); top: -140px; left: -140px; }
-.glow-orb-2 { width: 460px; height: 460px; background: var(--secondary-color); bottom: -80px; right: -80px; }
+/* Iconos SVG en línea: reemplazan a los emojis del prototipo */
+.ico { width: 1em; height: 1em; flex: none; display: inline-block; vertical-align: -.125em; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+.ico-lg { width: 1.35em; height: 1.35em; }
+.ico-solid { fill: currentColor; stroke: none; }
+#icon-sprite { display: none; }
 
-/* Impersonation / Tenant context bar */
-.tenant-bar {
-  position: sticky; top: 0; z-index: 120;
-  background: linear-gradient(90deg, rgba(99,102,241,0.28) 0%, rgba(99,102,241,0.12) 100%);
-  border-bottom: 1px solid var(--secondary-glow);
-  padding: 8px 20px;
-  display: none; align-items: center; justify-content: space-between; gap: 12px;
-  font-size: 0.82rem; font-weight: 700; flex-wrap: wrap;
+/* Etiqueta pequeña en mayúsculas: estructura la jerarquía sin usar tamaño */
+.eyebrow {
+  font-size: .68rem; font-weight: 800; text-transform: uppercase;
+  letter-spacing: .14em; color: var(--text-dim);
 }
-.tenant-bar.active { display: flex; }
 
-/* Header & Navigation */
+.ambient-glow { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.glow-orb { position: absolute; border-radius: 50%; filter: blur(130px); opacity: .13; transition: background .6s ease; }
+.glow-orb-1 { width: 540px; height: 540px; background: var(--primary-color); top: -160px; left: -120px; }
+.glow-orb-2 { width: 480px; height: 480px; background: var(--secondary-color); bottom: -120px; right: -100px; }
+
+/* ==========================================================================
+   BARRAS DE AVISO (demo, backup, offline, librerías, tenant)
+   ========================================================================== */
+.notice-bar, .tenant-bar {
+  position: relative; z-index: 99;
+  display: none; align-items: center; justify-content: center;
+  gap: 14px; flex-wrap: wrap;
+  padding: 9px 22px;
+  font-size: .82rem; font-weight: 600;
+  border-bottom: 1px solid var(--hairline);
+  backdrop-filter: blur(12px);
+}
+.notice-bar.active, .tenant-bar.active { display: flex; }
+.notice-bar strong { font-weight: 800; }
+.notice-info    { background: color-mix(in srgb, var(--secondary-color) 15%, transparent); border-bottom-color: color-mix(in srgb, var(--secondary-color) 35%, transparent); }
+.notice-warn    { background: rgba(245,158,11,.13); border-bottom-color: rgba(245,158,11,.35); }
+.notice-danger  { background: rgba(239,68,68,.14); border-bottom-color: rgba(239,68,68,.38); }
+.notice-offline { background: rgba(245,158,11,.92); color: #2c1c00; border-bottom-color: rgba(0,0,0,.2); }
+.tenant-bar { background: color-mix(in srgb, var(--secondary-color) 18%, transparent); }
+
+/* ==========================================================================
+   HEADER
+   ========================================================================== */
 .app-header {
   position: sticky; top: 0; z-index: 100;
-  background: rgba(7, 10, 18, 0.88);
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
-  border-bottom: 1px solid var(--glass-border);
-  padding: 14px 28px;
   display: flex; align-items: center; justify-content: space-between;
-  gap: 16px; flex-wrap: wrap;
+  gap: 18px; flex-wrap: wrap; row-gap: 12px;
+  padding: 13px 26px;
+  background: color-mix(in srgb, var(--ink-950) 82%, transparent);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border-bottom: 1px solid var(--hairline);
+}
+.app-header::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+  opacity: .35;
 }
 
-@media (max-width: 900px) {
-  .app-header { padding: 12px 16px; }
-  .brand-container { flex: 1 1 100%; justify-content: space-between; }
-  .header-actions { flex: 1 1 100%; justify-content: space-between; }
-  .view-nav { flex: 1; overflow-x: auto; }
-}
-
-.brand-container { display: flex; align-items: center; gap: 14px; }
+.brand-container { display: flex; align-items: center; gap: 13px; min-width: 0; }
 
 .gym-logo-img {
-  width: 44px; height: 44px; border-radius: 12px; object-fit: cover;
-  background: var(--card-bg); border: 2px solid var(--primary-color);
-  box-shadow: 0 0 16px var(--primary-glow); transition: transform 0.3s ease;
+  width: 42px; height: 42px; border-radius: 13px; object-fit: cover; flex: none;
+  background: var(--ink-700);
+  border: 1px solid var(--hairline-2);
+  box-shadow: 0 0 0 1px rgba(0,0,0,.5), 0 6px 18px -6px var(--primary-glow), var(--sheen);
+  transition: transform .35s var(--ease-out);
 }
-.gym-logo-img:hover { transform: scale(1.05); }
+.gym-logo-img:hover { transform: scale(1.06) rotate(-2deg); }
 
 .brand-name {
-  font-size: 1.35rem; font-weight: 900; letter-spacing: -0.5px;
-  background: linear-gradient(135deg, #ffffff 0%, var(--primary-color) 100%);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  font-size: 1.22rem; font-weight: 800; letter-spacing: -.03em;
+  background: linear-gradient(135deg, #fff 20%, color-mix(in srgb, var(--primary-color) 75%, #fff) 100%);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 42vw;
 }
 
 .brand-tag {
-  font-size: 0.68rem; padding: 3px 9px; border-radius: 20px;
-  background: rgba(255, 255, 255, 0.08); border: 1px solid var(--glass-border);
-  color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;
+  font-size: .62rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 6px;
+  background: var(--surface-2); border: 1px solid var(--hairline);
+  color: var(--text-muted); white-space: nowrap;
 }
 
-.header-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.header-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; flex: 1 1 auto; min-width: 0; justify-content: flex-end; }
 
+/* Navegación tipo control segmentado */
 .view-nav {
-  display: flex; background: rgba(255, 255, 255, 0.05);
-  padding: 4px; border-radius: var(--radius-md);
-  border: 1px solid var(--glass-border); gap: 4px;
+  display: flex; gap: 3px; padding: 3px;
+  background: var(--surface-1);
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  box-shadow: var(--sheen);
+  min-width: 0;
 }
-
 .nav-btn {
-  background: transparent; border: none; color: var(--text-muted);
-  padding: 8px 16px; border-radius: var(--radius-sm);
-  font-size: 0.86rem; font-weight: 700; cursor: pointer;
-  display: none; align-items: center; gap: 8px;
-  transition: all 0.25s ease; font-family: inherit; white-space: nowrap;
+  display: none; align-items: center; gap: 7px;
+  padding: 8px 15px; border: none; border-radius: 11px;
+  background: transparent; color: var(--text-muted);
+  font-family: inherit; font-size: .84rem; font-weight: 700;
+  cursor: pointer; white-space: nowrap;
+  transition: color .2s, background .2s, box-shadow .25s;
 }
-.nav-btn.visible { display: flex; }
-.nav-btn:hover { color: var(--text-main); background: rgba(255, 255, 255, 0.06); }
-.nav-btn.active { background: var(--primary-color); color: #041017; box-shadow: 0 0 16px var(--primary-glow); font-weight: 800; }
+.nav-btn.visible { display: inline-flex; }
+.nav-btn:hover { color: var(--text-main); background: var(--surface-2); }
+.nav-btn.active {
+  color: #04121a; font-weight: 800;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--primary-color) 92%, #fff) 0%, var(--primary-color) 100%);
+  box-shadow: 0 2px 10px -2px var(--primary-glow), inset 0 1px 0 rgba(255,255,255,.35);
+}
 
 .user-profile-pill {
-  display: flex; align-items: center; gap: 10px;
-  background: rgba(255, 255, 255, 0.05); border: 1px solid var(--glass-border);
-  padding: 6px 14px; border-radius: 999px; font-size: 0.84rem;
+  display: flex; align-items: center; gap: 9px;
+  padding: 6px 8px 6px 13px; border-radius: 999px;
+  background: var(--surface-1); border: 1px solid var(--hairline);
+  box-shadow: var(--sheen);
+  font-size: .82rem; max-width: 320px; white-space: nowrap;
 }
+.user-profile-pill > strong { overflow: hidden; text-overflow: ellipsis; }
 
+/* Insignias de rol */
 .role-tag-badge {
-  font-size: 0.68rem; font-weight: 900; padding: 2px 8px; border-radius: 12px;
-  text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap;
+  font-size: .62rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 6px; white-space: nowrap;
+  border: 1px solid transparent;
 }
-.role-badge-superadmin { background: rgba(236, 72, 153, 0.25); color: #f9a8d4; border: 1px solid rgba(236, 72, 153, 0.45); }
-.role-badge-owner { background: rgba(250, 204, 21, 0.2); color: #fde047; border: 1px solid rgba(250, 204, 21, 0.42); }
-.role-badge-admin { background: rgba(99, 102, 241, 0.25); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4); }
-.role-badge-recepcion { background: rgba(251, 146, 60, 0.25); color: #fdba74; border: 1px solid rgba(251, 146, 60, 0.4); }
-.role-badge-entrenador { background: rgba(56, 189, 248, 0.22); color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.4); }
-.role-badge-socio { background: rgba(20, 184, 166, 0.25); color: #5eead4; border: 1px solid rgba(20, 184, 166, 0.4); }
+.role-badge-superadmin { background: rgba(236,72,153,.16); color: #f9a8d4; border-color: rgba(236,72,153,.4); }
+.role-badge-owner      { background: rgba(250,204,21,.14); color: #fde047; border-color: rgba(250,204,21,.38); }
+.role-badge-admin      { background: rgba(99,102,241,.18); color: #a5b4fc; border-color: rgba(99,102,241,.4); }
+.role-badge-recepcion  { background: rgba(251,146,60,.16); color: #fdba74; border-color: rgba(251,146,60,.4); }
+.role-badge-entrenador { background: rgba(56,189,248,.16); color: #7dd3fc; border-color: rgba(56,189,248,.4); }
+.role-badge-socio      { background: rgba(20,184,166,.16); color: #5eead4; border-color: rgba(20,184,166,.4); }
 
-/* Main Content Views */
-.app-container { position: relative; z-index: 1; max-width: 1280px; margin: 0 auto; padding: 24px 20px 80px 20px; }
+/* ==========================================================================
+   LAYOUT
+   ========================================================================== */
+.app-container { position: relative; z-index: 1; max-width: 1320px; margin: 0 auto; padding: 30px 22px 96px; }
 
-.view-panel { display: none; animation: fadeInView 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-.view-panel.active { display: block; }
+.view-panel { display: none; }
+.view-panel.active { display: block; animation: viewIn .42s var(--ease-out); }
+@keyframes viewIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 
-@keyframes fadeInView {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+.grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 20px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 20px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 18px; }
+@media (max-width: 1000px) { .grid-3, .grid-4 { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+@media (max-width: 720px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } }
 
-/* Glass Cards */
+/* ==========================================================================
+   SUPERFICIES
+   ========================================================================== */
 .glass-card {
-  background: var(--card-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border); border-radius: var(--radius-lg);
-  padding: 24px; box-shadow: var(--shadow-soft);
   position: relative; overflow: hidden;
-  transition: transform 0.25s ease, border-color 0.25s ease;
+  padding: 24px;
+  border-radius: var(--radius-lg);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.045) 0%, rgba(255,255,255,.015) 120px, transparent 100%),
+    color-mix(in srgb, var(--ink-700) 72%, transparent);
+  border: 1px solid var(--hairline);
+  box-shadow: var(--shadow-md), var(--sheen);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  transition: border-color .3s, transform .3s var(--ease-out);
 }
-.glass-card:hover { border-color: var(--glass-border-light); }
+.glass-card:hover { border-color: var(--hairline-2); }
 
 .glass-card-header {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 20px; flex-wrap: wrap; gap: 12px;
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 14px; flex-wrap: wrap; margin-bottom: 20px;
 }
 
-.card-title { font-size: 1.15rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
+.card-title {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 1.06rem; font-weight: 800; letter-spacing: -.02em;
+}
+.card-title .ico { color: var(--primary-color); width: 1.15em; height: 1.15em; }
 
-/* Buttons */
+.section-note { font-size: .82rem; color: var(--text-muted); margin-top: 4px; line-height: 1.5; }
+
+/* ==========================================================================
+   BOTONES
+   ========================================================================== */
 .btn {
-  background: linear-gradient(135deg, var(--primary-color) 0%, #0d9488 100%);
-  color: #03141b; border: none; padding: 10px 20px; border-radius: var(--radius-sm);
-  font-weight: 800; font-size: 0.88rem; cursor: pointer;
+  position: relative; overflow: hidden;
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  transition: all 0.25s ease; font-family: inherit; box-shadow: 0 4px 14px var(--primary-glow);
+  padding: 10px 18px; border: none; border-radius: 11px;
+  font-family: inherit; font-size: .86rem; font-weight: 800; letter-spacing: -.01em;
+  color: #04121a; cursor: pointer; white-space: nowrap;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--primary-color) 90%, #fff) 0%, var(--primary-color) 55%, color-mix(in srgb, var(--primary-color) 82%, #000) 100%);
+  box-shadow: 0 1px 0 rgba(255,255,255,.35) inset, 0 4px 14px -4px var(--primary-glow), 0 1px 2px rgba(0,0,0,.4);
+  transition: transform .18s var(--ease-out), box-shadow .25s, filter .2s;
 }
-.btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px var(--primary-glow); filter: brightness(1.08); }
-.btn:active { transform: translateY(0); }
+/* Destello que cruza al pasar el mouse */
+.btn::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(105deg, transparent 30%, rgba(255,255,255,.28) 50%, transparent 70%);
+  transform: translateX(-120%);
+  transition: transform .7s var(--ease-out);
+}
+.btn:hover { transform: translateY(-1.5px); box-shadow: 0 1px 0 rgba(255,255,255,.4) inset, 0 8px 24px -6px var(--primary-glow), 0 2px 4px rgba(0,0,0,.4); }
+.btn:hover::after { transform: translateX(120%); }
+.btn:active { transform: translateY(0) scale(.985); }
+.btn:focus-visible { outline: 2px solid var(--primary-color); outline-offset: 2px; }
+.btn .ico { width: 1.05em; height: 1.05em; stroke-width: 2.1; }
 
-.btn-secondary { background: rgba(255, 255, 255, 0.06); color: var(--text-main); border: 1px solid var(--glass-border); box-shadow: none; }
-.btn-secondary:hover { background: rgba(255, 255, 255, 0.12); border-color: var(--glass-border-light); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+.btn-secondary {
+  color: var(--text-main);
+  background: var(--surface-2);
+  border: 1px solid var(--hairline-2);
+  box-shadow: var(--sheen), 0 1px 2px rgba(0,0,0,.3);
+}
+.btn-secondary:hover { background: var(--surface-3); border-color: var(--hairline-3); box-shadow: var(--sheen), 0 6px 18px -8px rgba(0,0,0,.7); }
 
-.btn-danger { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); box-shadow: none; }
-.btn-danger:hover { background: rgba(239, 68, 68, 0.35); box-shadow: 0 4px 14px var(--status-red-glow); }
+.btn-danger {
+  color: #fecaca; background: rgba(239,68,68,.16);
+  border: 1px solid rgba(239,68,68,.4); box-shadow: var(--sheen);
+}
+.btn-danger:hover { background: rgba(239,68,68,.3); box-shadow: 0 6px 18px -6px var(--status-red-glow); }
 
-.btn-tiny { padding: 4px 9px; font-size: 0.75rem; }
+.btn-tiny { padding: 5px 10px; font-size: .74rem; border-radius: 8px; gap: 5px; }
+.btn-tiny .ico { width: 1em; height: 1em; }
 
-/* Form Controls */
-.form-group { margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px; text-align: left; }
-.form-label { font-size: 0.84rem; font-weight: 700; color: var(--text-muted); }
+.preset-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 13px; border-radius: 999px;
+  background: var(--surface-1); border: 1px solid var(--hairline);
+  color: var(--text-main); font-family: inherit; font-size: .78rem; font-weight: 700;
+  cursor: pointer; transition: all .22s var(--ease-out);
+}
+.preset-chip:hover { background: var(--surface-3); border-color: var(--primary-color); transform: translateY(-1px); }
+
+.chip-inline {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 5px 13px; border-radius: 999px;
+  background: var(--surface-1); border: 1px solid var(--hairline);
+  box-shadow: var(--sheen); font-size: .8rem;
+}
+
+/* ==========================================================================
+   FORMULARIOS
+   ========================================================================== */
+.form-group { display: flex; flex-direction: column; gap: 7px; margin-bottom: 16px; text-align: left; min-width: 0; }
+.form-label { font-size: .78rem; font-weight: 700; color: var(--text-muted); letter-spacing: .01em; }
+
 .form-input, .form-select {
-  background: rgba(10, 15, 26, 0.8); border: 1px solid var(--glass-border);
-  border-radius: var(--radius-sm); padding: 11px 14px;
-  color: var(--text-main); font-size: 0.92rem; font-family: inherit;
-  width: 100%; transition: all 0.2s ease;
+  width: 100%; padding: 11px 14px;
+  font-family: inherit; font-size: .9rem; color: var(--text-main);
+  background: color-mix(in srgb, var(--ink-950) 55%, transparent);
+  border: 1px solid var(--hairline); border-radius: 11px;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,.35);
+  transition: border-color .2s, box-shadow .2s, background .2s;
 }
-.form-input:focus, .form-select:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px var(--primary-glow); }
-.form-input:disabled, .form-input[readonly] { opacity: 0.7; cursor: not-allowed; }
-.form-hint { font-size: 0.76rem; color: var(--text-dim); }
+.form-input::placeholder { color: var(--text-dim); }
+.form-input:hover, .form-select:hover { border-color: var(--hairline-2); }
+.form-input:focus, .form-select:focus {
+  outline: none; border-color: var(--primary-color);
+  background: color-mix(in srgb, var(--ink-950) 35%, transparent);
+  box-shadow: inset 0 1px 3px rgba(0,0,0,.3), 0 0 0 3.5px color-mix(in srgb, var(--primary-color) 22%, transparent);
+}
+.form-input:disabled, .form-input[readonly] { opacity: .6; cursor: not-allowed; }
+.form-select { appearance: none; -webkit-appearance: none; padding-right: 38px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2398a2b7' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 13px center; background-size: 15px;
+}
+.form-input[type="color"] { padding: 4px; height: 44px; cursor: pointer; }
+.form-input[type="file"] { padding: 9px 12px; font-size: .82rem; cursor: pointer; }
+.form-hint { font-size: .74rem; color: var(--text-dim); line-height: 1.45; }
 
-/* Status Badges */
+input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-color); cursor: pointer; }
+
+/* ==========================================================================
+   INSIGNIAS DE ESTADO
+   ========================================================================== */
 .status-badge {
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 4px 12px; border-radius: 999px;
-  font-size: 0.78rem; font-weight: 800; letter-spacing: 0.02em;
+  padding: 4px 11px; border-radius: 999px;
+  font-size: .74rem; font-weight: 800; letter-spacing: .01em;
+  border: 1px solid transparent; white-space: nowrap;
 }
-.badge-green { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.35); }
-.badge-yellow { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); }
-.badge-red { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35); }
-.badge-neutral { background: rgba(255,255,255,0.06); color: var(--text-muted); border: 1px solid var(--glass-border); }
+.status-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; box-shadow: 0 0 8px currentColor; flex: none; }
+.badge-green   { background: rgba(34,197,94,.13);  color: #4ade80; border-color: rgba(34,197,94,.32); }
+.badge-yellow  { background: rgba(245,158,11,.13); color: #fbbf24; border-color: rgba(245,158,11,.32); }
+.badge-red     { background: rgba(239,68,68,.13);  color: #f87171; border-color: rgba(239,68,68,.32); }
+.badge-neutral { background: var(--surface-2); color: var(--text-muted); border-color: var(--hairline); }
+.badge-neutral::before { box-shadow: none; opacity: .6; }
 
-/* Grid Layouts */
-.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
-.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-@media (max-width: 900px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } }
-
-/* Metric Card */
+/* ==========================================================================
+   MÉTRICAS
+   ========================================================================== */
 .metric-card {
-  background: var(--card-bg); border: 1px solid var(--glass-border);
-  border-radius: var(--radius-md); padding: 18px 20px; position: relative; overflow: hidden;
+  position: relative; overflow: hidden;
+  padding: 18px 20px 16px;
+  border-radius: var(--radius-md);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.05) 0%, transparent 70%),
+    color-mix(in srgb, var(--ink-700) 68%, transparent);
+  border: 1px solid var(--hairline);
+  box-shadow: var(--shadow-sm), var(--sheen);
+  transition: transform .3s var(--ease-out), border-color .3s;
 }
+.metric-card:hover { transform: translateY(-2px); border-color: var(--hairline-2); }
 .metric-card::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-  background: var(--primary-color); opacity: 0.6;
+  content: ''; position: absolute; top: 0; left: 18px; right: 18px; height: 2px;
+  background: linear-gradient(90deg, var(--primary-color), transparent);
+  border-radius: 0 0 2px 2px;
 }
-.metric-label { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
-.metric-value { font-size: 1.8rem; font-weight: 900; margin: 4px 0; color: var(--text-main); }
-.metric-trend { font-size: 0.76rem; color: var(--text-dim); }
+.metric-label { font-size: .68rem; font-weight: 800; text-transform: uppercase; letter-spacing: .13em; color: var(--text-dim); }
+.metric-value {
+  font-family: var(--font-display); font-size: 2.6rem; line-height: 1; letter-spacing: .01em;
+  margin: 10px 0 6px; color: var(--text-main);
+}
+.metric-trend { font-size: .74rem; color: var(--text-dim); line-height: 1.4; }
 
-/* Tables */
-.log-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; text-align: left; }
+/* ==========================================================================
+   TABLAS
+   ========================================================================== */
+.log-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: .86rem; text-align: left; }
 .log-table th {
-  padding: 12px 16px; background: rgba(255, 255, 255, 0.03);
-  color: var(--text-muted); font-weight: 700; border-bottom: 1px solid var(--glass-border);
-  font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;
+  padding: 10px 14px; white-space: nowrap;
+  font-size: .66rem; font-weight: 800; text-transform: uppercase; letter-spacing: .12em;
+  color: var(--text-dim); background: var(--surface-1);
+  border-bottom: 1px solid var(--hairline);
 }
-.log-table td { padding: 14px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.04); color: var(--text-main); vertical-align: middle; }
-.log-table tr:hover td { background: rgba(255, 255, 255, 0.02); }
+.log-table th:first-child { border-radius: 10px 0 0 0; }
+.log-table th:last-child { border-radius: 0 10px 0 0; }
+.log-table td { padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,.045); vertical-align: middle; }
+.log-table tbody tr { transition: background .18s; }
+.log-table tbody tr:hover td { background: var(--surface-1); }
+.log-table tbody tr:last-child td { border-bottom: none; }
+.log-table img { box-shadow: 0 2px 8px rgba(0,0,0,.5); }
 
-/* Modals */
-.modal-overlay {
-  position: fixed; inset: 0;
-  background: rgba(4, 7, 14, 0.85);
-  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-  z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px;
+.list-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 11px 15px; border-radius: 12px;
+  background: var(--surface-1); border: 1px solid var(--hairline);
+  box-shadow: var(--sheen); font-size: .86rem;
+  transition: border-color .2s, background .2s;
 }
-.modal-card {
-  background: #0f1626; border: 1px solid var(--glass-border-light);
-  border-radius: var(--radius-xl); max-width: 540px; width: 100%;
-  padding: 28px; box-shadow: var(--shadow-lg); position: relative;
-  max-height: 90vh; overflow-y: auto;
-  animation: modalScaleIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-@keyframes modalScaleIn {
-  from { opacity: 0; transform: scale(0.95) translateY(10px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
-}
+.list-row:hover { background: var(--surface-2); border-color: var(--hairline-2); }
 
-/* Tabs */
+/* ==========================================================================
+   PESTAÑAS
+   ========================================================================== */
 .tab-row {
-  display: flex; gap: 8px; border-bottom: 1px solid var(--glass-border);
-  padding-bottom: 12px; margin-bottom: 20px; overflow-x: auto;
+  display: flex; gap: 4px; padding: 4px; margin-bottom: 22px;
+  background: var(--surface-1); border: 1px solid var(--hairline);
+  border-radius: 14px; box-shadow: var(--sheen); overflow-x: auto;
 }
 .tab-link {
-  background: transparent; border: none; color: var(--text-muted);
-  font-weight: 700; font-size: 0.88rem; padding: 8px 16px;
-  border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s ease;
-  font-family: inherit; white-space: nowrap;
+  flex: 1; padding: 9px 14px; border: none; border-radius: 10px;
+  background: transparent; color: var(--text-muted);
+  font-family: inherit; font-size: .84rem; font-weight: 700;
+  cursor: pointer; white-space: nowrap; transition: all .22s;
 }
-.tab-link:hover { color: var(--text-main); background: rgba(255, 255, 255, 0.05); }
-.tab-link.active { color: var(--text-main); background: rgba(255, 255, 255, 0.1); border-bottom: 2px solid var(--primary-color); }
+.tab-link:hover { color: var(--text-main); background: var(--surface-2); }
+.tab-link.active { color: var(--text-main); background: var(--surface-3); box-shadow: var(--sheen-strong), 0 2px 8px -2px rgba(0,0,0,.5); }
 
-/* Toast */
+/* ==========================================================================
+   MODALES
+   ========================================================================== */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  display: flex; align-items: center; justify-content: center; padding: 22px;
+  background: color-mix(in srgb, var(--ink-950) 78%, transparent);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  animation: fadeIn .25s ease;
+}
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+
+.modal-card {
+  position: relative;
+  width: 100%; max-width: 540px; max-height: 92vh; overflow-y: auto;
+  padding: 28px;
+  border-radius: var(--radius-xl);
+  background: linear-gradient(180deg, var(--ink-700) 0%, var(--ink-800) 100%);
+  border: 1px solid var(--hairline-2);
+  box-shadow: var(--shadow-lg), var(--sheen-strong);
+  animation: modalIn .42s var(--ease-out);
+}
+.modal-card::before {
+  content: ''; position: absolute; top: 0; left: 10%; right: 10%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+  opacity: .6;
+}
+@keyframes modalIn { from { opacity: 0; transform: translateY(18px) scale(.97); } to { opacity: 1; transform: none; } }
+
+/* ==========================================================================
+   TOAST
+   ========================================================================== */
 .toast-notification {
   position: fixed; top: 86px; right: 24px; z-index: 9999;
-  background: #0f172a; border: 1px solid var(--primary-color); color: var(--text-main);
-  padding: 12px 20px; border-radius: var(--radius-md);
-  font-size: 0.88rem; font-weight: 700;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 20px var(--primary-glow);
-  display: none; animation: slideInToast 0.3s ease; max-width: 360px;
+  display: none; max-width: 380px;
+  padding: 13px 18px; border-radius: 14px;
+  background: linear-gradient(180deg, var(--ink-700), var(--ink-800));
+  border: 1px solid var(--hairline-2);
+  border-left: 3px solid var(--primary-color);
+  box-shadow: var(--shadow-lg), var(--sheen);
+  font-size: .86rem; font-weight: 600; line-height: 1.45;
+  animation: toastIn .45s var(--ease-spring);
 }
-@keyframes slideInToast {
-  from { opacity: 0; transform: translateY(-20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+@keyframes toastIn { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: none; } }
 
-/* Carnet Digital */
-.digital-credential-card {
-  background: linear-gradient(135deg, rgba(20, 30, 50, 0.9) 0%, rgba(10, 15, 26, 0.95) 100%);
-  border: 1px solid var(--glass-border-light); border-radius: var(--radius-xl);
-  padding: 30px 24px; text-align: center;
-  box-shadow: var(--shadow-lg), 0 0 35px var(--primary-glow);
-  position: relative; overflow: hidden; max-width: 420px; margin: 0 auto;
-}
-.digital-credential-card::after {
-  content: ''; position: absolute; top: -50%; left: -50%;
-  width: 200%; height: 200%;
-  background: radial-gradient(circle, var(--primary-glow) 0%, transparent 60%);
-  opacity: 0.12; pointer-events: none;
-}
-.credential-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; gap: 10px; }
-.credential-gym { font-size: 1.15rem; font-weight: 900; }
-.credential-subtitle { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; }
-
-.member-avatar {
-  width: 96px; height: 96px; border-radius: 50%; object-fit: cover;
-  margin: 0 auto 14px auto; border: 3px solid var(--primary-color);
-  box-shadow: 0 0 20px var(--primary-glow); display: block;
-}
-.member-name { font-size: 1.4rem; font-weight: 900; margin-bottom: 2px; }
-.member-meta { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 18px; }
-
-.qr-box {
-  background: #ffffff; padding: 16px; border-radius: var(--radius-md);
-  display: inline-block; box-shadow: 0 8px 24px rgba(0,0,0,0.5); margin-bottom: 12px;
-}
-.qr-timer { font-size: 0.78rem; font-weight: 700; color: var(--primary-color); display: flex; align-items: center; justify-content: center; gap: 6px; }
-
-/* Semáforo & Scanner */
-.traffic-light-banner {
-  border-radius: var(--radius-lg); padding: 24px; text-align: center;
-  margin-bottom: 24px; display: none;
-  animation: bannerPop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.traffic-light-banner.active { display: block; }
-@keyframes bannerPop {
-  from { opacity: 0; transform: scale(0.96); }
-  to { opacity: 1; transform: scale(1); }
-}
-.traffic-banner-green { background: rgba(16, 185, 129, 0.18); border: 2px solid var(--status-green); box-shadow: 0 0 35px var(--status-green-glow); color: #34d399; }
-.traffic-banner-yellow { background: rgba(245, 158, 11, 0.18); border: 2px solid var(--status-yellow); box-shadow: 0 0 35px var(--status-yellow-glow); color: #fbbf24; }
-.traffic-banner-red { background: rgba(239, 68, 68, 0.18); border: 2px solid var(--status-red); box-shadow: 0 0 35px var(--status-red-glow); color: #f87171; }
-
-.scanner-video-box {
-  position: relative; width: 100%; aspect-ratio: 4/3; background: #000;
-  border-radius: var(--radius-md); overflow: hidden;
-  border: 2px dashed var(--glass-border-light); margin-bottom: 16px;
-}
-.scanner-video { width: 100%; height: 100%; object-fit: cover; }
-.scanner-overlay-laser {
-  position: absolute; top: 0; left: 0; right: 0; height: 3px;
-  background: var(--primary-color); box-shadow: 0 0 14px var(--primary-glow);
-  animation: scanLaser 2s infinite ease-in-out;
-}
-@keyframes scanLaser {
-  0% { top: 10%; opacity: 0.8; }
-  50% { top: 90%; opacity: 1; }
-  100% { top: 10%; opacity: 0.8; }
-}
-
-/* Login Portal Cards */
+/* ==========================================================================
+   PORTALES DE INGRESO
+   ========================================================================== */
 .role-login-card-btn {
-  background: rgba(255, 255, 255, 0.04); border: 1px solid var(--glass-border);
-  border-radius: var(--radius-md); padding: 16px 20px; cursor: pointer;
-  display: flex; align-items: center; gap: 16px;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1); text-align: left;
+  position: relative; overflow: hidden;
+  display: flex; align-items: center; gap: 15px;
+  padding: 15px 18px; border-radius: var(--radius-md);
+  background: var(--surface-1); border: 1px solid var(--hairline);
+  box-shadow: var(--sheen);
+  cursor: pointer; text-align: left;
+  transition: transform .3s var(--ease-out), background .25s, border-color .25s, box-shadow .3s;
 }
 .role-login-card-btn:hover {
-  background: rgba(255, 255, 255, 0.08); border-color: var(--glass-border-light);
-  transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+  transform: translateY(-3px);
+  background: var(--surface-2); border-color: var(--hairline-2);
+  box-shadow: var(--shadow-md), var(--sheen-strong);
 }
-.preset-chip {
-  padding: 6px 12px; border-radius: 999px; border: 1px solid var(--glass-border);
-  background: rgba(255, 255, 255, 0.05); color: var(--text-main);
-  font-size: 0.78rem; font-weight: 700; cursor: pointer;
-  transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 6px;
+.portal-icon {
+  display: grid; place-items: center; flex: none;
+  width: 46px; height: 46px; border-radius: 13px;
+  background: var(--surface-2); border: 1px solid var(--hairline-2);
+  box-shadow: var(--sheen);
 }
-.preset-chip:hover { background: rgba(255, 255, 255, 0.12); border-color: var(--primary-color); }
+.portal-icon .ico { width: 22px; height: 22px; color: var(--primary-color); }
+.role-login-card-btn:nth-child(1) .portal-icon .ico { color: var(--secondary-color); }
+.role-login-card-btn:nth-child(2) .portal-icon .ico { color: var(--accent-warm); }
 
-/* Tenant / chips utilitarios */
-.chip-inline {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 4px 12px; border-radius: 999px;
-  background: rgba(255,255,255,0.06); border: 1px solid var(--glass-border);
-  font-size: 0.8rem;
+/* Chevron reutilizado como flecha hacia la derecha */
+.flip-x { transform: scaleX(-1); }
+
+/* ==========================================================================
+   CREDENCIAL DIGITAL — el elemento hero de la app
+   ========================================================================== */
+.digital-credential-card {
+  position: relative; overflow: hidden;
+  max-width: 420px; margin: 0 auto; padding: 26px 24px 28px;
+  border-radius: var(--radius-2xl);
+  background:
+    linear-gradient(160deg, rgba(255,255,255,.09) 0%, rgba(255,255,255,.02) 34%, transparent 60%),
+    linear-gradient(200deg, color-mix(in srgb, var(--primary-color) 22%, transparent) 0%, transparent 45%),
+    linear-gradient(180deg, var(--ink-700) 0%, var(--ink-900) 100%);
+  border: 1px solid var(--hairline-2);
+  box-shadow: var(--shadow-lg), 0 0 60px -20px var(--primary-glow), var(--sheen-strong);
+  text-align: center;
 }
-.list-row {
-  display: flex; align-items: center; justify-content: space-between; gap: 10px;
-  background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border);
-  border-radius: var(--radius-sm); padding: 10px 14px; font-size: 0.86rem;
+/* Reflejo diagonal, como el de una tarjeta plástica */
+.digital-credential-card::before {
+  content: ''; position: absolute; top: -60%; left: -30%; width: 90%; height: 220%;
+  background: linear-gradient(75deg, transparent 40%, rgba(255,255,255,.055) 50%, transparent 60%);
+  transform: rotate(8deg); pointer-events: none;
 }
+/* Halo de color inferior */
+.digital-credential-card::after {
+  content: ''; position: absolute; bottom: -50%; left: 50%; transform: translateX(-50%);
+  width: 130%; height: 80%;
+  background: radial-gradient(ellipse at center, var(--primary-glow) 0%, transparent 65%);
+  opacity: .3; pointer-events: none;
+}
+.digital-credential-card > * { position: relative; z-index: 1; }
+
+.credential-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 22px; }
+.credential-gym { font-size: 1.1rem; font-weight: 800; letter-spacing: -.02em; line-height: 1.2; }
+.credential-subtitle { font-size: .64rem; font-weight: 700; text-transform: uppercase; letter-spacing: .16em; color: var(--text-muted); margin-top: 3px; }
+
+.member-avatar {
+  display: block; width: 92px; height: 92px; margin: 0 auto 14px;
+  border-radius: 50%; object-fit: cover;
+  border: 2px solid color-mix(in srgb, var(--primary-color) 70%, transparent);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--primary-color) 12%, transparent), 0 10px 30px -8px rgba(0,0,0,.8);
+  background: var(--ink-700);
+}
+.member-name { font-size: 1.42rem; font-weight: 800; letter-spacing: -.03em; line-height: 1.15; }
+.member-meta { font-size: .78rem; color: var(--text-muted); margin-top: 4px; margin-bottom: 16px; font-variant-numeric: tabular-nums; }
+
+.qr-box {
+  display: inline-block; padding: 14px; margin-bottom: 12px;
+  background: #fff; border-radius: 18px;
+  box-shadow: 0 10px 30px -8px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.15);
+}
+.qr-box img, .qr-box canvas { display: block; border-radius: 4px; }
+.qr-timer {
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  font-size: .76rem; font-weight: 700; color: var(--primary-color);
+}
+.qr-timer .ico { width: 14px; height: 14px; animation: spin 4s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg) } }
+
+/* ==========================================================================
+   SEMÁFORO — se lee a dos metros del mostrador
+   ========================================================================== */
+.traffic-light-banner {
+  position: relative; overflow: hidden;
+  display: none; padding: 34px 26px; margin-bottom: 24px;
+  border-radius: var(--radius-xl);
+  text-align: center;
+}
+.traffic-light-banner.active { display: block; animation: trafficIn .45s var(--ease-spring); }
+@keyframes trafficIn { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: none; } }
+
+.traffic-icon-wrap {
+  display: grid; place-items: center; width: 74px; height: 74px; margin: 0 auto 14px;
+  border-radius: 50%; border: 2px solid currentColor;
+  background: rgba(0,0,0,.25);
+}
+.traffic-icon-wrap .ico { width: 38px; height: 38px; stroke-width: 2.4; }
+.traffic-light-banner h2 {
+  font-family: var(--font-display); font-size: 2.5rem; letter-spacing: .02em;
+  line-height: 1; margin-bottom: 10px; text-transform: uppercase;
+}
+#traffic-desc { font-size: .98rem; font-weight: 600; opacity: .92; max-width: 620px; margin: 0 auto; }
+
+.traffic-banner-green  { background: radial-gradient(120% 140% at 50% 0%, rgba(34,197,94,.28), rgba(34,197,94,.09)); border: 1px solid var(--status-green); box-shadow: 0 0 60px -14px var(--status-green-glow), var(--sheen); color: #86efac; }
+.traffic-banner-yellow { background: radial-gradient(120% 140% at 50% 0%, rgba(245,158,11,.28), rgba(245,158,11,.09)); border: 1px solid var(--status-yellow); box-shadow: 0 0 60px -14px var(--status-yellow-glow), var(--sheen); color: #fcd34d; }
+.traffic-banner-red    { background: radial-gradient(120% 140% at 50% 0%, rgba(239,68,68,.28), rgba(239,68,68,.09)); border: 1px solid var(--status-red); box-shadow: 0 0 60px -14px var(--status-red-glow), var(--sheen); color: #fca5a5; }
+.traffic-banner-green .traffic-icon-wrap { animation: pulseRing 2s ease-out infinite; }
+@keyframes pulseRing { 0% { box-shadow: 0 0 0 0 currentColor; opacity: 1 } 70% { box-shadow: 0 0 0 18px transparent } 100% { box-shadow: 0 0 0 0 transparent } }
+
+.traffic-member {
+  display: inline-flex; align-items: center; gap: 14px; margin-top: 18px;
+  padding: 12px 20px 12px 12px; border-radius: 999px;
+  background: rgba(0,0,0,.3); border: 1px solid rgba(255,255,255,.14);
+  text-align: left;
+}
+.traffic-member img { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,.85); flex: none; }
+
+/* ==========================================================================
+   ESCÁNER
+   ========================================================================== */
+.scanner-video-box {
+  position: relative; width: 100%; aspect-ratio: 4/3; margin-bottom: 16px;
+  background: #000; border-radius: var(--radius-md); overflow: hidden;
+  border: 1px solid var(--hairline-2);
+  box-shadow: inset 0 0 60px rgba(0,0,0,.9);
+}
+.scanner-video { width: 100%; height: 100%; object-fit: cover; }
+/* Marco de puntería */
+.scanner-video-box::after {
+  content: ''; position: absolute; inset: 18%;
+  border-radius: 14px; pointer-events: none;
+  background:
+    linear-gradient(var(--primary-color), var(--primary-color)) left top / 26px 2px no-repeat,
+    linear-gradient(var(--primary-color), var(--primary-color)) left top / 2px 26px no-repeat,
+    linear-gradient(var(--primary-color), var(--primary-color)) right top / 26px 2px no-repeat,
+    linear-gradient(var(--primary-color), var(--primary-color)) right top / 2px 26px no-repeat,
+    linear-gradient(var(--primary-color), var(--primary-color)) left bottom / 26px 2px no-repeat,
+    linear-gradient(var(--primary-color), var(--primary-color)) left bottom / 2px 26px no-repeat,
+    linear-gradient(var(--primary-color), var(--primary-color)) right bottom / 26px 2px no-repeat,
+    linear-gradient(var(--primary-color), var(--primary-color)) right bottom / 2px 26px no-repeat;
+  opacity: .85;
+}
+.scanner-overlay-laser {
+  position: absolute; left: 18%; right: 18%; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+  box-shadow: 0 0 16px var(--primary-color);
+  animation: scanLaser 2.6s ease-in-out infinite;
+}
+@keyframes scanLaser { 0%,100% { top: 20%; opacity: .7 } 50% { top: 78%; opacity: 1 } }
+
+/* ==========================================================================
+   VARIOS
+   ========================================================================== */
 .credential-print {
-  background: rgba(10,15,26,0.9); border: 1px dashed var(--primary-color);
-  border-radius: var(--radius-sm); padding: 14px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.88rem; word-break: break-all;
+  padding: 15px; border-radius: 12px;
+  background: color-mix(in srgb, var(--ink-950) 60%, transparent);
+  border: 1px dashed color-mix(in srgb, var(--primary-color) 55%, transparent);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: .84rem; line-height: 1.7; word-break: break-word; white-space: pre-wrap;
 }
-.section-note { font-size: 0.82rem; color: var(--text-muted); margin-top: 3px; }
+
+.empty-state { padding: 34px 20px; text-align: center; color: var(--text-dim); }
+.empty-state .ico { width: 34px; height: 34px; opacity: .45; margin-bottom: 10px; }
+
+.data-table-wrap { overflow-x: auto; margin: 0 -4px; padding: 0 4px; }
+
+@media (max-width: 720px) {
+  .app-header { padding: 12px 16px; }
+  .brand-container { flex: 1 1 100%; }
+  .header-actions { flex: 1 1 100%; }
+  .view-nav { flex: 1; overflow-x: auto; }
+  .app-container { padding: 20px 14px 80px; }
+  .glass-card { padding: 18px; border-radius: var(--radius-md); }
+  .metric-value { font-size: 2.1rem; }
+  .traffic-light-banner h2 { font-size: 1.9rem; }
+  .toast-notification { left: 14px; right: 14px; max-width: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
   </style>
 
   <!-- ===================================================================
@@ -428,6 +738,66 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
   </script>
 </head>
 <body>
+  <!-- ===================================================================
+       Iconos SVG en línea. Reemplazan los emojis del prototipo: los emojis
+       cambian de dibujo según el sistema operativo y no toman el color de la
+       marca. Estos heredan currentColor y se ven igual en todos lados.
+       =================================================================== -->
+  <svg id="icon-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
+    <symbol id="i-scan" viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M3 12h18"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+    <symbol id="i-building" viewBox="0 0 24 24"><path d="M3 21h18M5 21V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v16M15 21V9h2a2 2 0 0 1 2 2v10"/><path d="M9 7h2M9 11h2M9 15h2"/></symbol>
+    <symbol id="i-card" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="3"/><circle cx="8" cy="11" r="2.2"/><path d="M13 9h5M13 13h5M5.5 17h5"/></symbol>
+    <symbol id="i-credit" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2.5"/><path d="M2 10h20M6 15h3"/></symbol>
+    <symbol id="i-pulse" viewBox="0 0 24 24"><path d="M2 12h4l2.5-6 3.5 12 3-8 2 2h5"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15.5" r="1.3" class="ico-solid"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3.5v5c0 5-3.4 8.6-8 10.5-4.6-1.9-8-5.5-8-10.5v-5z"/><path d="M9 12l2 2 4-4"/></symbol>
+    <symbol id="i-palette" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="9" cy="9.5" r="1.2" class="ico-solid"/><circle cx="14.5" cy="9" r="1.2" class="ico-solid"/><circle cx="16" cy="14" r="1.2" class="ico-solid"/><circle cx="10" cy="15" r="1.2" class="ico-solid"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></symbol>
+    <symbol id="i-clipboard" viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 4V3.5A1.5 1.5 0 0 1 10.5 2h3A1.5 1.5 0 0 1 15 3.5V4"/><path d="M9 10h6M9 14h6M9 18h3"/></symbol>
+    <symbol id="i-database" viewBox="0 0 24 24"><ellipse cx="12" cy="5.5" rx="8" ry="3"/><path d="M4 5.5v13c0 1.66 3.58 3 8 3s8-1.34 8-3v-13"/><path d="M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5M12 3v12"/></symbol>
+    <symbol id="i-printer" viewBox="0 0 24 24"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 17h10v4H7z"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M17 3.5a2.1 2.1 0 0 1 3 3L8 18.5l-4 1 1-4z"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4.5A1.5 1.5 0 0 1 9.5 3h5A1.5 1.5 0 0 1 16 4.5V6"/><path d="M5.5 6l1 14a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2l1-14"/><path d="M10 11v6M14 11v6"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.5 9 9 0 0 1-3.9-.9L3 21l1.9-5.1A8.4 8.4 0 0 1 4 11.5 8.4 8.4 0 0 1 12.5 3 8.4 8.4 0 0 1 21 11.5z"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4.2-4.2"/></symbol>
+    <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2L4.5 13.5H11l-1 8.5L19.5 10H13z"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18z"/></symbol>
+    <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4M5 4h11l-1.5 4L16 12H5"/></symbol>
+    <symbol id="i-wifi-off" viewBox="0 0 24 24"><path d="M2 2l20 20"/><path d="M8.5 16.4a5 5 0 0 1 7 0M5 12.9a10 10 0 0 1 4-2.5M19 12.9a10 10 0 0 0-6-2.8"/><circle cx="12" cy="20" r="1" class="ico-solid"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></symbol>
+    <symbol id="i-check-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3.5l9.5 16.5H2.5z"/><path d="M12 9.5v4.5M12 17h.01"/></symbol>
+    <symbol id="i-ban" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+    <symbol id="i-money" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 6.5v11M14.5 9.5c0-1.1-1.1-1.8-2.5-1.8s-2.5.7-2.5 1.8 1.1 1.6 2.5 1.9 2.5.8 2.5 1.9-1.1 1.8-2.5 1.8-2.5-.7-2.5-1.8"/></symbol>
+    <symbol id="i-dice" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="3.5"/><circle cx="8.5" cy="8.5" r="1.3" class="ico-solid"/><circle cx="15.5" cy="8.5" r="1.3" class="ico-solid"/><circle cx="12" cy="12" r="1.3" class="ico-solid"/><circle cx="8.5" cy="15.5" r="1.3" class="ico-solid"/><circle cx="15.5" cy="15.5" r="1.3" class="ico-solid"/></symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M3 6.5l9 6.5 9-6.5"/></symbol>
+    <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="16" r="4"/><path d="M11 13l8-8M17 5l2.5 2.5M15 7l2.5 2.5"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5l12 7.5-12 7.5z"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 4.5v15M16 4.5v15"/></symbol>
+    <symbol id="i-stop" viewBox="0 0 24 24"><rect x="5.5" y="5.5" width="13" height="13" rx="2"/></symbol>
+    <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3"/><path d="M15.5 8.5L20 12l-4.5 3.5M20 12H9"/></symbol>
+    <symbol id="i-flask" viewBox="0 0 24 24"><path d="M9 3h6M10 3v6.5L4.8 18a2 2 0 0 0 1.7 3h11a2 2 0 0 0 1.7-3L14 9.5V3"/><path d="M7.5 14h9"/></symbol>
+    <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M17.5 19H7a4.5 4.5 0 0 1-.5-9 6 6 0 0 1 11.4 1.6A3.7 3.7 0 0 1 17.5 19z"/></symbol>
+    <symbol id="i-drive" viewBox="0 0 24 24"><rect x="2.5" y="13" width="19" height="8" rx="2.5"/><path d="M5.5 13L8 4h8l2.5 9"/><circle cx="17" cy="17" r="1.2" class="ico-solid"/></symbol>
+    <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="M14.5 6l-6 6 6 6"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2.5"/><path d="M5.5 15H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v.5"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2.5"/><circle cx="9" cy="9.5" r="1.8"/><path d="M3.5 17l5-4.5 4 3.5 3-2.5 5 4"/></symbol>
+    <symbol id="i-hand" viewBox="0 0 24 24"><path d="M8 13V5.5a1.75 1.75 0 0 1 3.5 0V12M11.5 12V4.5a1.75 1.75 0 0 1 3.5 0V12M15 12V6.5a1.75 1.75 0 0 1 3.5 0V14a7 7 0 0 1-7 7h-1a6.5 6.5 0 0 1-6.5-6.5v-3a1.75 1.75 0 0 1 3.5 0"/></symbol>
+    <symbol id="i-dumbbell" viewBox="0 0 24 24"><path d="M6.5 6.5v11M3.5 8.5v7M17.5 6.5v11M20.5 8.5v7M6.5 12h11"/></symbol>
+  </svg>
+
 
   <div class="ambient-glow">
     <div class="glow-orb glow-orb-1"></div>
@@ -438,20 +808,20 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
 
   <!-- Aviso de versión nueva: el usuario decide cuándo recargar -->
   <div id="update-bar" style="display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:9998; background:#0f172a; border:1px solid var(--primary-color); border-radius:var(--radius-md); padding:12px 18px; box-shadow:0 10px 30px rgba(0,0,0,0.6); align-items:center; gap:14px; font-size:0.86rem; font-weight:700;">
-    <span>🔄 Hay una versión nueva de la app.</span>
+    <span><svg class="ico" aria-hidden="true"><use href="#i-refresh"/></svg> Hay una versión nueva de la app.</span>
     <button class="btn btn-tiny" onclick="FitApp.applyUpdate()">Actualizar</button>
     <button class="btn btn-secondary btn-tiny" onclick="document.getElementById('update-bar').style.display='none'">Después</button>
   </div>
 
   <!-- Indicador de conexión, importante en el mostrador -->
   <div id="offline-bar" style="display:none; position:fixed; top:0; left:0; right:0; z-index:9997; background:rgba(245,158,11,0.95); color:#3b2600; text-align:center; padding:6px 12px; font-size:0.82rem; font-weight:800;">
-    📴 Sin conexión — la app sigue funcionando con los datos guardados en este dispositivo.
+    <svg class="ico" aria-hidden="true"><use href="#i-wifi-off"/></svg> Sin conexión — la app sigue funcionando con los datos guardados en este dispositivo.
   </div>
 
   <!-- Instalación todavía en modo demostración -->
   <div id="demo-bar" style="display:none; align-items:center; justify-content:center; gap:14px; flex-wrap:wrap; background:rgba(99,102,241,0.18); border-bottom:1px solid var(--secondary-glow); padding:8px 20px; font-size:0.83rem; font-weight:700; position:relative; z-index:99;">
-    <span>🧪 Estás en la <strong>instalación de demostración</strong>, con gimnasios de ejemplo y cuentas de clave pública.</span>
-    <button class="btn btn-tiny" onclick="FitApp.showSetupModal()">🏁 Poner en marcha mi gimnasio</button>
+    <span><svg class="ico" aria-hidden="true"><use href="#i-flask"/></svg> Estás en la <strong>instalación de demostración</strong>, con gimnasios de ejemplo y cuentas de clave pública.</span>
+    <button class="btn btn-tiny" onclick="FitApp.showSetupModal()"><svg class="ico" aria-hidden="true"><use href="#i-flag"/></svg> Poner en marcha mi gimnasio</button>
   </div>
 
   <!-- Librerías de QR no disponibles -->
@@ -462,7 +832,7 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
   <!-- Recordatorio de backup / cuota del navegador -->
   <div id="backup-bar" style="display:none; align-items:center; justify-content:center; gap:14px; flex-wrap:wrap; background:rgba(245,158,11,0.15); border-bottom:1px solid rgba(245,158,11,0.4); padding:8px 20px; font-size:0.83rem; position:relative; z-index:99;">
     <span id="backup-bar-text"></span>
-    <button class="btn btn-tiny" onclick="FitApp.exportDatabaseJSON(false)">📥 Descargar backup</button>
+    <button class="btn btn-tiny" onclick="FitApp.exportDatabaseJSON(false)"><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg> Descargar backup</button>
   </div>
 
   <!-- =====================================================================
@@ -472,7 +842,7 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
     <div class="modal-card" style="max-width: 500px; width: 100%; padding: 32px 28px;">
 
       <div style="text-align: center; margin-bottom: 22px;">
-        <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=120&auto=format&fit=crop&q=80" alt="FitAccess" class="login-logo-img gym-logo-img" style="width:68px; height:68px; margin:0 auto 10px auto;">
+        <img alt="FitAccess" data-brand-mark="1" class="login-logo-img gym-logo-img" style="width:68px; height:68px; margin:0 auto 10px auto;">
         <h2 style="font-size: 1.6rem; font-weight: 900;">FitAccess</h2>
         <p style="font-size: 0.84rem; color: var(--text-muted);">Plataforma de control de acceso y gestión para gimnasios</p>
       </div>
@@ -485,7 +855,7 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
 
         <div style="display: flex; flex-direction: column; gap: 12px;">
           <div class="role-login-card-btn" style="border-left: 4px solid var(--secondary-color);" onclick="FitApp.selectAccessPortal('staff')">
-            <div style="font-size: 2.2rem;">⚙️</div>
+            <div class="portal-icon"><svg class="ico" aria-hidden="true"><use href="#i-gear"/></svg></div>
             <div style="flex: 1;">
               <div style="font-weight: 800; font-size: 1.05rem; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
                 Portal Staff / Gerencia <span class="role-tag-badge role-badge-admin">Dueño · Admin</span>
@@ -497,7 +867,7 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
           </div>
 
           <div class="role-login-card-btn" style="border-left: 4px solid var(--accent-warm);" onclick="FitApp.selectAccessPortal('recepcion')">
-            <div style="font-size: 2.2rem;">📹</div>
+            <div class="portal-icon"><svg class="ico" aria-hidden="true"><use href="#i-scan"/></svg></div>
             <div style="flex: 1;">
               <div style="font-weight: 800; font-size: 1.05rem; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
                 Portal Recepción <span class="role-tag-badge role-badge-recepcion">Mostrador</span>
@@ -509,7 +879,7 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
           </div>
 
           <div class="role-login-card-btn" style="border-left: 4px solid var(--primary-color);" onclick="FitApp.selectAccessPortal('socio')">
-            <div style="font-size: 2.2rem;">👤</div>
+            <div class="portal-icon"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg></div>
             <div style="flex: 1;">
               <div style="font-weight: 800; font-size: 1.05rem; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
                 Portal Socio <span class="role-tag-badge role-badge-socio">Socio</span>
@@ -523,7 +893,7 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
 
         <div style="text-align: center; margin-top: 16px;">
           <button type="button" class="btn btn-secondary btn-tiny" onclick="FitApp.selectAccessPortal('console')">
-            🛰️ Consola de la plataforma (operador FitAccess)
+            <svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg> Consola de la plataforma (operador FitAccess)
           </button>
         </div>
       </div>
@@ -532,7 +902,7 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
       <div id="login-form-container" style="display: none;">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--glass-border); gap: 10px;">
           <div style="display: flex; align-items: center; gap: 10px;">
-            <span id="portal-icon" style="font-size: 1.6rem;">⚙️</span>
+            <span id="portal-icon" class="portal-icon" style="width:38px;height:38px;"><svg class="ico" aria-hidden="true"><use href="#i-gear"/></svg></span>
             <div>
               <div id="portal-title" style="font-weight: 800; font-size: 1.05rem;">Ingreso Staff</div>
               <div id="portal-subtitle" style="font-size: 0.76rem; color: var(--text-muted);">Ingresá tu correo y contraseña</div>
@@ -551,12 +921,12 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
             <label class="form-label">Contraseña:</label>
             <div style="position: relative;">
               <input id="portal-login-password" class="form-input" type="password" placeholder="••••••••" required autocomplete="current-password">
-              <button type="button" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.9rem;" onclick="FitApp.togglePasswordVisibility('portal-login-password')">👁️</button>
+              <button type="button" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.9rem;" onclick="FitApp.togglePasswordVisibility('portal-login-password')"><svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg></button>
             </div>
           </div>
 
           <button class="btn" type="submit" style="width: 100%; font-weight: 800; margin-top: 4px; padding: 12px;">
-            🔐 Iniciar Sesión
+            <svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg> Iniciar Sesión
           </button>
         </form>
 
@@ -568,7 +938,7 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
 
         <div id="portal-demo-helper" style="margin-top: 16px; background: rgba(255, 255, 255, 0.03); border: 1px dashed var(--glass-border-light); border-radius: var(--radius-sm); padding: 12px;">
           <div style="font-size: 0.74rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">
-            🧪 Cuentas de prueba · clave <code>FitAccess123!</code>
+            <svg class="ico" aria-hidden="true"><use href="#i-flask"/></svg> Cuentas de prueba · clave <code>FitAccess123!</code>
           </div>
           <div id="portal-demo-accounts" style="display: flex; flex-direction: column; gap: 6px;"></div>
         </div>
@@ -591,14 +961,14 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
 
   <!-- Barra de contexto de tenant (impersonación del superadmin) -->
   <div id="tenant-context-bar" class="tenant-bar">
-    <span>🛰️ <strong>Modo plataforma</strong> — estás operando dentro de <strong id="tenant-bar-gym">—</strong> como Super Admin. Todo queda auditado.</span>
+    <span><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg> <strong>Modo plataforma</strong> — estás operando dentro de <strong id="tenant-bar-gym">—</strong> como Super Admin. Todo queda auditado.</span>
     <button class="btn btn-secondary btn-tiny" onclick="FitApp.exitGymContext()">← Volver a la consola</button>
   </div>
 
   <!-- Header -->
   <header class="app-header">
     <div class="brand-container">
-      <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=120&auto=format&fit=crop&q=80" alt="Logo" class="gym-logo-img">
+      <img alt="Logo" data-brand-mark="1" class="gym-logo-img">
       <div>
         <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
           <span class="brand-name brand-name-text">FitAccess</span>
@@ -610,17 +980,17 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
 
     <div class="header-actions">
       <nav class="view-nav" id="main-view-nav">
-        <button class="nav-btn" id="nav-console" onclick="FitApp.switchView('console')">🛰️ Consola SaaS</button>
-        <button class="nav-btn" id="nav-socio" onclick="FitApp.switchView('socio')">👤 Mi Carnet</button>
-        <button class="nav-btn" id="nav-reception" onclick="FitApp.switchView('reception')">📹 Recepción</button>
-        <button class="nav-btn" id="nav-admin" onclick="FitApp.switchView('admin')">⚙️ Panel Gimnasio</button>
+        <button class="nav-btn" id="nav-console" onclick="FitApp.switchView('console')"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg> Consola SaaS</button>
+        <button class="nav-btn" id="nav-socio" onclick="FitApp.switchView('socio')"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg> Mi Carnet</button>
+        <button class="nav-btn" id="nav-reception" onclick="FitApp.switchView('reception')"><svg class="ico" aria-hidden="true"><use href="#i-scan"/></svg> Recepción</button>
+        <button class="nav-btn" id="nav-admin" onclick="FitApp.switchView('admin')"><svg class="ico" aria-hidden="true"><use href="#i-gear"/></svg> Panel Gimnasio</button>
       </nav>
 
       <span id="header-cloud-badge" class="status-badge badge-neutral" title="Origen de los datos">Local</span>
 
-      <div id="user-profile-info" class="user-profile-pill">👤 <strong>Usuario</strong></div>
+      <div id="user-profile-info" class="user-profile-pill"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg> <strong>Usuario</strong></div>
 
-      <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.82rem;" onclick="FitApp.logout()">🚪 Salir</button>
+      <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.82rem;" onclick="FitApp.logout()"><svg class="ico" aria-hidden="true"><use href="#i-logout"/></svg> Salir</button>
     </div>
   </header>
 
@@ -656,10 +1026,10 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
       <div class="glass-card">
         <div class="glass-card-header">
           <div>
-            <h3 class="card-title">🛰️ Gimnasios de la Plataforma</h3>
+            <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg> Gimnasios de la Plataforma</h3>
             <p class="section-note">Cada gimnasio es un tenant aislado: su padrón, su staff, su branding y sus datos.</p>
           </div>
-          <button class="btn" onclick="FitApp.showCreateGymModal()">➕ Alta de Gimnasio</button>
+          <button class="btn" onclick="FitApp.showCreateGymModal()"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg> Alta de Gimnasio</button>
         </div>
 
         <div style="overflow-x: auto;">
@@ -682,13 +1052,13 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
 
       <div class="glass-card" style="margin-top: 20px;">
         <div class="glass-card-header">
-          <h3 class="card-title">💾 Backup Global de la Plataforma</h3>
+          <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-database"/></svg> Backup Global de la Plataforma</h3>
         </div>
         <p class="section-note" style="margin-bottom: 14px;">Incluye todos los tenants. Sólo disponible para el operador del SaaS.</p>
         <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-          <button class="btn" onclick="FitApp.exportDatabaseJSON(true)">📥 Descargar Backup Global</button>
+          <button class="btn" onclick="FitApp.exportDatabaseJSON(true)"><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg> Descargar Backup Global</button>
           <label class="btn btn-secondary" style="cursor: pointer;">
-            📤 Restaurar Backup
+            <svg class="ico" aria-hidden="true"><use href="#i-upload"/></svg> Restaurar Backup
             <input type="file" accept=".json" style="display: none;" onchange="FitApp.importDatabaseJSON(this)">
           </label>
         </div>
@@ -702,7 +1072,7 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
 
       <div id="demo-member-selector-box" style="margin-bottom: 20px; display: none; align-items: center; justify-content: space-between; gap: 15px; background: var(--card-bg); padding: 12px 18px; border-radius: var(--radius-md); border: 1px solid var(--glass-border); flex-wrap: wrap;">
         <label for="demo-member-select" style="font-size: 0.86rem; font-weight: 700;">
-          🔍 Ver carnet de un socio de <strong class="gym-name-text">—</strong>:
+          <svg class="ico" aria-hidden="true"><use href="#i-search"/></svg> Ver carnet de un socio de <strong class="gym-name-text">—</strong>:
         </label>
         <select id="demo-member-select" class="form-select" style="max-width: 380px; font-size: 0.86rem;" onchange="FitApp.selectDemoMember(this.value)"></select>
       </div>
@@ -711,9 +1081,9 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
 
         <div style="text-align: center; margin-bottom: 18px;">
           <div class="chip-inline" style="margin-bottom: 8px;">
-            🏢 <span>Sede: <strong id="socio-sede-label">—</strong></span>
+            <svg class="ico" aria-hidden="true"><use href="#i-building"/></svg> <span>Sede: <strong id="socio-sede-label">—</strong></span>
           </div>
-          <h1 style="font-size: 1.55rem; font-weight: 900; margin-top: 2px;">¡Hola, <span id="socio-welcome-name">Socio</span>! 👋</h1>
+          <h1 style="font-size: 1.55rem; font-weight: 900; margin-top: 2px;">¡Hola, <span id="socio-welcome-name">Socio</span>! <svg class="ico" aria-hidden="true"><use href="#i-hand"/></svg></h1>
           <p style="font-size: 0.84rem; color: var(--text-muted);">Presentá tu credencial digital con QR para ingresar</p>
         </div>
 
@@ -733,7 +1103,7 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
 
           <div class="qr-box"><div id="qr-canvas-container"></div></div>
           <div class="qr-timer">
-            ⏱️ Renueva en <span id="qr-countdown-seconds">30</span>s (código anticopia)
+            <svg class="ico" aria-hidden="true"><use href="#i-clock"/></svg> Renueva en <span id="qr-countdown-seconds">30</span>s (código anticopia)
           </div>
 
           <div style="display: flex; justify-content: center; gap: 10px; margin-top: 18px; flex-wrap: wrap;">
@@ -744,9 +1114,9 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
 
         <div class="glass-card" style="margin-top: 20px;">
           <div class="tab-row">
-            <button class="tab-link active" onclick="FitApp.switchSocioTab('pagos', this)">💳 Cuota & Pagos</button>
-            <button class="tab-link" onclick="FitApp.switchSocioTab('apto', this)">🩺 Apto Médico</button>
-            <button class="tab-link" onclick="FitApp.switchSocioTab('perfil', this)">⚙️ Mi Perfil</button>
+            <button class="tab-link active" onclick="FitApp.switchSocioTab('pagos', this)"><svg class="ico" aria-hidden="true"><use href="#i-credit"/></svg> Cuota & Pagos</button>
+            <button class="tab-link" onclick="FitApp.switchSocioTab('apto', this)"><svg class="ico" aria-hidden="true"><use href="#i-pulse"/></svg> Apto Médico</button>
+            <button class="tab-link" onclick="FitApp.switchSocioTab('perfil', this)"><svg class="ico" aria-hidden="true"><use href="#i-gear"/></svg> Mi Perfil</button>
           </div>
 
           <div id="stab-pagos" class="socio-tab" style="display: block;">
@@ -764,7 +1134,7 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
                 <span id="socio-payment-status-badge" class="status-badge badge-green">Al Día</span>
               </div>
             </div>
-            <button class="btn" style="width: 100%;" id="socio-pay-btn" onclick="FitApp.processSelectedPayment()">💳 Pagar Cuota</button>
+            <button class="btn" style="width: 100%;" id="socio-pay-btn" onclick="FitApp.processSelectedPayment()"><svg class="ico" aria-hidden="true"><use href="#i-credit"/></svg> Pagar Cuota</button>
           </div>
 
           <div id="stab-apto" class="socio-tab" style="display: none;">
@@ -815,8 +1185,8 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
     <section id="view-reception" class="view-panel">
 
       <div id="traffic-light-banner" class="traffic-light-banner">
-        <div style="font-size: 2.8rem; margin-bottom: 6px;" id="traffic-icon">✅</div>
-        <h2 id="traffic-title" style="font-size: 1.6rem; font-weight: 900; margin-bottom: 4px;">ACCESO PERMITIDO</h2>
+        <div class="traffic-icon-wrap" id="traffic-icon"><svg class="ico" aria-hidden="true"><use href="#i-check-circle"/></svg></div>
+        <h2 id="traffic-title">ACCESO PERMITIDO</h2>
         <p id="traffic-desc" style="font-size: 0.95rem; opacity: 0.9; max-width: 600px; margin: 0 auto;"></p>
         <div id="traffic-member-detail"></div>
       </div>
@@ -824,7 +1194,7 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
       <div class="grid-2">
         <div class="glass-card">
           <div class="glass-card-header">
-            <h3 class="card-title">📹 Escáner de Molinete</h3>
+            <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-scan"/></svg> Escáner de Molinete</h3>
             <span id="scanner-badge-status" class="status-badge badge-neutral">Cámara Detenida</span>
           </div>
 
@@ -834,15 +1204,15 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
           </div>
 
           <div style="display: flex; gap: 8px; margin-bottom: 14px;">
-            <button class="btn btn-secondary" style="flex: 1;" onclick="FitScanner.startCamera()">▶ Iniciar Cámara</button>
-            <button class="btn btn-secondary" style="flex: 1;" onclick="FitScanner.stopCamera()">⏹ Detener</button>
+            <button class="btn btn-secondary" style="flex: 1;" onclick="FitScanner.startCamera()"><svg class="ico" aria-hidden="true"><use href="#i-play"/></svg> Iniciar Cámara</button>
+            <button class="btn btn-secondary" style="flex: 1;" onclick="FitScanner.stopCamera()"><svg class="ico" aria-hidden="true"><use href="#i-stop"/></svg> Detener</button>
           </div>
 
           <div class="form-group" style="margin-bottom: 0;">
             <label class="form-label">Búsqueda manual por DNI / ID / Nombre:</label>
             <div style="display: flex; gap: 8px;">
               <input type="text" id="input-manual-search" class="form-input" placeholder="Ej: 38450123 o SOC-1001" onkeydown="if(event.key==='Enter') FitApp.validateManualSearch()">
-              <button class="btn" onclick="FitApp.validateManualSearch()" style="white-space: nowrap;">🔍 Validar</button>
+              <button class="btn" onclick="FitApp.validateManualSearch()" style="white-space: nowrap;"><svg class="ico" aria-hidden="true"><use href="#i-search"/></svg> Validar</button>
             </div>
             <span class="form-hint">Busca únicamente dentro del padrón de <strong class="gym-name-text">—</strong>.</span>
           </div>
@@ -850,7 +1220,7 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
 
         <div class="glass-card">
           <div class="glass-card-header">
-            <h3 class="card-title">⚡ Sede activa & Casos de prueba</h3>
+            <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-bolt"/></svg> Sede activa & Casos de prueba</h3>
           </div>
 
           <div class="form-group">
@@ -866,9 +1236,9 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
 
       <div class="glass-card" style="margin-top: 20px;">
         <div class="glass-card-header">
-          <h3 class="card-title">📋 Registro de Ingresos</h3>
+          <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-clipboard"/></svg> Registro de Ingresos</h3>
           <div style="display: flex; gap: 8px;">
-            <button class="btn btn-secondary btn-tiny" data-cap="data:export" onclick="FitApp.exportLogsCSV()">📥 Exportar CSV</button>
+            <button class="btn btn-secondary btn-tiny" data-cap="data:export" onclick="FitApp.exportLogsCSV()"><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg> Exportar CSV</button>
             <button class="btn btn-secondary btn-tiny" onclick="FitApp.clearGymLogs()">Limpiar</button>
           </div>
         </div>
@@ -915,7 +1285,7 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
       <div class="glass-card" style="margin-bottom: 24px;" data-cap="gym:settings">
         <div class="glass-card-header">
           <div>
-            <h3 class="card-title">🏢 Mi Gimnasio</h3>
+            <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-building"/></svg> Mi Gimnasio</h3>
             <p class="section-note">Este es el nombre que ven tus socios en la credencial. Nada de esto afecta a otros gimnasios.</p>
           </div>
           <span class="chip-inline" id="gym-saas-chip">Plan —</span>
@@ -939,21 +1309,21 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
 
         <div class="grid-2" style="margin-top: 6px;">
           <div>
-            <h4 style="font-size: 0.95rem; font-weight: 800; margin-bottom: 10px;">📍 Sedes</h4>
+            <h4 style="font-size: 0.95rem; font-weight: 800; margin-bottom: 10px;"><svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg> Sedes</h4>
             <div id="gym-branches-list" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px;"></div>
             <div style="display: flex; gap: 8px;">
               <input type="text" id="new-branch-name" class="form-input" placeholder="Nombre de la sede (Ej: Sede Centro)">
-              <button class="btn btn-secondary" style="white-space: nowrap;" onclick="FitApp.addBranch()">➕ Sede</button>
+              <button class="btn btn-secondary" style="white-space: nowrap;" onclick="FitApp.addBranch()"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg> Sede</button>
             </div>
           </div>
 
           <div>
-            <h4 style="font-size: 0.95rem; font-weight: 800; margin-bottom: 10px;">💵 Planes y Precios</h4>
+            <h4 style="font-size: 0.95rem; font-weight: 800; margin-bottom: 10px;"><svg class="ico" aria-hidden="true"><use href="#i-money"/></svg> Planes y Precios</h4>
             <div id="gym-plans-list" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px;"></div>
             <div style="display: flex; gap: 8px;">
               <input type="text" id="new-plan-name" class="form-input" placeholder="Nombre del plan">
               <input type="number" id="new-plan-price" class="form-input" placeholder="Precio" style="max-width: 120px;">
-              <button class="btn btn-secondary" style="white-space: nowrap;" onclick="FitApp.addPlan()">➕</button>
+              <button class="btn btn-secondary" style="white-space: nowrap;" onclick="FitApp.addPlan()"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg></button>
             </div>
           </div>
         </div>
@@ -989,13 +1359,13 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
       <div class="glass-card" style="margin-bottom: 24px; border: 1px solid var(--secondary-glow);" data-cap="users:create">
         <div class="glass-card-header">
           <div>
-            <h3 class="card-title" style="color: var(--secondary-color);">🔐 Usuarios & Permisos</h3>
+            <h3 class="card-title" style="color: var(--secondary-color);"><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg> Usuarios & Permisos</h3>
             <p class="section-note">
               Todo usuario que crees queda vinculado a <strong class="gym-name-text">—</strong>. No podés ver ni crear usuarios de otros gimnasios.
             </p>
           </div>
           <button class="btn" style="background: linear-gradient(135deg, var(--secondary-color) 0%, #4338ca 100%); color: #fff;" onclick="FitApp.showCreateUserModal()">
-            ➕ Crear Usuario
+            <svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg> Crear Usuario
           </button>
         </div>
 
@@ -1013,15 +1383,15 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
       <div class="glass-card" style="margin-bottom: 24px;">
         <div class="glass-card-header">
           <div>
-            <h3 class="card-title">👥 Padrón de Socios</h3>
+            <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-users"/></svg> Padrón de Socios</h3>
             <p class="section-note">Sólo los socios de <strong class="gym-name-text">—</strong>.</p>
           </div>
           <div style="display: flex; gap: 8px; flex-wrap: wrap;">
             <select id="member-branch-filter" class="form-select" style="max-width: 190px; padding: 8px 12px; font-size: 0.85rem;" onchange="FitApp.renderMembersTable()"></select>
             <input type="text" id="member-search" class="form-input" placeholder="Buscar por nombre, DNI o ID..." style="max-width: 240px; padding: 8px 12px; font-size: 0.85rem;">
-            <button class="btn" data-cap="members:create" onclick="FitApp.showAddMemberModal()">➕ Nuevo Socio</button>
-            <button class="btn btn-secondary" onclick="FitApp.printAllCards()" title="Imprime las credenciales de la sede filtrada">🖨️ Credenciales</button>
-            <button class="btn btn-secondary" data-cap="data:export" onclick="FitApp.exportMembersCSV()">📥 CSV</button>
+            <button class="btn" data-cap="members:create" onclick="FitApp.showAddMemberModal()"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg> Nuevo Socio</button>
+            <button class="btn btn-secondary" onclick="FitApp.printAllCards()" title="Imprime las credenciales de la sede filtrada"><svg class="ico" aria-hidden="true"><use href="#i-printer"/></svg> Credenciales</button>
+            <button class="btn btn-secondary" data-cap="data:export" onclick="FitApp.exportMembersCSV()"><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg> CSV</button>
           </div>
         </div>
 
@@ -1039,10 +1409,10 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
       <div class="glass-card" style="margin-bottom: 24px;" data-cap="gym:branding">
         <div class="glass-card-header">
           <div>
-            <h3 class="card-title">🎨 Identidad Visual</h3>
+            <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-palette"/></svg> Identidad Visual</h3>
             <p class="section-note">Colores y logo propios de tu gimnasio.</p>
           </div>
-          <button class="btn btn-secondary" onclick="FitApp.exportBrandingJSON()">💾 Exportar Branding</button>
+          <button class="btn btn-secondary" onclick="FitApp.exportBrandingJSON()"><svg class="ico" aria-hidden="true"><use href="#i-database"/></svg> Exportar Branding</button>
         </div>
 
         <div class="grid-3" style="margin-bottom: 20px;">
@@ -1068,10 +1438,10 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
 
         <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
           <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">Paletas rápidas:</span>
-          <button class="preset-chip" onclick="FitApp.applyPreset('cyber')">⚡ Cyber Teal</button>
-          <button class="preset-chip" onclick="FitApp.applyPreset('gold')">🏆 Gold</button>
-          <button class="preset-chip" onclick="FitApp.applyPreset('velox')">💎 Violet</button>
-          <button class="preset-chip" onclick="FitApp.applyPreset('iron')">🥊 Iron Red</button>
+          <button class="preset-chip" onclick="FitApp.applyPreset('cyber')"><svg class="ico" aria-hidden="true"><use href="#i-bolt"/></svg> Cyber Teal</button>
+          <button class="preset-chip" onclick="FitApp.applyPreset('gold')"><svg class="ico" aria-hidden="true"><use href="#i-palette"/></svg> Gold</button>
+          <button class="preset-chip" onclick="FitApp.applyPreset('velox')"><svg class="ico" aria-hidden="true"><use href="#i-palette"/></svg> Violet</button>
+          <button class="preset-chip" onclick="FitApp.applyPreset('iron')"><svg class="ico" aria-hidden="true"><use href="#i-palette"/></svg> Iron Red</button>
         </div>
       </div>
 
@@ -1079,7 +1449,7 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
       <div class="glass-card" style="margin-bottom: 24px;" data-cap="audit:view">
         <div class="glass-card-header">
           <div>
-            <h3 class="card-title">🧾 Auditoría</h3>
+            <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-clipboard"/></svg> Auditoría</h3>
             <p class="section-note">Quién hizo qué dentro de tu gimnasio.</p>
           </div>
         </div>
@@ -1093,10 +1463,10 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
 
       <!-- Backup del tenant -->
       <div class="glass-card" data-cap="data:export">
-        <div class="glass-card-header"><h3 class="card-title">💾 Backup de mis datos</h3></div>
+        <div class="glass-card-header"><h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-database"/></svg> Backup de mis datos</h3></div>
         <p class="section-note" style="margin-bottom: 14px;">Exporta únicamente los datos de tu gimnasio (socios, ingresos, usuarios y branding).</p>
         <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-          <button class="btn" onclick="FitApp.exportDatabaseJSON(false)">📥 Descargar Backup del Gimnasio</button>
+          <button class="btn" onclick="FitApp.exportDatabaseJSON(false)"><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg> Descargar Backup del Gimnasio</button>
         </div>
       </div>
 
@@ -1112,13 +1482,13 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
   <div id="modal-setup" class="modal-overlay" style="display: none; z-index: 99998;">
     <div class="modal-card" style="max-width: 620px;">
       <div style="text-align:center; margin-bottom: 18px;">
-        <div style="font-size: 2.4rem;">🏁</div>
+        <div style="font-size: 2.4rem;"><svg class="ico" aria-hidden="true"><use href="#i-flag"/></svg></div>
         <h3 style="font-size: 1.35rem; font-weight: 900;">Poner en marcha tu gimnasio</h3>
         <p class="section-note">Se borran los datos de demostración y queda tu instalación real.</p>
       </div>
 
       <div style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.35); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 18px; font-size: 0.84rem;">
-        ⚠️ <strong>Esto elimina los dos gimnasios de ejemplo, sus socios y las cuentas de prueba.</strong>
+        <svg class="ico" aria-hidden="true"><use href="#i-alert"/></svg> <strong>Esto elimina los dos gimnasios de ejemplo, sus socios y las cuentas de prueba.</strong>
         Las cuentas con la clave pública <code>FitAccess123!</code> dejan de funcionar.
       </div>
 
@@ -1139,7 +1509,7 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
           <input type="text" id="su-phone" class="form-input" placeholder="+54 9 11 5555-1234">
         </div>
 
-        <h4 style="font-size: 0.95rem; font-weight: 800; margin: 6px 0 10px 0;">💵 Planes y precios</h4>
+        <h4 style="font-size: 0.95rem; font-weight: 800; margin: 6px 0 10px 0;"><svg class="ico" aria-hidden="true"><use href="#i-money"/></svg> Planes y precios</h4>
         <div id="su-plans" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px;">
           <div style="display:flex; gap:8px;">
             <input type="text" class="form-input su-plan-name" placeholder="Nombre del plan" value="Mensual Libre" required>
@@ -1156,7 +1526,7 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
         </div>
 
         <div style="border-top: 1px solid var(--glass-border); margin: 14px 0; padding-top: 14px;">
-          <h4 style="font-size: 0.95rem; font-weight: 800; margin-bottom: 4px;">👑 Tu cuenta de dueño</h4>
+          <h4 style="font-size: 0.95rem; font-weight: 800; margin-bottom: 4px;"><svg class="ico" aria-hidden="true"><use href="#i-key"/></svg> Tu cuenta de dueño</h4>
           <p class="section-note" style="margin-bottom: 12px;">Con esta cuenta administrás todo. Guardala bien: no hay forma de recuperarla en modo local.</p>
           <div class="grid-2">
             <div class="form-group">
@@ -1193,7 +1563,7 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
 
         <div style="display:flex; gap:10px;">
           <button type="button" class="btn btn-secondary" style="flex:1;" onclick="FitApp.hideModal('modal-setup')">Cancelar</button>
-          <button type="submit" class="btn" style="flex:2; padding:12px; font-weight:800;">🏁 Crear mi gimnasio</button>
+          <button type="submit" class="btn" style="flex:2; padding:12px; font-weight:800;"><svg class="ico" aria-hidden="true"><use href="#i-flag"/></svg> Crear mi gimnasio</button>
         </div>
       </form>
     </div>
@@ -1203,8 +1573,8 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
   <div id="modal-create-gym" class="modal-overlay" style="display: none;">
     <div class="modal-card">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
-        <h3 class="card-title">🛰️ Alta de Gimnasio (Tenant)</h3>
-        <button class="btn btn-secondary btn-tiny" onclick="FitApp.hideModal('modal-create-gym')">✕</button>
+        <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg> Alta de Gimnasio (Tenant)</h3>
+        <button class="btn btn-secondary btn-tiny" onclick="FitApp.hideModal('modal-create-gym')"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
       </div>
 
       <form onsubmit="event.preventDefault(); FitApp.saveNewGym();">
@@ -1229,7 +1599,7 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
         </div>
 
         <div style="border-top: 1px solid var(--glass-border); margin: 6px 0 14px 0; padding-top: 14px;">
-          <h4 style="font-size: 0.95rem; font-weight: 800; margin-bottom: 4px;">👑 Dueño del gimnasio</h4>
+          <h4 style="font-size: 0.95rem; font-weight: 800; margin-bottom: 4px;"><svg class="ico" aria-hidden="true"><use href="#i-key"/></svg> Dueño del gimnasio</h4>
           <p class="section-note" style="margin-bottom: 12px;">Se crea el usuario con rol <code>owner</code>, único dueño del tenant.</p>
           <div class="grid-2">
             <div class="form-group">
@@ -1245,12 +1615,12 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
             <label class="form-label">Contraseña inicial:</label>
             <div style="display: flex; gap: 8px;">
               <input type="text" id="gym-new-owner-password" class="form-input" minlength="8" required>
-              <button type="button" class="btn btn-secondary" style="white-space:nowrap;" onclick="FitApp.generateRandomPassword('gym-new-owner-password')">🎲 Generar</button>
+              <button type="button" class="btn btn-secondary" style="white-space:nowrap;" onclick="FitApp.generateRandomPassword('gym-new-owner-password')"><svg class="ico" aria-hidden="true"><use href="#i-dice"/></svg> Generar</button>
             </div>
           </div>
         </div>
 
-        <button type="submit" class="btn" style="width: 100%; padding: 12px; font-weight: 800;">🏢 Crear Gimnasio & Dueño</button>
+        <button type="submit" class="btn" style="width: 100%; padding: 12px; font-weight: 800;"><svg class="ico" aria-hidden="true"><use href="#i-building"/></svg> Crear Gimnasio & Dueño</button>
       </form>
     </div>
   </div>
@@ -1259,15 +1629,15 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
   <div id="modal-create-user" class="modal-overlay" style="display: none;">
     <div class="modal-card">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
-        <h3 class="card-title">🔐 Crear Usuario</h3>
-        <button class="btn btn-secondary btn-tiny" onclick="FitApp.hideModal('modal-create-user')">✕</button>
+        <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg> Crear Usuario</h3>
+        <button class="btn btn-secondary btn-tiny" onclick="FitApp.hideModal('modal-create-user')"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
       </div>
 
       <form onsubmit="event.preventDefault(); FitApp.saveNewUser();">
         <div class="form-group">
           <label class="form-label">Gimnasio al que pertenece:</label>
           <input type="text" id="user-new-gym-display" class="form-input" readonly>
-          <span class="form-hint">🔒 El usuario queda asociado a este gimnasio y sólo verá sus datos.</span>
+          <span class="form-hint"><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg> El usuario queda asociado a este gimnasio y sólo verá sus datos.</span>
         </div>
 
         <div class="form-group">
@@ -1284,14 +1654,14 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
           <label class="form-label">Contraseña inicial:</label>
           <div style="display: flex; gap: 8px;">
             <input type="text" id="user-new-password" class="form-input" placeholder="Mínimo 8 caracteres" minlength="8" required>
-            <button type="button" class="btn btn-secondary" style="white-space:nowrap;" onclick="FitApp.generateRandomPassword('user-new-password')">🎲 Generar</button>
+            <button type="button" class="btn btn-secondary" style="white-space:nowrap;" onclick="FitApp.generateRandomPassword('user-new-password')"><svg class="ico" aria-hidden="true"><use href="#i-dice"/></svg> Generar</button>
           </div>
           <span class="form-hint">Se guarda hasheada. Vas a verla una sola vez para entregarla.</span>
         </div>
 
         <div class="form-group" id="user-invite-note" style="display: none;">
           <div style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); border-radius: var(--radius-sm); padding: 12px; font-size: 0.82rem;">
-            📧 <strong>Se envía una invitación por email.</strong> La persona elige su propia
+            <svg class="ico" aria-hidden="true"><use href="#i-mail"/></svg> <strong>Se envía una invitación por email.</strong> La persona elige su propia
             contraseña desde el link. Vos nunca la conocés.
           </div>
         </div>
@@ -1312,7 +1682,7 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
           <select id="user-new-branch" class="form-select"></select>
         </div>
 
-        <button type="submit" class="btn" style="width: 100%; margin-top: 10px; padding: 12px; font-weight: 800;">💾 Crear Usuario</button>
+        <button type="submit" class="btn" style="width: 100%; margin-top: 10px; padding: 12px; font-weight: 800;"><svg class="ico" aria-hidden="true"><use href="#i-database"/></svg> Crear Usuario</button>
       </form>
     </div>
   </div>
@@ -1320,11 +1690,11 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
   <!-- Credenciales generadas -->
   <div id="modal-credentials" class="modal-overlay" style="display: none;">
     <div class="modal-card" style="max-width: 460px;">
-      <h3 class="card-title" style="margin-bottom: 6px;">✅ Usuario creado</h3>
+      <h3 class="card-title" style="margin-bottom: 6px;"><svg class="ico" aria-hidden="true"><use href="#i-check-circle"/></svg> Usuario creado</h3>
       <p class="section-note" style="margin-bottom: 16px;">Copiá estos datos ahora: la contraseña se guarda hasheada y no vas a poder verla de nuevo.</p>
       <div class="credential-print" id="credentials-print-box">—</div>
       <div style="display: flex; gap: 10px; margin-top: 16px;">
-        <button class="btn btn-secondary" style="flex:1;" onclick="FitApp.copyCredentials()">📋 Copiar</button>
+        <button class="btn btn-secondary" style="flex:1;" onclick="FitApp.copyCredentials()"><svg class="ico" aria-hidden="true"><use href="#i-clipboard"/></svg> Copiar</button>
         <button class="btn" style="flex:1;" onclick="FitApp.hideModal('modal-credentials')">Listo</button>
       </div>
     </div>
@@ -1334,8 +1704,8 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
   <div id="modal-add-member" class="modal-overlay" style="display: none;">
     <div class="modal-card">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
-        <h3 class="card-title">➕ Nuevo Socio</h3>
-        <button class="btn btn-secondary btn-tiny" onclick="FitApp.hideModal('modal-add-member')">✕</button>
+        <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg> Nuevo Socio</h3>
+        <button class="btn btn-secondary btn-tiny" onclick="FitApp.hideModal('modal-add-member')"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
       </div>
 
       <form onsubmit="event.preventDefault(); FitApp.saveNewMember();">
@@ -1412,7 +1782,7 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
           </label>
         </div>
 
-        <button type="submit" class="btn" style="width: 100%; margin-top: 10px; padding: 12px; font-weight: 800;">💾 Guardar Socio</button>
+        <button type="submit" class="btn" style="width: 100%; margin-top: 10px; padding: 12px; font-weight: 800;"><svg class="ico" aria-hidden="true"><use href="#i-database"/></svg> Guardar Socio</button>
       </form>
     </div>
   </div>
@@ -1421,8 +1791,8 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
   <div id="modal-edit-member" class="modal-overlay" style="display: none;">
     <div class="modal-card">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
-        <h3 class="card-title">✏️ Editar Socio</h3>
-        <button class="btn btn-secondary btn-tiny" onclick="FitApp.hideModal('modal-edit-member')">✕</button>
+        <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-pencil"/></svg> Editar Socio</h3>
+        <button class="btn btn-secondary btn-tiny" onclick="FitApp.hideModal('modal-edit-member')"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
       </div>
 
       <form onsubmit="event.preventDefault(); FitApp.saveEditedMember();">
@@ -1478,7 +1848,7 @@ h1, h2, h3, h4 { letter-spacing: -0.02em; }
           </select>
         </div>
 
-        <button type="submit" class="btn" style="width: 100%; margin-top: 10px; padding: 12px; font-weight: 800;">💾 Actualizar</button>
+        <button type="submit" class="btn" style="width: 100%; margin-top: 10px; padding: 12px; font-weight: 800;"><svg class="ico" aria-hidden="true"><use href="#i-database"/></svg> Actualizar</button>
       </form>
     </div>
   </div>
@@ -1593,10 +1963,10 @@ const PORTAL_ROLES = {
 };
 
 const PORTAL_META = {
-  console:   { icon: "🛰️", title: "Consola de Plataforma", subtitle: "Operador FitAccess · todos los gimnasios" },
-  staff:     { icon: "⚙️", title: "Ingreso Staff / Gerencia", subtitle: "Panel de gestión de tu gimnasio" },
-  recepcion: { icon: "📹", title: "Terminal de Recepción", subtitle: "Molinete, escáner y cobros" },
-  socio:     { icon: "👤", title: "App del Socio", subtitle: "Tu carnet digital y tus pagos" }
+  console:   { icon: "globe", title: "Consola de Plataforma", subtitle: "Operador FitAccess · todos los gimnasios" },
+  staff:     { icon: "gear", title: "Ingreso Staff / Gerencia", subtitle: "Panel de gestión de tu gimnasio" },
+  recepcion: { icon: "scan", title: "Terminal de Recepción", subtitle: "Molinete, escáner y cobros" },
+  socio:     { icon: "user", title: "App del Socio", subtitle: "Tu carnet digital y tus pagos" }
 };
 
 const PRESET_THEMES = {
@@ -1606,11 +1976,20 @@ const PRESET_THEMES = {
   iron:  { name: "Iron Red",   primary: "#ef4444", secondary: "#f97316" }
 };
 
-const DEFAULT_PHOTO = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80";
+/* Gráficos locales en lugar de URLs remotas: se ven siempre, también sin
+   internet y en la tablet del mostrador, y no dependen de un tercero. */
+const DEFAULT_PHOTO = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Crect width='96' height='96' fill='%23151b29'/%3E%3Ccircle cx='48' cy='37' r='15' fill='%233a4560'/%3E%3Cpath d='M17 93c0-17.1 13.9-31 31-31s31 13.9 31 31z' fill='%233a4560'/%3E%3C/svg%3E";
+
+const BRAND_MARK = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%232dd4bf'/%3E%3Cstop offset='1' stop-color='%230d9488'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='17' fill='url(%23g)'/%3E%3Cg stroke='%23ffffff' stroke-width='5' stroke-linecap='round'%3E%3Cpath d='M21 22v20M15 27v10M43 22v20M49 27v10M21 32h22'/%3E%3C/g%3E%3C/svg%3E";
 
 /* ==========================================================================
    2. UTILIDADES
    ========================================================================== */
+
+/* Icono SVG para usar dentro de plantillas de innerHTML.
+   Ojo: sólo sirve donde se asigna innerHTML. En textContent se vería el
+   markup como texto, así que en los mensajes de aviso se sigue usando texto. */
+const ic = (name, extra = "") => `<svg class="ico ${extra}" aria-hidden="true"><use href="#i-${name}"/></svg>`;
 
 const uid = (prefix) => `${prefix}-${Date.now().toString(36)}${Math.floor(Math.random() * 1e4).toString(36)}`;
 const todayISO = () => new Date().toISOString().split("T")[0];
@@ -1688,7 +2067,7 @@ function buildSeed() {
       email: "hola@powerhousegym.com",
       active: true,
       createdAt: new Date().toISOString(),
-      branding: { primaryColor: "#ef4444", secondaryColor: "#f97316", logoUrl: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=120&auto=format&fit=crop&q=80" },
+      branding: { primaryColor: "#ef4444", secondaryColor: "#f97316", logoUrl: BRAND_MARK },
       branches: [
         { id: "br-ph-1", name: "Sede Palermo", address: "Av. Santa Fe 3400" },
         { id: "br-ph-2", name: "Sede Belgrano", address: "Cabildo 2100" }
@@ -1711,7 +2090,7 @@ function buildSeed() {
       email: "info@veloxtraining.com",
       active: true,
       createdAt: new Date().toISOString(),
-      branding: { primaryColor: "#a855f7", secondaryColor: "#3b82f6", logoUrl: "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=120&auto=format&fit=crop&q=80" },
+      branding: { primaryColor: "#a855f7", secondaryColor: "#3b82f6", logoUrl: BRAND_MARK },
       branches: [{ id: "br-vx-1", name: "Sede Villa Crespo", address: "Corrientes 5200" }],
       plans: [
         { id: "pl-vx-1", name: "Funcional 3 veces", price: 21000 },
@@ -1989,6 +2368,8 @@ const FitApp = {
     this.setupListeners();
     this.startQRTimer();
     this.renderCloudBadge();
+    // Marca por defecto en los <img> que no tienen logo de gimnasio todavía
+    document.querySelectorAll("[data-brand-mark]").forEach(img => { if (!img.src) img.src = BRAND_MARK; });
     this.registerServiceWorker();
     this.watchConnection();
     this.checkLibraries();
@@ -2006,7 +2387,7 @@ const FitApp = {
     if (!faltan.length) { bar.style.display = "none"; return; }
     const txt = document.getElementById("libs-bar-text");
     if (txt) {
-      txt.innerHTML = `⚠️ <strong>No cargaron las librerías de QR.</strong> No va a funcionar ${faltan.join(" ni ")}.
+      txt.innerHTML = `${ic("alert")} <strong>No cargaron las librerías de QR.</strong> No va a funcionar ${faltan.join(" ni ")}.
         Podés seguir operando con la búsqueda por DNI. Solución definitiva: guardar las copias locales (ver <code>vendor/README.md</code>).`;
     }
     bar.style.display = "flex";
@@ -2064,7 +2445,7 @@ const FitApp = {
       alert(`⚠️ NO SE PUDO GUARDAR\n\nEl almacenamiento de este navegador está lleno (${uso.mb.toFixed(1)} MB).\n\nLo último que cargaste NO quedó guardado. Descargá un backup ahora y liberá espacio, o pasá la app a Firebase.`);
       const bar = document.getElementById("backup-bar");
       const txt = document.getElementById("backup-bar-text");
-      if (txt) txt.innerHTML = `🚨 <strong>El almacenamiento está lleno y los cambios no se están guardando.</strong>`;
+      if (txt) txt.innerHTML = `${ic("alert")} <strong>El almacenamiento está lleno y los cambios no se están guardando.</strong>`;
       if (bar) bar.style.display = "flex";
       return false;
     }
@@ -2208,7 +2589,7 @@ const FitApp = {
 
     document.getElementById("login-portal-selector").style.display = "none";
     document.getElementById("login-form-container").style.display = "block";
-    document.getElementById("portal-icon").textContent = meta.icon;
+    document.getElementById("portal-icon").innerHTML = ic(meta.icon);
     document.getElementById("portal-title").textContent = meta.title;
     document.getElementById("portal-subtitle").textContent = meta.subtitle;
 
@@ -2326,14 +2707,14 @@ const FitApp = {
     // El portal NO define el rol: se valida que el rol real pueda entrar ahí.
     const allowedRoles = PORTAL_ROLES[portal] || [];
     if (!allowedRoles.includes(user.role)) {
-      return fail(`⚠️ Tu cuenta tiene rol <strong>${esc(ROLES[user.role].label)}</strong> y no puede ingresar por este portal.`);
+      return fail(`${ic("alert")} Tu cuenta tiene rol <strong>${esc(ROLES[user.role].label)}</strong> y no puede ingresar por este portal.`);
     }
 
     // El tenant tiene que existir y no estar suspendido por impago.
     if (user.role !== "superadmin") {
       const gym = this.gymById(user.gymId);
       if (!gym) return fail("❌ Tu usuario no está asociado a ningún gimnasio. Avisale al soporte.");
-      if (!gym.active) return fail(`🚫 <strong>${esc(gym.name)}</strong> está suspendido. Contactá a FitAccess.`);
+      if (!gym.active) return fail(`${ic("ban")} <strong>${esc(gym.name)}</strong> está suspendido. Contactá a FitAccess.`);
     }
 
     return this.completeLogin(user, portal);
@@ -2448,7 +2829,7 @@ const FitApp = {
     // Pill de usuario
     const pill = document.getElementById("user-profile-info");
     if (pill) {
-      pill.innerHTML = `👤 <strong>${esc(this.session.name)}</strong>
+      pill.innerHTML = `${ic("user")} <strong>${esc(this.session.name)}</strong>
         <span class="role-tag-badge role-badge-${role}">${ROLES[role].label}</span>`;
     }
 
@@ -2611,17 +2992,37 @@ const FitApp = {
     this.renderReceptionPanel();
   },
 
+  /* Los indicadores cuentan hasta el valor en vez de aparecer de golpe.
+     Es detalle, pero es la diferencia entre una tabla y un panel. */
+  countTo(id, target) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const desde = parseInt(el.textContent, 10) || 0;
+    if (desde === target) { el.textContent = target; return; }
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      el.textContent = target; return;
+    }
+    const t0 = performance.now();
+    const dur = 650;
+    const paso = (t) => {
+      const p = Math.min(1, (t - t0) / dur);
+      const suave = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(desde + (target - desde) * suave);
+      if (p < 1) requestAnimationFrame(paso);
+    };
+    requestAnimationFrame(paso);
+  },
+
   updateStats() {
     const list = this.scopedMembers();
     const active = list.filter(m => m.subscriptionStatus === "al_dia").length;
     const today = todayISO();
     const todayLogs = this.scopedLogs().filter(l => (l.at || "").startsWith(today)).length;
 
-    const set = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
-    set("stat-total-members", list.length);
-    set("stat-active-members", active);
-    set("stat-expired-members", list.length - active);
-    set("stat-today-logs", todayLogs);
+    this.countTo("stat-total-members", list.length);
+    this.countTo("stat-active-members", active);
+    this.countTo("stat-expired-members", list.length - active);
+    this.countTo("stat-today-logs", todayLogs);
 
     const gym = this.activeGym();
     const limitEl = document.getElementById("stat-members-limit");
@@ -2677,9 +3078,9 @@ const FitApp = {
           <td>${statusBadge}</td>
           <td>
             <div style="display:flex; gap:6px; flex-wrap:wrap;">
-              <button class="btn btn-tiny" onclick="FitApp.enterGymContext('${g.id}')">Entrar ➜</button>
-              <button class="btn btn-secondary btn-tiny" onclick="FitApp.toggleGymActive('${g.id}')">${g.active ? "⏸ Suspender" : "▶ Reactivar"}</button>
-              <button class="btn btn-secondary btn-tiny" style="color:var(--status-red);" onclick="FitApp.deleteGym('${g.id}')">🗑️</button>
+              <button class="btn btn-tiny" onclick="FitApp.enterGymContext('${g.id}')">${ic("chevron-left","flip-x")}Entrar</button>
+              <button class="btn btn-secondary btn-tiny" onclick="FitApp.toggleGymActive('${g.id}')">${g.active ? ic("pause") + " Suspender" : ic("play") + " Reactivar"}</button>
+              <button class="btn btn-secondary btn-tiny" style="color:var(--status-red);" onclick="FitApp.deleteGym('${g.id}')">${ic("trash")}</button>
             </div>
           </td>
         </tr>`;
@@ -2860,8 +3261,8 @@ const FitApp = {
       branches.innerHTML = (gym.branches || []).map(b => {
         const count = this.scopedMembers().filter(m => m.branchId === b.id).length;
         return `<div class="list-row">
-          <span>📍 <strong>${esc(b.name)}</strong> <span style="color:var(--text-dim); font-size:0.78rem;">· sede habitual de ${count} socio(s)</span></span>
-          <button class="btn btn-secondary btn-tiny" style="color:var(--status-red);" onclick="FitApp.removeBranch('${b.id}')">✕</button>
+          <span>${ic("pin")} <strong>${esc(b.name)}</strong> <span style="color:var(--text-dim); font-size:0.78rem;">· sede habitual de ${count} socio(s)</span></span>
+          <button class="btn btn-secondary btn-tiny" style="color:var(--status-red);" onclick="FitApp.removeBranch('${b.id}')"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
         </div>`;
       }).join("") || `<span class="form-hint">Sin sedes cargadas.</span>`;
     }
@@ -2871,10 +3272,10 @@ const FitApp = {
       plans.innerHTML = (gym.plans || []).map(p => {
         const count = this.scopedMembers().filter(m => m.planId === p.id).length;
         return `<div class="list-row">
-          <span>💳 <strong>${esc(p.name)}</strong> <span style="color:var(--text-dim); font-size:0.78rem;">· ${count} socio(s)</span></span>
+          <span>${ic("credit")} <strong>${esc(p.name)}</strong> <span style="color:var(--text-dim); font-size:0.78rem;">· ${count} socio(s)</span></span>
           <span style="display:flex; align-items:center; gap:8px;">
             <strong style="color:var(--primary-color);">${this.money(p.price)}</strong>
-            <button class="btn btn-secondary btn-tiny" style="color:var(--status-red);" onclick="FitApp.removePlan('${p.id}')">✕</button>
+            <button class="btn btn-secondary btn-tiny" style="color:var(--status-red);" onclick="FitApp.removePlan('${p.id}')"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
           </span>
         </div>`;
       }).join("") || `<span class="form-hint">Sin planes cargados.</span>`;
@@ -3024,7 +3425,7 @@ Object.assign(FitApp, {
       };
       return `
         <tr>
-          <td><img src="${esc(m.photo || DEFAULT_PHOTO)}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;"></td>
+          <td><img onerror="this.onerror=null;this.src=DEFAULT_PHOTO" src="${esc(m.photo || DEFAULT_PHOTO)}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;"></td>
           <td><strong>${esc(m.name)}</strong><br>
             <span style="font-size:0.75rem;color:var(--text-muted);">DNI ${esc(m.dni)} · ${esc(m.id)}</span></td>
           <td style="font-size:0.82rem;">${esc(branch ? branch.name : "—")}</td>
@@ -3036,11 +3437,11 @@ Object.assign(FitApp, {
           <td>${aptoMap[m.aptoMedico] || aptoMap.pendiente}</td>
           <td>
             <div style="display:flex; gap:6px;">
-              <button class="btn btn-secondary btn-tiny" onclick="FitApp.viewMemberCard('${m.id}')" title="Ver carnet">🪪</button>
-              <button class="btn btn-secondary btn-tiny" onclick="FitApp.printMemberCard('${m.id}')" title="Imprimir credencial">🖨️</button>
-              ${canEdit ? `<button class="btn btn-secondary btn-tiny" onclick="FitApp.openEditMemberModal('${m.id}')" title="Editar">✏️</button>` : ""}
-              <button class="btn btn-secondary btn-tiny" onclick="FitApp.sendWhatsAppReminder('${m.id}')" title="WhatsApp">💬</button>
-              ${this.can("members:delete") ? `<button class="btn btn-secondary btn-tiny" style="color:var(--status-red);" onclick="FitApp.deleteMember('${m.id}')" title="Eliminar">🗑️</button>` : ""}
+              <button class="btn btn-secondary btn-tiny" onclick="FitApp.viewMemberCard('${m.id}')" title="Ver carnet">${ic("card")}</button>
+              <button class="btn btn-secondary btn-tiny" onclick="FitApp.printMemberCard('${m.id}')" title="Imprimir credencial">${ic("printer")}</button>
+              ${canEdit ? `<button class="btn btn-secondary btn-tiny" onclick="FitApp.openEditMemberModal('${m.id}')" title="Editar">${ic("pencil")}</button>` : ""}
+              <button class="btn btn-secondary btn-tiny" onclick="FitApp.sendWhatsAppReminder('${m.id}')" title="WhatsApp">${ic("chat")}</button>
+              ${this.can("members:delete") ? `<button class="btn btn-secondary btn-tiny" style="color:var(--status-red);" onclick="FitApp.deleteMember('${m.id}')" title="Eliminar">${ic("trash")}</button>` : ""}
             </div>
           </td>
         </tr>`;
@@ -3386,10 +3787,10 @@ Object.assign(FitApp, {
           <td>${u.active ? `<span class="status-badge badge-green">Activo</span>` : `<span class="status-badge badge-red">Inactivo</span>`}</td>
           <td>
             <div style="display:flex; gap:6px; flex-wrap:wrap;">
-              ${canManage ? `<button class="btn btn-secondary btn-tiny" onclick="FitApp.toggleUserActive('${u.id}')">${u.active ? "⏸" : "▶"}</button>` : ""}
-              ${canManage ? `<button class="btn btn-secondary btn-tiny" onclick="FitApp.resetUserPassword('${u.id}')" title="Resetear contraseña">🔑</button>` : ""}
-              ${canManage ? `<button class="btn btn-secondary btn-tiny" style="color:var(--status-red);" onclick="FitApp.deleteUser('${u.id}')">🗑️</button>` : ""}
-              ${!canManage ? `<span style="font-size:0.74rem;color:var(--text-dim);">${isSelf ? "—" : "🔒 rango superior"}</span>` : ""}
+              ${canManage ? `<button class="btn btn-secondary btn-tiny" onclick="FitApp.toggleUserActive('${u.id}')">${u.active ? ic("pause") : ic("play")}</button>` : ""}
+              ${canManage ? `<button class="btn btn-secondary btn-tiny" onclick="FitApp.resetUserPassword('${u.id}')" title="Resetear contraseña">${ic("key")}</button>` : ""}
+              ${canManage ? `<button class="btn btn-secondary btn-tiny" style="color:var(--status-red);" onclick="FitApp.deleteUser('${u.id}')">${ic("trash")}</button>` : ""}
+              ${!canManage ? `<span style="font-size:0.74rem;color:var(--text-dim);">${isSelf ? "—" : ic("lock") + " rango superior"}</span>` : ""}
             </div>
           </td>
         </tr>`;
@@ -3712,7 +4113,7 @@ Object.assign(FitApp, {
     setText("socio-profile-branch", branch ? branch.name : "—");
 
     const avatar = document.getElementById("m-avatar");
-    if (avatar) avatar.src = m.photo || DEFAULT_PHOTO;
+    if (avatar) { avatar.onerror = () => { avatar.onerror = null; avatar.src = DEFAULT_PHOTO; }; avatar.src = m.photo || DEFAULT_PHOTO; }
     setText("m-name", m.name);
     setText("socio-welcome-name", (m.name || "").split(" ")[0] || m.name);
     setText("m-id", `Socio N°: ${m.id} | DNI: ${m.dni || "—"}`);
@@ -4013,8 +4414,8 @@ Object.assign(FitApp, {
     const banner = document.getElementById("traffic-light-banner");
     if (!banner) return;
     banner.className = `traffic-light-banner active traffic-banner-${color}`;
-    const icons = { green: "✅", yellow: "⚠️", red: "⛔" };
-    document.getElementById("traffic-icon").textContent = icons[color] || "ℹ️";
+    const icons = { green: "check-circle", yellow: "alert", red: "ban" };
+    document.getElementById("traffic-icon").innerHTML = ic(icons[color] || "alert");
     document.getElementById("traffic-title").textContent = title;
     document.getElementById("traffic-desc").textContent = desc;
 
@@ -4026,13 +4427,13 @@ Object.assign(FitApp, {
     const branch = this.branchOf(member);
     const chargeBtn = (canCharge && this.can("payments:charge"))
       ? `<button class="btn" style="margin-top:12px; background:#fff; color:#06251f; font-weight:800;"
-           onclick="FitApp.quickCobrarCuota('${member.id}')">💳 Cobrar ${this.money(plan.price)} ahora</button>`
+           onclick="FitApp.quickCobrarCuota('${member.id}')">${ic("credit")} Cobrar ${this.money(plan.price)} ahora</button>`
       : "";
 
     detail.innerHTML = `
-      <div style="display:flex; flex-direction:column; align-items:center; margin-top:14px;">
-        <div style="display:flex; align-items:center; gap:14px;">
-          <img src="${esc(member.photo || DEFAULT_PHOTO)}" style="width:54px;height:54px;border-radius:50%;object-fit:cover;border:2px solid #fff;">
+      <div style="display:flex; flex-direction:column; align-items:center;">
+        <div class="traffic-member">
+          <img onerror="this.onerror=null;this.src=DEFAULT_PHOTO" src="${esc(member.photo || DEFAULT_PHOTO)}" alt="">
           <div style="text-align:left;">
             <div style="font-weight:800; font-size:1.05rem;">${esc(member.name)}</div>
             <div style="font-size:0.8rem; opacity:0.85;">DNI ${esc(member.dni)} · ${esc(member.id)} · ${esc(plan.name)}</div>
@@ -4390,7 +4791,7 @@ Object.assign(FitApp, {
       label.className = `status-badge ${on ? "badge-green" : "badge-neutral"}`;
     }
     if (badge) {
-      badge.textContent = on ? "☁️ Firebase" : "💾 Local";
+      badge.innerHTML = on ? ic("cloud") + " Firebase" : ic("drive") + " Local";
       badge.className = `status-badge ${on ? "badge-green" : "badge-neutral"}`;
       badge.title = on
         ? "Los datos y los permisos vienen de Firebase. El rol está firmado en el token."
@@ -4582,14 +4983,14 @@ Object.assign(FitApp, {
     const textEl = document.getElementById("backup-bar-text");
 
     if (uso.pct > 80) {
-      if (textEl) textEl.innerHTML = `⚠️ <strong>El almacenamiento del navegador está al ${uso.pct.toFixed(0)}%</strong> (${uso.mb.toFixed(1)} MB). Descargá un backup y considerá pasar a Firebase antes de seguir cargando socios.`;
+      if (textEl) textEl.innerHTML = `${ic("alert")} <strong>El almacenamiento del navegador está al ${uso.pct.toFixed(0)}%</strong> (${uso.mb.toFixed(1)} MB). Descargá un backup y considerá pasar a Firebase antes de seguir cargando socios.`;
       bar.style.display = "flex";
       return;
     }
     if (dias === Infinity || dias > 7) {
       if (textEl) textEl.innerHTML = dias === Infinity
-        ? `💾 <strong>Todavía no descargaste ningún backup.</strong> Los datos viven sólo en este dispositivo.`
-        : `💾 <strong>Hace ${Math.floor(dias)} días que no descargás un backup.</strong> Los datos viven sólo en este dispositivo.`;
+        ? `${ic("database")} <strong>Todavía no descargaste ningún backup.</strong> Los datos viven sólo en este dispositivo.`
+        : `${ic("database")} <strong>Hace ${Math.floor(dias)} días que no descargás un backup.</strong> Los datos viven sólo en este dispositivo.`;
       bar.style.display = "flex";
       return;
     }
