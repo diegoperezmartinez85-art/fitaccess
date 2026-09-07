@@ -5725,6 +5725,47 @@ Object.assign(FitApp, {
       : "💾 Modo local. Podés usar las cuentas de prueba.");
   },
 
+  /* Completa un gimnasio que viene de Firestore al que le faltan campos.
+     Sirve para poder crear el gimnasio a mano en la consola de Firebase con
+     sólo el nombre: la app le pone sedes, planes y ajustes por defecto y los
+     devuelve a la nube. Sin esto habría que armar mapas y arreglos anidados a
+     mano, que es donde todo el mundo se equivoca. */
+  normalizeGym(gym) {
+    const faltaba = [];
+    const g = { ...gym };
+
+    if (!g.slug) { g.slug = slugify(g.name || "gimnasio"); faltaba.push("slug"); }
+    if (!g.name) { g.name = "Mi Gimnasio"; faltaba.push("name"); }
+    if (g.active === undefined) { g.active = true; faltaba.push("active"); }
+
+    if (!g.branding || !g.branding.primaryColor) {
+      g.branding = { primaryColor: "#14b8a6", secondaryColor: "#6366f1", logoUrl: BRAND_MARK, ...(g.branding || {}) };
+      faltaba.push("branding");
+    }
+    if (!Array.isArray(g.branches) || !g.branches.length) {
+      g.branches = [{ id: "br-principal", name: "Sede Principal", address: "" }];
+      faltaba.push("branches");
+    }
+    if (!Array.isArray(g.plans) || !g.plans.length) {
+      g.plans = [{ id: "pl-mensual", name: "Plan Mensual", price: 20000 }];
+      faltaba.push("plans");
+    }
+    if (!g.settings || g.settings.qrTtlSeconds === undefined) {
+      g.settings = {
+        currency: "ARS", warnDays: 3, requireApto: true,
+        qrTtlSeconds: 30, crossBranchAccess: true, paymentLink: "",
+        ...(g.settings || {})
+      };
+      faltaba.push("settings");
+    }
+    if (!g.saas || !g.saas.plan) {
+      g.saas = { plan: "pro", status: "active", ...(g.saas || {}) };
+      faltaba.push("saas");
+    }
+
+    return { gym: g, faltaba };
+  },
+
   /* Trae el gimnasio y su padrón desde Firestore y reemplaza lo local.
      Sólo puede traer el tenant al que el token da acceso: si las reglas dicen
      que no, la lectura falla y se avisa. */
@@ -5733,7 +5774,17 @@ Object.assign(FitApp, {
     const res = await window.FirebaseSaaS.pullTenant(gymId);
     if (!res.ok) { this.showToast(res.message || "⚠️ No se pudieron leer los datos del gimnasio."); return; }
 
-    this.gyms = this.gyms.filter(g => g.id !== gymId).concat([res.gym]);
+    /* Si el gimnasio se creó a mano en la consola y le faltan campos, se
+       completan acá y se devuelven a Firestore para no repetir el trámite. */
+    const norm = this.normalizeGym(res.gym);
+    if (norm.faltaba.length) {
+      this.showToast(`Configuración del gimnasio completada: ${norm.faltaba.join(", ")}.`);
+      window.FirebaseSaaS.push("gym", norm.gym, gymId).then(r => {
+        if (!r.ok) console.warn("No se pudo guardar la configuración completada:", r.message);
+      });
+    }
+
+    this.gyms = this.gyms.filter(g => g.id !== gymId).concat([norm.gym]);
     this.members = this.members.filter(m => m.gymId !== gymId).concat(res.members);
     if (res.logs) this.logs = this.logs.filter(l => l.gymId !== gymId).concat(res.logs);
     if (res.audit) this.audit = this.audit.filter(a => a.gymId !== gymId).concat(res.audit);
