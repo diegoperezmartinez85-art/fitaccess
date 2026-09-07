@@ -5885,6 +5885,12 @@ Object.assign(FitApp, {
   isDemoData() { return Store.isDemo(); },
 
   showSetupModal() {
+    /* En modo nube los gimnasios se crean en Firestore, no acá. Este asistente
+       borra los datos locales del dispositivo: dejarlo disponible sería una
+       trampa. */
+    if (this.cloudOn()) {
+      return this.showToast("Estás trabajando con Firebase: el gimnasio ya existe en la nube. Este asistente es sólo para el modo local.");
+    }
     const warn = document.getElementById("su-local-warning");
     const chk = document.getElementById("su-accept-local");
     // En modo nube los datos no dependen de este dispositivo.
@@ -5978,11 +5984,14 @@ Object.assign(FitApp, {
     this.showToast(`🏁 ${gymName} listo. Ya podés cargar socios.`);
   },
 
-  /* Aviso permanente mientras la instalación siga siendo la demo. */
+  /* Aviso mientras la instalación siga siendo la demo.
+     En modo nube NO aplica: el gimnasio vive en Firestore, es real, y el
+     asistente de puesta en marcha (que borra datos locales) no tiene sentido
+     acá. Mostrarlo era confuso y el botón podía hacer un desastre. */
   renderSetupBanner() {
     const bar = document.getElementById("demo-bar");
     if (!bar) return;
-    const showing = this.isDemoData() && !!this.session;
+    const showing = this.isDemoData() && !!this.session && !this.cloudOn();
     bar.style.display = showing ? "flex" : "none";
   },
 
