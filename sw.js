@@ -21,18 +21,23 @@
  *    error en la página. Ahora siempre se devuelve una Response.
  */
 
-const VERSION = "fitaccess-v2.0.0";
+const VERSION = "fitaccess-v2.1.0";
 const SHELL_CACHE = `${VERSION}-shell`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 
-/* La app es un solo archivo: no hay ./js/ ni ./css/ que cachear. */
+/* La app es un solo archivo: no hay ./js/ ni ./css/ que cachear.
+   Las guías se precargan porque se consultan justamente cuando algo no
+   funciona, que es cuando menos se puede contar con la conexión. */
 const SHELL_ASSETS = [
   "./",
   "./index.html",
   "./manifest.json",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
-  "./icons/icon-maskable-512.png"
+  "./icons/icon-maskable-512.png",
+  "./guias/index.html",
+  "./guias/manual-del-dueno.html",
+  "./guias/alta-de-gimnasios-y-usuarios.html"
 ];
 
 /* Nunca se cachean: son el estado vivo de la sesión y de la base.

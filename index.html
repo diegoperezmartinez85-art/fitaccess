@@ -324,7 +324,7 @@ h1, h2, h3, h4 { letter-spacing: -0.025em; line-height: 1.15; }
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   padding: 10px 18px; border: none; border-radius: 11px;
   font-family: inherit; font-size: .86rem; font-weight: 800; letter-spacing: -.01em;
-  color: #04121a; cursor: pointer; white-space: nowrap;
+  color: #04121a; cursor: pointer; white-space: nowrap; text-decoration: none;
   background: linear-gradient(180deg, color-mix(in srgb, var(--primary-color) 90%, #fff) 0%, var(--primary-color) 55%, color-mix(in srgb, var(--primary-color) 82%, #000) 100%);
   box-shadow: 0 1px 0 rgba(255,255,255,.35) inset, 0 4px 14px -4px var(--primary-glow), 0 1px 2px rgba(0,0,0,.4);
   transition: transform .18s var(--ease-out), box-shadow .25s, filter .2s;
@@ -1462,6 +1462,24 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
           <div class="metric-label">Ingresos de Hoy</div>
           <div id="stat-today-logs" class="metric-value" style="color: var(--primary-color);">0</div>
           <div class="metric-trend">Registros en molinete</div>
+        </div>
+      </div>
+
+      <!-- Guías de uso: se abren en otra pestaña y se pueden guardar como PDF -->
+      <div class="glass-card" style="margin-bottom: 24px;">
+        <div class="glass-card-header">
+          <div>
+            <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-clipboard"/></svg> Guías paso a paso</h3>
+            <p class="section-note">Se abren en otra pestaña. Cada una tiene un botón para guardarla como PDF o imprimirla.</p>
+          </div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <a class="btn btn-secondary" href="./guias/manual-del-dueno.html" target="_blank" rel="noopener">
+              <svg class="ico" aria-hidden="true"><use href="#i-building"/></svg> Manual del dueño
+            </a>
+            <a class="btn btn-secondary" data-cap="users:create" href="./guias/alta-de-gimnasios-y-usuarios.html" target="_blank" rel="noopener">
+              <svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg> Alta de usuarios
+            </a>
+          </div>
         </div>
       </div>
 
