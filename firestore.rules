@@ -161,10 +161,24 @@ service cloud.firestore {
           // puede editar datos personales ni tocar el apto médico.
           || (roleIn(gymId) == 'recepcion'
               && changedKeys().hasOnly(['subscriptionStatus', 'dueDate', 'payments', 'lastCheckInAt']))
-          // El socio actualiza su contacto y sube su certificado. NO puede
-          // escribir aptoMedico ni dueDate: sube el archivo y el staff valida.
+          /* El socio actualiza su contacto, sube su certificado y manda el
+             comprobante de pago. NO puede escribir aptoMedico, dueDate ni
+             subscriptionStatus: eso lo decide el gimnasio cuando revisa.
+             O sea que puede *pedir* que le acrediten el pago, no acreditárselo. */
           || (isOwnMember(gymId, memberId)
-              && changedKeys().hasOnly(['phone', 'email', 'photo', 'aptoFile', 'aptoRequestedAt']));
+              && changedKeys().hasOnly(['phone', 'email', 'photo', 'aptoFile',
+                                        'aptoRequestedAt', 'aptoRejection', 'pendingPayment']))
+
+          /* Activación: cualquiera con sesión puede marcar la ficha como
+             reclamada, pero sólo si presenta el código correcto, la ficha está
+             libre y se pone a sí mismo como dueño del vínculo. Es la otra mitad
+             de la regla de /users: las dos se escriben en el mismo lote. */
+          || (signedIn()
+              && changedKeys().hasOnly(['claimedUid', 'claimedAt'])
+              && resource.data.get('claimCode', '') != ''
+              && resource.data.get('claimedUid', '') == ''
+              && request.resource.data.claimedUid == request.auth.uid
+              && request.resource.data.claimCode == resource.data.claimCode);
       }
 
       // ------------------------------------- registro de accesos (molinete)
@@ -192,15 +206,51 @@ service cloud.firestore {
     }
 
     // ------------------------------------------------------- /users/{uid}
-    // Perfil, rol y gymId. ⚠️ CRÍTICO: el cliente NO escribe acá. Si pudiera,
-    // cualquiera se pondría role: "owner" y las reglas de arriba lo creerían.
-    // Se escribe con el Admin SDK: tools/admin-cli.js o functions/index.js.
+    // Perfil, rol y gymId. ⚠️ CRÍTICO: salvo el caso de activación de abajo,
+    // el cliente NO escribe acá. Si pudiera, cualquiera se pondría
+    // role: "owner" y las reglas de arriba le creerían.
     match /users/{uid} {
       allow read: if isPlatform()
         || request.auth.uid == uid
         || (signedIn() && isGymManager(resource.data.gymId));
 
-      allow write: if false;
+      /* ------------------------------------------------------------------
+         ACTIVACIÓN DEL SOCIO SIN BACKEND
+
+         El socio se crea su cuenta (Firebase Auth lo permite gratis) y acá
+         escribe su vínculo con el gimnasio. Lo único que lo habilita es
+         conocer el código que el gimnasio le mandó por WhatsApp, que se
+         compara contra la ficha del socio.
+
+         Las cinco condiciones que lo hacen seguro:
+           1. Sólo su propio documento (uid == auth.uid)
+           2. Sólo si no existía: es de un solo uso
+           3. El rol está fijado en 'socio'. No puede pedir owner ni admin
+           4. El código tiene que coincidir con el de la ficha
+           5. La ficha no puede estar ya reclamada por otra cuenta
+
+         Y no puede modificarlo después: update y delete están cerrados, así
+         que no puede cambiarse el rol ni pasarse a otro gimnasio.
+         ------------------------------------------------------------------ */
+      function fichaDelSocio() {
+        return get(/databases/$(database)/documents/gyms/$(request.resource.data.gymId)/members/$(request.resource.data.memberId)).data;
+      }
+
+      allow create: if signedIn()
+        && request.auth.uid == uid
+        && request.resource.data.role == 'socio'
+        && request.resource.data.active == true
+        && request.resource.data.keys().hasOnly(
+             ['uid', 'email', 'name', 'gymId', 'role', 'memberId', 'claimCode', 'active', 'claimedAt'])
+        && request.resource.data.uid == uid
+        && request.resource.data.gymId is string
+        && request.resource.data.memberId is string
+        && request.resource.data.claimCode is string
+        && fichaDelSocio().get('claimCode', '') != ''
+        && fichaDelSocio().get('claimCode', '') == request.resource.data.claimCode
+        && fichaDelSocio().get('claimedUid', '') == '';
+
+      allow update, delete: if false;
     }
 
     // Registro de operadores de la plataforma (bootstrap).
