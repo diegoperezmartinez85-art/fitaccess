@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FitAccess · Manual del dueño de gimnasio</title>
+<style>
+  :root {
+    --ink: #16211f;
+    --ink-soft: #55625f;
+    --line: #dde5e3;
+    --teal: #0d9488;
+    --teal-bg: #effcf9;
+    --amber: #b45309;
+    --amber-bg: #fffaeb;
+    --red: #b91c1c;
+    --red-bg: #fef4f2;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: #f2f6f5; color: var(--ink);
+    font: 16px/1.62 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  .toolbar {
+    position: sticky; top: 0; z-index: 10;
+    background: #0f2b28; color: #fff; padding: 10px 20px;
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  }
+  .toolbar strong { font-size: .95rem; letter-spacing: .2px; }
+  .toolbar span { font-size: .8rem; color: #9fc9c2; }
+  .toolbar button {
+    margin-left: auto; background: #14b8a6; color: #06201d; border: 0;
+    padding: 9px 16px; border-radius: 8px;
+    font: inherit; font-weight: 700; font-size: .87rem; cursor: pointer;
+  }
+  .toolbar button:hover { background: #2dd4bf; }
+  .sheet {
+    max-width: 830px; margin: 26px auto 60px; background: #fff;
+    padding: 52px 58px 64px; border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.13);
+  }
+  .eyebrow { font-size: .75rem; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase; color: var(--teal); }
+  h1 { font-size: 2.05rem; line-height: 1.18; margin: 8px 0 12px; letter-spacing: -.5px; }
+  .lede { font-size: 1.06rem; color: var(--ink-soft); margin: 0 0 6px; }
+  .meta { font-size: .8rem; color: #8b9895; border-top: 1px solid var(--line); margin-top: 26px; padding-top: 12px; }
+  h2 { font-size: 1.32rem; margin: 44px 0 14px; padding-bottom: 9px; border-bottom: 2px solid var(--teal); letter-spacing: -.2px; }
+  h3 { font-size: 1.03rem; margin: 26px 0 8px; }
+  p { margin: 0 0 12px; }
+  ul, ol { margin: 0 0 12px; padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  code {
+    background: #eef3f2; border: 1px solid #dbe4e2; border-radius: 4px;
+    padding: 1px 6px; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: .87em; color: #0b3f39; white-space: nowrap;
+  }
+  .step { display: flex; gap: 16px; padding: 18px 0; border-top: 1px solid var(--line); break-inside: avoid; page-break-inside: avoid; }
+  .step:first-of-type { border-top: 0; }
+  .num {
+    flex: 0 0 32px; height: 32px; border-radius: 50%;
+    background: var(--teal); color: #fff;
+    display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: .95rem;
+  }
+  .step-body { flex: 1; min-width: 0; }
+  .step-body > :last-child { margin-bottom: 0; }
+  .step h3 { margin-top: 0; }
+  .box {
+    border-left: 4px solid var(--teal); background: var(--teal-bg);
+    padding: 13px 17px; margin: 14px 0; border-radius: 0 6px 6px 0;
+    break-inside: avoid; page-break-inside: avoid;
+  }
+  .box.warn { border-color: #d97706; background: var(--amber-bg); }
+  .box.danger { border-color: var(--red); background: var(--red-bg); }
+  .box p:last-child { margin-bottom: 0; }
+  .tag { font-weight: 800; font-size: .74rem; letter-spacing: .9px; text-transform: uppercase; display: block; margin-bottom: 4px; color: var(--teal); }
+  .box.warn .tag { color: var(--amber); }
+  .box.danger .tag { color: var(--red); }
+  table { width: 100%; border-collapse: collapse; margin: 14px 0 18px; font-size: .89rem; }
+  th, td { text-align: left; padding: 9px 11px; border: 1px solid var(--line); vertical-align: top; }
+  th { background: #f5f9f8; font-size: .78rem; text-transform: uppercase; letter-spacing: .6px; color: var(--ink-soft); }
+  .path {
+    background: #0f2b28; color: #b9ece4; padding: 9px 14px; border-radius: 6px;
+    font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .83rem;
+    margin: 10px 0 14px; overflow-wrap: anywhere;
+  }
+  .check { list-style: none; padding-left: 0; }
+  .check li { padding-left: 30px; position: relative; margin-bottom: 9px; }
+  .check li::before {
+    content: ""; position: absolute; left: 0; top: 3px;
+    width: 17px; height: 17px; border: 2px solid var(--teal); border-radius: 4px;
+  }
+  .toc { background: #f6faf9; border: 1px solid var(--line); border-radius: 8px; padding: 18px 22px; margin: 26px 0 0; }
+  .toc h2 { margin: 0 0 10px; font-size: 1rem; border: 0; padding: 0; }
+  .toc ol { margin: 0; padding-left: 20px; font-size: .93rem; }
+  .toc a { color: var(--teal); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  hr.soft { border: 0; border-top: 1px solid var(--line); margin: 34px 0; }
+
+  .light {
+    display: flex; gap: 14px; align-items: flex-start;
+    padding: 14px 16px; border: 1px solid var(--line); border-radius: 8px;
+    margin-bottom: 10px; break-inside: avoid;
+  }
+  .dot { flex: 0 0 20px; height: 20px; border-radius: 50%; margin-top: 4px; border: 2px solid rgba(0,0,0,.14); }
+  .dot.g { background: #16a34a; }
+  .dot.y { background: #eab308; }
+  .dot.r { background: #dc2626; }
+  .light b { display: block; margin-bottom: 3px; }
+  .light .why { font-size: .87rem; color: var(--ink-soft); }
+  .btn-ref {
+    display: inline-block; background: #0f2b28; color: #fff; border-radius: 5px;
+    padding: 1px 8px; font-size: .82em; font-weight: 700; white-space: nowrap;
+  }
+  .routine { border: 1px solid var(--line); border-radius: 8px; padding: 16px 20px; margin: 14px 0; break-inside: avoid; }
+  .routine h4 { margin: 0 0 8px; font-size: .95rem; color: var(--teal); }
+  .routine ul { margin: 0; }
+
+  @media (max-width: 640px) {
+    .toolbar { padding: 8px 14px; gap: 10px; }
+    .toolbar span { display: none; }
+    .toolbar strong { font-size: .82rem; }
+    .toolbar button { padding: 7px 12px; font-size: .8rem; }
+    .sheet { padding: 28px 20px 44px; margin: 12px 8px 34px; }
+    h1 { font-size: 1.6rem; }
+    h2 { font-size: 1.15rem; }
+    .step { gap: 11px; }
+    .num { flex-basis: 27px; height: 27px; font-size: .85rem; }
+    table { font-size: .82rem; }
+    th, td { padding: 7px 8px; }
+  }
+  @media print {
+    body { background: #fff; font-size: 11.2pt; }
+    .toolbar { display: none; }
+    .sheet { box-shadow: none; margin: 0; max-width: none; padding: 0; }
+    h2 { page-break-after: avoid; break-after: avoid; }
+    a { color: inherit; text-decoration: none; }
+    .toc { page-break-after: always; break-after: page; }
+    @page { margin: 17mm 15mm; }
+
+    /* Chrome imprime sin fondos por defecto. Todo lo que dependía de un fondo
+       oscuro se redibuja con bordes y texto oscuro, que sí se imprimen. */
+    .path {
+      background: none; color: #0b3f39; border: 1px solid #0d9488;
+      border-left-width: 4px; font-weight: 600;
+    }
+    .btn-ref { background: none; color: #0b3f39; border: 1px solid #55625f; font-weight: 700; }
+    .num { background: none; color: #0d9488; border: 2px solid #0d9488; }
+    .dot { border-width: 4px; }
+    .dot.g { border-color: #16a34a; background: none; }
+    .dot.y { border-color: #b58900; background: none; }
+    .dot.r { border-color: #dc2626; background: none; }
+    th { background: none; }
+    code { background: none; }
+    .check li::before { border-color: #55625f; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <strong>FitAccess · Guía 2 de 2</strong>
+  <span>Manual del dueño de gimnasio</span>
+  <button onclick="window.print()">Guardar como PDF / Imprimir</button>
+</div>
+
+<div class="sheet">
+
+  <div class="eyebrow">Manual de operación</div>
+  <h1>Cómo usar FitAccess en tu gimnasio</h1>
+  <p class="lede">
+    Todo lo que necesitás para arrancar: configurar tu gimnasio, cargar los socios, mandarles la credencial
+    por WhatsApp, controlar el acceso en la puerta y cobrar las cuotas.
+  </p>
+  <p class="lede"><strong>Leelo una vez de corrido. Después usalo como consulta.</strong></p>
+
+  <div class="toc">
+    <h2>Contenido</h2>
+    <ol>
+      <li><a href="#entrar">Cómo entrar y por qué puerta</a></li>
+      <li><a href="#instalar">Instalar la app en la PC y en el celular</a></li>
+      <li><a href="#configurar">Los primeros 20 minutos: configurar tu gimnasio</a></li>
+      <li><a href="#socios">Cargar tus socios</a></li>
+      <li><a href="#credencial">La credencial: tres formas de entregarla</a></li>
+      <li><a href="#activacion">Cómo el socio activa la app en su celular</a></li>
+      <li><a href="#puerta">En la puerta: el semáforo</a></li>
+      <li><a href="#cobros">Cobrar las cuotas</a></li>
+      <li><a href="#aptos">Aptos médicos</a></li>
+      <li><a href="#staff">Tu equipo: recepción y entrenadores</a></li>
+      <li><a href="#rutina">Rutina recomendada</a></li>
+      <li><a href="#problemas">Problemas frecuentes</a></li>
+    </ol>
+  </div>
+
+  <h2 id="entrar">1. Cómo entrar y por qué puerta</h2>
+  <p>
+    Cuando abrís FitAccess, lo primero que ves son cuatro puertas de entrada. Elegir la correcta es importante:
+    si te equivocás de puerta, te va a dar error aunque el usuario y la contraseña estén bien.
+  </p>
+  <table>
+    <tr><th style="width:33%">Puerta</th><th>Para quién</th></tr>
+    <tr><td><strong>Ingreso Staff / Gerencia</strong></td><td><strong>Vos</strong>, tu administrador y tus entrenadores. Es la que usás casi siempre.</td></tr>
+    <tr><td><strong>Terminal de Recepción</strong></td><td>La computadora o tablet del mostrador. Sólo escáner y cobros.</td></tr>
+    <tr><td><strong>App del Socio</strong></td><td>Tus socios, desde su celular.</td></tr>
+    <tr><td><strong>Consola de Plataforma</strong></td><td>No es para vos. Es de quien administra el sistema.</td></tr>
+  </table>
+  <div class="box">
+    <span class="tag">Tu puerta</span>
+    <p>Vos entrás por <b>Ingreso Staff / Gerencia</b>. Anotátelo. Desde ahí llegás a todo lo demás.</p>
+  </div>
+  <p>
+    Una vez adentro, arriba a la derecha tenés los botones para moverte:
+    <span class="btn-ref">Panel Gimnasio</span> (configuración, socios, cobros) y
+    <span class="btn-ref">Recepción</span> (el escáner). En el celular esos botones están abajo.
+  </p>
+  <div class="box warn">
+    <span class="tag">Revisá que diga "Nube"</span>
+    <p>
+      Arriba, al lado de tu nombre, hay una insignia. Tiene que decir <b>Nube</b>. Eso significa que tus datos
+      están guardados en internet y que todos tus dispositivos ven lo mismo. Si dice <b>Local</b>, los datos
+      están sólo en ese navegador y no se comparten: avisale a quien te dio el acceso.
+    </p>
+  </div>
+
+  <h2 id="instalar">2. Instalar la app en la PC y en el celular</h2>
+  <p>
+    FitAccess funciona en el navegador, pero conviene instalarlo como aplicación: abre más rápido, va a pantalla
+    completa y queda con su ícono junto al resto de tus programas.
+  </p>
+
+  <div class="step">
+    <div class="num">1</div>
+    <div class="step-body">
+      <h3>En la computadora</h3>
+      <p>
+        Buscá el botón <span class="btn-ref">Instalar app</span> arriba a la derecha y hacé clic. Confirmá
+        <strong>Instalar</strong> en el cartel que aparece.
+      </p>
+      <p>
+        Si no ves ese botón, mirá la barra de direcciones de Chrome: a la derecha hay un ícono de una pantallita
+        con una flecha hacia abajo. Ese es el mismo botón.
+      </p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">2</div>
+    <div class="step-body">
+      <h3>En el celular Android</h3>
+      <p>
+        Abrí el sitio en Chrome, tocá el <strong>menú de tres puntitos</strong> arriba a la derecha y elegí
+        <strong>Agregar a pantalla de inicio</strong> (o <strong>Instalar aplicación</strong>).
+      </p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">3</div>
+    <div class="step-body">
+      <h3>En iPhone</h3>
+      <p>
+        Tiene que ser con <strong>Safari</strong>, no con Chrome. Tocá el botón de <strong>Compartir</strong>
+        (el cuadradito con la flecha hacia arriba) y elegí <strong>Agregar a inicio</strong>.
+      </p>
+    </div>
+  </div>
+
+  <div class="box">
+    <span class="tag">Dónde instalarlo</span>
+    <p>
+      Instalalo en <b>tres lugares</b>: tu computadora, tu celular, y la tablet o PC del mostrador.
+      Los tres ven exactamente la misma información al instante. Si recepción cobra una cuota, vos lo ves
+      desde tu celular sin hacer nada.
+    </p>
+  </div>
+
+  <hr class="soft">
+
+  <h2 id="configurar">3. Los primeros 20 minutos: configurar tu gimnasio</h2>
+  <p>Hacé esto una sola vez, antes de cargar el primer socio. Todo está en un mismo lugar:</p>
+  <div class="path">Panel Gimnasio &gt; tarjeta "Mi Gimnasio"</div>
+
+  <div class="step">
+    <div class="num">1</div>
+    <div class="step-body">
+      <h3>Nombre y teléfono</h3>
+      <p>
+        En <strong>Nombre comercial del gimnasio</strong> escribí el nombre tal como querés que lo vean tus socios.
+        <strong>Este es el nombre que va impreso en cada credencial</strong>, así que revisá que esté bien escrito.
+      </p>
+      <p>Completá también el <strong>Teléfono de contacto</strong>.</p>
+      <p>
+        El campo <strong>Identificador (slug)</strong> no se puede editar. Es el código interno que mantiene tus
+        datos separados de los de otros gimnasios. Ignoralo.
+      </p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">2</div>
+    <div class="step-body">
+      <h3>Sedes</h3>
+      <p>
+        Ya viene creada una sede que se llama <strong>Sede Principal</strong>. Cambiale el nombre por el real
+        (por ejemplo "Sucursal Centro"). Si tenés más de un local, agregalos escribiendo el nombre y tocando
+        <span class="btn-ref">+ Sede</span>.
+      </p>
+      <p>Si tenés un solo local, dejá una sola sede y listo.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">3</div>
+    <div class="step-body">
+      <h3>Planes y precios</h3>
+      <p>
+        Viene creado un <strong>Plan Mensual</strong>. Ponele el precio real. Agregá los que uses: Trimestral,
+        Anual, Pase Libre, Estudiantes. Escribí nombre y precio y tocá el <span class="btn-ref">+</span>.
+      </p>
+      <div class="box">
+        <span class="tag">El precio se usa solo</span>
+        <p>
+          Cuando recepción cobra en el mostrador, el botón ya muestra el monto del plan de ese socio. No hay que
+          acordarse de nada ni tipear el precio. Por eso vale la pena cargarlos bien.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">4</div>
+    <div class="step-body">
+      <h3>Las cuatro reglas de tu gimnasio</h3>
+      <p>Más abajo en la misma tarjeta hay cuatro decisiones. Estas definen cómo se comporta el semáforo de la puerta:</p>
+      <table>
+        <tr><th style="width:34%">Opción</th><th>Qué hace</th></tr>
+        <tr>
+          <td><strong>Aviso previo de vencimiento (días)</strong></td>
+          <td>Cuántos días antes de que venza la cuota el socio pasa a amarillo. Con 3 está bien para empezar. Si querés avisar con más tiempo, poné 5 o 7.</td>
+        </tr>
+        <tr>
+          <td><strong>Apto médico obligatorio</strong></td>
+          <td><em>Sí</em>: sin apto vigente el socio da rojo y no entra. <em>No</em>: da amarillo, entra igual pero recepción ve el aviso. Elegí según tu criterio y tu seguro.</td>
+        </tr>
+        <tr>
+          <td><strong>Vigencia del QR (segundos)</strong></td>
+          <td>El QR del celular se renueva cada tantos segundos para que nadie lo pase por captura de pantalla. Dejalo en 30.</td>
+        </tr>
+        <tr>
+          <td><strong>Acceso entre sedes</strong></td>
+          <td>Sólo importa si tenés más de un local. <em>Padrón compartido</em>: el socio entra en cualquier sede y queda registrado como visita. <em>Restringido</em>: sólo entra en la suya.</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">5</div>
+    <div class="step-body">
+      <h3>El link de pago</h3>
+      <p>
+        Este es el que permite que tus socios paguen desde el celular. Va en el campo
+        <strong>Link de pago de Mercado Pago</strong>.
+      </p>
+      <p>Para conseguirlo:</p>
+      <ol>
+        <li>Entrá a tu cuenta de Mercado Pago.</li>
+        <li>Buscá <strong>Cobrar</strong> y después <strong>Link de pago</strong>.</li>
+        <li>Creá un link con el monto de tu cuota mensual.</li>
+        <li>Copiá la dirección que te da y pegala en el campo de FitAccess.</li>
+      </ol>
+      <p>
+        Desde ese momento, cuando un socio toca <span class="btn-ref">Pagar cuota</span> en su celular,
+        se le abre tu link.
+      </p>
+      <div class="box warn">
+        <span class="tag">El pago no se acredita solo</span>
+        <p>
+          Mercado Pago no le avisa a FitAccess cuando alguien paga. El socio paga, <b>sube una foto del
+          comprobante</b>, y vos lo confirmás con un clic. Es un paso manual de tres segundos, pero es tu
+          control: nadie renueva su cuota sin que vos lo apruebes.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">6</div>
+    <div class="step-body">
+      <h3>Tus colores y tu logo</h3>
+      <p>
+        Más abajo en el Panel hay una sección de marca. Podés elegir un juego de colores ya armado o poner los
+        tuyos, y subir el logo de tu gimnasio.
+      </p>
+      <p>El logo y los colores aparecen en la app y en las credenciales. Es lo último que conviene hacer: primero que funcione, después que quede lindo.</p>
+    </div>
+  </div>
+
+  <hr class="soft">
+
+  <h2 id="socios">4. Cargar tus socios</h2>
+  <div class="path">Panel Gimnasio &gt; tarjeta "Padrón de Socios" &gt; botón <b>Nuevo Socio</b></div>
+  <p>Los campos que importan:</p>
+  <table>
+    <tr><th style="width:30%">Campo</th><th>Qué poner</th></tr>
+    <tr><td><strong>Nombre y apellido</strong></td><td>Obligatorio. Es lo que sale en la credencial.</td></tr>
+    <tr><td><strong>DNI</strong></td><td>Muy recomendable. Sirve para buscarlo rápido en el mostrador cuando se olvidó la credencial.</td></tr>
+    <tr><td><strong>Teléfono / WhatsApp</strong></td><td><strong>Cargalo siempre.</strong> Es a este número que le vas a mandar la credencial.</td></tr>
+    <tr><td><strong>Correo electrónico</strong></td><td>Lo necesita si va a usar la app en el celular.</td></tr>
+    <tr><td><strong>Sede</strong> y <strong>Plan</strong></td><td>Se eligen de las listas que configuraste antes.</td></tr>
+    <tr><td><strong>Estado de cuota</strong> y <strong>Vencimiento</strong></td><td>Si ya te pagó este mes, dejá "Al día" y poné la fecha en que le vence.</td></tr>
+    <tr><td><strong>Apto médico</strong></td><td>Vigente, Vencido o Pendiente, según lo que tengas.</td></tr>
+    <tr><td><strong>Foto</strong></td><td>Opcional pero vale la pena: es lo que hace que la credencial sirva de verdad para identificar. Se saca con la cámara del celular ahí mismo.</td></tr>
+  </table>
+
+  <div class="box danger">
+    <span class="tag">No marques "Crear también su acceso al carnet digital"</span>
+    <p>
+      Hay una casilla con ese texto al final del formulario. <b>Dejala sin marcar.</b> Es de una versión anterior
+      del sistema y no sirve para el acceso desde internet: crea un usuario que no va a poder entrar.
+    </p>
+    <p>
+      La forma correcta de que el socio use la app es el <b>código de activación</b>, que se explica en la
+      sección 6 de esta guía. El socio se crea su propia cuenta y el código lo vincula a tu gimnasio.
+    </p>
+  </div>
+
+  <div class="box">
+    <span class="tag">Consejo para arrancar</span>
+    <p>
+      No cargues 200 socios el primer día. Cargá 5, probá el circuito completo con ellos (credencial, escaneo,
+      cobro), y cuando estés seguro de que entendés cómo funciona, cargá el resto. Vas a ahorrar mucho retrabajo.
+    </p>
+  </div>
+
+  <h3>Bajar el padrón a Excel</h3>
+  <p>
+    El botón <span class="btn-ref">CSV</span> del padrón te descarga un archivo con todos tus socios, que se
+    abre con Excel. Sirve como respaldo y para hacer tus propias cuentas. <strong>Descargalo una vez por
+    semana</strong> y guardalo.
+  </p>
+
+  <hr class="soft">
+
+  <h2 id="credencial">5. La credencial: tres formas de entregarla</h2>
+  <p>
+    Cada socio tiene una credencial con su foto, su nombre, el nombre de tu gimnasio y un código QR.
+    En la fila de cada socio del padrón hay botones chiquitos para manejarla:
+  </p>
+  <table>
+    <tr><th style="width:26%">El botón con dibujo de</th><th>Qué hace</th></tr>
+    <tr><td><strong>globo de diálogo</strong></td><td>Muestra la credencial y te deja mandarla por WhatsApp.</td></tr>
+    <tr><td><strong>impresora</strong></td><td>Imprime la credencial de ese socio.</td></tr>
+    <tr><td><strong>llave</strong></td><td>Genera un código de activación nuevo para ese socio.</td></tr>
+  </table>
+  <div class="box">
+    <span class="tag">Cómo saber cuál es cuál</span>
+    <p>
+      Son botones chiquitos, sólo con el dibujo. Si dejás el mouse encima un segundo, aparece un cartelito con
+      el nombre: <b>"Enviar credencial por WhatsApp"</b>, <b>"Imprimir credencial"</b> y
+      <b>"Regenerar código de activación"</b>. En el celular, mantené el dedo apoyado para ver lo mismo.
+    </p>
+  </div>
+  <p>
+    Y arriba del padrón, el botón <span class="btn-ref">Credenciales</span> imprime <strong>todas</strong> las
+    credenciales de una vez, varias por hoja.
+  </p>
+
+  <h3>Forma 1 — Por WhatsApp (la más práctica)</h3>
+  <ol>
+    <li>En la fila del socio, tocá el botón del <strong>globo de diálogo</strong>.</li>
+    <li>Se abre una vista previa con la credencial ya armada.</li>
+    <li>Tocá <strong>Compartir / Enviar por WhatsApp</strong>.</li>
+    <li>Elegí el contacto y enviá.</li>
+  </ol>
+  <p>
+    El socio recibe la imagen de la credencial y un mensaje con su código y un enlace. Puede guardar la imagen
+    en su galería y mostrarla en la puerta, o tocar el enlace y activarse la app.
+  </p>
+  <div class="box">
+    <span class="tag">El QR de la imagen sí funciona</span>
+    <p>
+      Aunque WhatsApp comprime las fotos, el QR de la credencial está hecho para sobrevivir esa compresión.
+      Está probado: se lee bien igual. Podés confiar en él.
+    </p>
+  </div>
+
+  <h3>Forma 2 — Impresa</h3>
+  <p>
+    Para los socios que no tienen smartphone, o que prefieren la tarjeta. Imprimila, plastificala si querés,
+    y listo.
+  </p>
+  <div class="box warn">
+    <span class="tag">La credencial impresa no vence nunca</span>
+    <p>
+      El QR impreso es fijo y sirve para siempre. Si un socio se va del gimnasio y se queda con la tarjeta,
+      el QR sigue siendo válido como identificación. <b>Lo que lo frena es el semáforo</b>: al escanearlo va a
+      dar rojo por cuota vencida. Por eso importa mantener el padrón al día. Si querés cortarlo del todo,
+      dalo de baja en el padrón.
+    </p>
+  </div>
+
+  <h3>Forma 3 — Desde la app del socio</h3>
+  <p>
+    Si el socio activó la app, tiene un QR en su celular que <strong>se renueva cada 30 segundos</strong>.
+    Es la opción más segura, porque una captura de pantalla deja de servir enseguida. Es la que conviene
+    promover con el tiempo.
+  </p>
+
+  <hr class="soft">
+
+  <h2 id="activacion">6. Cómo el socio activa la app en su celular</h2>
+  <p>
+    Esto es lo que le permite al socio ver su cuota, pagar y subir el apto desde el teléfono.
+    <strong>Vos no le creás la cuenta</strong>: él se la crea, y un código de 8 caracteres lo conecta con tu gimnasio.
+  </p>
+
+  <div class="step">
+    <div class="num">1</div>
+    <div class="step-body">
+      <h3>Le mandás la credencial por WhatsApp</h3>
+      <p>
+        Botón del <strong>globo de diálogo</strong> en su fila del padrón, y enviar.
+        En el mensaje van dos cosas importantes:
+      </p>
+      <ul>
+        <li>Un <strong>enlace largo</strong>. Es el camino fácil: al tocarlo se abre la app con sus datos ya cargados.</li>
+        <li>Un <strong>código de 8 caracteres</strong>, tipo <code>K7M4PXQR</code>. Es el respaldo, para cargar a mano.</li>
+      </ul>
+      <div class="box">
+        <span class="tag">Por qué el código no tiene ceros ni la letra O</span>
+        <p>
+          Los códigos se generan sin <code>0</code>, <code>O</code>, <code>1</code>, <code>I</code> ni <code>L</code>,
+          justamente para que nadie se confunda al dictarlos por teléfono.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">2</div>
+    <div class="step-body">
+      <h3>El socio toca el enlace y elige su contraseña</h3>
+      <p>
+        Se abre la app con su nombre ya puesto. Sólo tiene que escribir su email y elegir una contraseña.
+        Toca activar y ya está adentro, viendo su carnet.
+      </p>
+      <p>
+        Desde ese momento ve tres pestañas: <strong>Cuota &amp; Pagos</strong>, <strong>Apto Médico</strong> y
+        <strong>Mi Perfil</strong>.
+      </p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">3</div>
+    <div class="step-body">
+      <h3>Si el enlace no le funciona</h3>
+      <p>Que entre a mano:</p>
+      <ol>
+        <li>Abrir el sitio de FitAccess.</li>
+        <li>Elegir la puerta <strong>App del Socio</strong>.</li>
+        <li>Buscar la opción de activarse con código.</li>
+        <li>Escribir el código de 8 caracteres, su email y una contraseña.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">4</div>
+    <div class="step-body">
+      <h3>Cuando el código ya no sirve</h3>
+      <p>
+        Cada código se usa <strong>una sola vez</strong>. Si el socio dice que le rebota, tocá el botón de la
+        <strong>llave</strong> en su fila: se genera uno nuevo y el anterior deja de valer. Después mandale la
+        credencial otra vez con el botón del globo de diálogo.
+      </p>
+      <div class="box warn">
+        <span class="tag">Si perdió el acceso a su cuenta</span>
+        <p>
+          Si el socio olvidó la contraseña, que use <b>¿Olvidaste tu contraseña?</b> en la pantalla de ingreso y
+          le llega un mail para cambiarla. Generar un código nuevo <b>no</b> resuelve eso, porque su ficha ya
+          quedó vinculada a una cuenta. Si perdió el acceso al email también, avisale a quien administra el
+          sistema para que desvincule la ficha.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <hr class="soft">
+
+  <h2 id="puerta">7. En la puerta: el semáforo</h2>
+  <div class="path">Botón <b>Recepción</b> (arriba en la PC, abajo en el celular)</div>
+
+  <h3>Encender la cámara</h3>
+  <p>
+    Tocá <span class="btn-ref">Iniciar Cámara</span>. El navegador te va a pedir permiso: elegí
+    <strong>Permitir</strong>. Esto se hace una sola vez por dispositivo.
+  </p>
+  <div class="box warn">
+    <span class="tag">Si dice "Modo Manual (sin cámara)"</span>
+    <p>
+      Es que no le diste permiso, o que otra aplicación está usando la cámara. En Chrome, hacé clic en el
+      candado al lado de la dirección y habilitá la cámara. Igual podés seguir trabajando: buscás al socio por
+      nombre o DNI y funciona todo lo demás.
+    </p>
+  </div>
+
+  <h3>Qué significa cada color</h3>
+  <p>Al escanear una credencial, la pantalla se pinta de un color. Eso es todo lo que recepción necesita mirar:</p>
+
+  <div class="light">
+    <div class="dot g"></div>
+    <div>
+      <b>Verde — que pase</b>
+      <div class="why">Cuota al día y apto en orden. No hay nada que hacer.</div>
+    </div>
+  </div>
+
+  <div class="light">
+    <div class="dot y"></div>
+    <div>
+      <b>Amarillo — que pase, pero avisale</b>
+      <div class="why">
+        Le vence la cuota en los próximos días (los que configuraste en "Aviso previo"), o le falta el apto pero
+        vos decidiste que no sea obligatorio. Entra igual. Es el momento de decirle "che, la semana que viene
+        se te vence".
+      </div>
+    </div>
+  </div>
+
+  <div class="light">
+    <div class="dot r"></div>
+    <div>
+      <b>Rojo — no pasa</b>
+      <div class="why">
+        La cuota está vencida, o el apto no está vigente y vos lo pusiste como obligatorio. La pantalla te dice
+        el motivo exacto. Si es por plata, aparece un botón para cobrarle ahí mismo.
+      </div>
+    </div>
+  </div>
+
+  <div class="box">
+    <span class="tag">Cómo entrenar a tu recepcionista</span>
+    <p>
+      No hace falta que entienda el sistema. Alcanza con: <b>verde pasa, amarillo pasa y le avisás, rojo no pasa
+      y leés el motivo en la pantalla</b>. Todo lo demás se aprende solo.
+    </p>
+  </div>
+
+  <h3>Si tenés más de una sede</h3>
+  <p>
+    Con el padrón compartido, un socio de una sede puede entrar en otra. Da verde y queda anotado como
+    "visita". No bloquea nada: es sólo información para que sepas cómo se mueve tu gente.
+  </p>
+
+  <hr class="soft">
+
+  <h2 id="cobros">8. Cobrar las cuotas</h2>
+  <p>Hay dos caminos, y los dos terminan en lo mismo: la cuota renovada por 30 días.</p>
+
+  <h3>Camino A — El socio paga desde el celular</h3>
+  <ol>
+    <li>El socio toca <strong>Pagar cuota</strong> en su app y se le abre tu link de Mercado Pago.</li>
+    <li>Paga.</li>
+    <li>Vuelve a la app y sube <strong>una foto o captura del comprobante</strong>.</li>
+    <li>A vos te aparece en <strong>Pendientes de revisión</strong>, dentro del Panel Gimnasio.</li>
+    <li>
+      Tocás <span class="btn-ref">Ver comprobante</span>, chequeás que el monto esté bien, y tocás
+      <span class="btn-ref">Confirmar y renovar 30 días</span>.
+    </li>
+  </ol>
+  <p>
+    Si el comprobante está mal o no corresponde, tocá <span class="btn-ref">Rechazar</span>. Al socio le
+    aparece un aviso de que fue rechazado y puede subir otro.
+  </p>
+
+  <h3>Camino B — Paga en el mostrador</h3>
+  <p>
+    Recepción lo escanea, sale rojo por cuota vencida, y en la misma pantalla aparece un botón
+    <span class="btn-ref">Cobrar $… ahora</span> con el monto de su plan ya calculado. Un clic y queda al día.
+  </p>
+
+  <div class="box">
+    <span class="tag">Mirá "Pendientes de revisión" todos los días</span>
+    <p>
+      Es donde caen los comprobantes y los aptos que mandan tus socios. Tiene un contador: si dice
+      <b>"todo al día"</b> no tenés nada que hacer. Si dice <b>"3 pendientes"</b>, hay gente esperando.
+      Revisalo una vez por día y no se te acumula.
+    </p>
+  </div>
+
+  <hr class="soft">
+
+  <h2 id="aptos">9. Aptos médicos</h2>
+  <p>El circuito es igual al de los pagos:</p>
+  <ol>
+    <li>El socio va a la pestaña <strong>Apto Médico</strong> de su app y sube una foto o un PDF del certificado.</li>
+    <li>Te aparece en <strong>Pendientes de revisión</strong>.</li>
+    <li>Lo mirás y lo aprobás. Queda vigente por un año.</li>
+  </ol>
+  <p>
+    También podés cargarlo vos: editás al socio en el padrón y cambiás el estado del apto a mano. Sirve para
+    los que te traen el papel al mostrador.
+  </p>
+  <div class="box warn">
+    <span class="tag">Decidí esto a conciencia</span>
+    <p>
+      La opción <b>Apto médico obligatorio</b> en la configuración es la que define si alguien sin apto entra
+      o no. Es una decisión tuya y de tu seguro, no del sistema. Si la ponés en "Sí", preparate para que el
+      primer día varios socios den rojo hasta que regularicen.
+    </p>
+  </div>
+
+  <hr class="soft">
+
+  <h2 id="staff">10. Tu equipo: recepción y entrenadores</h2>
+  <p>
+    Cada empleado tiene que tener <strong>su propia cuenta</strong>. No compartas la tuya: la tuya puede cambiar
+    precios, ver reportes y tocar la configuración.
+  </p>
+  <table>
+    <tr><th style="width:26%">Rol</th><th>Ve</th><th>No ve</th></tr>
+    <tr><td><strong>Recepción</strong></td><td>Escáner, semáforo, cobrar</td><td>Reportes, configuración, usuarios</td></tr>
+    <tr><td><strong>Entrenador</strong></td><td>Padrón y aptos</td><td>Dinero, configuración</td></tr>
+    <tr><td><strong>Administrador</strong></td><td>Casi todo lo tuyo</td><td>La facturación del servicio</td></tr>
+  </table>
+  <p>
+    Para pedir una cuenta nueva, escribile a quien te dio el acceso a FitAccess con estos tres datos:
+    <strong>nombre de la persona, su email, y qué rol le corresponde</strong>. En unos minutos la tiene.
+  </p>
+  <div class="box">
+    <span class="tag">Sobre el botón "Crear Usuario"</span>
+    <p>
+      Vas a ver un botón <b>Crear Usuario</b> en el Panel Gimnasio. Con la configuración actual del servicio
+      ese botón da error: la creación de cuentas se hace del lado del administrador del sistema. No es una falla
+      de tu instalación.
+    </p>
+  </div>
+  <div class="box warn">
+    <span class="tag">Cuando se va un empleado</span>
+    <p>
+      Avisá el mismo día para que le den de baja el acceso. Mientras la cuenta siga activa, puede entrar desde
+      cualquier lugar y ver el padrón de tus socios.
+    </p>
+  </div>
+
+  <hr class="soft">
+
+  <h2 id="rutina">11. Rutina recomendada</h2>
+
+  <div class="routine">
+    <h4>Todos los días · 2 minutos</h4>
+    <ul>
+      <li>Abrí <strong>Pendientes de revisión</strong> y despachá lo que haya.</li>
+      <li>Mirá los socios en amarillo y mandales un mensaje avisando del vencimiento.</li>
+    </ul>
+  </div>
+
+  <div class="routine">
+    <h4>Una vez por semana · 10 minutos</h4>
+    <ul>
+      <li>Descargá el <strong>CSV</strong> del padrón y guardalo. Es tu respaldo.</li>
+      <li>Revisá quiénes están en rojo hace varios días: son bajas probables, conviene llamarlos.</li>
+      <li>Mandale la credencial por WhatsApp a los socios nuevos de la semana.</li>
+    </ul>
+  </div>
+
+  <div class="routine">
+    <h4>Una vez por mes · 20 minutos</h4>
+    <ul>
+      <li>Revisá los precios de los planes.</li>
+      <li>Mirá los aptos que están por vencer.</li>
+      <li>Chequeá la lista de usuarios de staff: que no quede nadie que ya no trabaja con vos.</li>
+    </ul>
+  </div>
+
+  <hr class="soft">
+
+  <h2 id="problemas">12. Problemas frecuentes</h2>
+  <table>
+    <tr><th style="width:38%">Lo que pasa</th><th>Qué hacer</th></tr>
+    <tr>
+      <td>Un socio dice que la app no le anda</td>
+      <td>Preguntale por qué puerta entra: tiene que ser <strong>App del Socio</strong>. Es la causa en la mayoría de los casos.</td>
+    </tr>
+    <tr>
+      <td>La cámara no lee un QR</td>
+      <td>Poco luz, pantalla del celular muy oscura o el vidrio sucio. Pedile que suba el brillo del teléfono. Si no sale, buscalo por DNI: es más rápido que insistir.</td>
+    </tr>
+    <tr>
+      <td>Cargué un socio y no aparece en la otra máquina</td>
+      <td>Verificá que la insignia diga <strong>Nube</strong> en las dos. Después recargá con <code>Ctrl+Shift+R</code>.</td>
+    </tr>
+    <tr>
+      <td>Un socio da rojo y no entiendo por qué</td>
+      <td>La pantalla del escaneo dice el motivo exacto abajo del nombre. Si dice cuota vencida, mirá la fecha de vencimiento en su ficha.</td>
+    </tr>
+    <tr>
+      <td>Confirmé un pago por error</td>
+      <td>Editá al socio en el padrón y corregile la fecha de vencimiento a mano.</td>
+    </tr>
+    <tr>
+      <td>El código de activación le rebota</td>
+      <td>Ya fue usado. Tocá el botón de la <strong>llave</strong> para generar uno nuevo y reenviale la credencial.</td>
+    </tr>
+    <tr>
+      <td>Veo una versión vieja de la app</td>
+      <td><code>Ctrl+Shift+R</code> en la PC. En el celular, cerrá la app del todo y volvé a abrirla.</td>
+    </tr>
+    <tr>
+      <td>La credencial sale con el nombre equivocado del gimnasio</td>
+      <td>Corregí <strong>Nombre comercial</strong> en Mi Gimnasio y volvé a generar las credenciales.</td>
+    </tr>
+  </table>
+
+  <div class="box danger">
+    <span class="tag">Dos cosas que no tienen vuelta atrás</span>
+    <p>
+      Si <b>borrás un socio</b> del padrón, se pierde su historial de pagos. Si <b>cambiás el nombre de una
+      sede</b>, cambia en todas las credenciales que generes de ahí en adelante. Ninguna de las dos se puede
+      deshacer, así que pensalo dos segundos antes.
+    </p>
+  </div>
+
+  <hr class="soft">
+
+  <h2>Control de puesta en marcha</h2>
+  <p>Marcá cada punto. Cuando estén todos, tu gimnasio está listo para operar.</p>
+  <ul class="check">
+    <li>Entré por <strong>Ingreso Staff / Gerencia</strong> y cambié mi contraseña provisoria.</li>
+    <li>La insignia de arriba dice <strong>Nube</strong>.</li>
+    <li>Instalé la app en mi PC, en mi celular y en el mostrador.</li>
+    <li>El nombre comercial de mi gimnasio está bien escrito.</li>
+    <li>Le puse el nombre real a mi sede.</li>
+    <li>Cargué mis planes con los precios reales.</li>
+    <li>Decidí si el apto médico es obligatorio.</li>
+    <li>Pegué mi link de pago de Mercado Pago.</li>
+    <li>Cargué 5 socios de prueba con teléfono y foto.</li>
+    <li>Le mandé la credencial por WhatsApp a uno y la recibió bien.</li>
+    <li>Ese socio activó la app y subió un comprobante.</li>
+    <li>Confirmé ese comprobante desde Pendientes de revisión.</li>
+    <li>Le di permiso a la cámara en el dispositivo del mostrador.</li>
+    <li>Escaneé una credencial y vi el semáforo funcionando.</li>
+    <li>Mi recepcionista tiene su propia cuenta y sabe leer los tres colores.</li>
+    <li>Descargué el CSV del padrón como respaldo.</li>
+  </ul>
+
+  <p class="meta">
+    FitAccess · Guía 2 de 2 · Manual del dueño de gimnasio.<br>
+    Para dudas sobre cuentas de acceso y altas de usuarios, contactá al administrador del sistema.
+  </p>
+
+</div>
+</body>
+</html>
