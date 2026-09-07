@@ -1053,9 +1053,12 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
           </button>
         </form>
 
-        <div style="margin-top: 12px; text-align: center;">
+        <div style="margin-top: 12px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
           <button type="button" class="btn btn-secondary btn-tiny" onclick="FitApp.requestPasswordReset()">
             ¿Olvidaste tu contraseña?
+          </button>
+          <button type="button" class="btn btn-secondary btn-tiny" id="btn-activar" onclick="FitApp.openActivation()">
+            <svg class="ico" aria-hidden="true"><use href="#i-key"/></svg> Primera vez: activar con código
           </button>
         </div>
 
@@ -1263,7 +1266,34 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
                 <span id="socio-payment-status-badge" class="status-badge badge-green">Al Día</span>
               </div>
             </div>
-            <button class="btn" style="width: 100%;" id="socio-pay-btn" onclick="FitApp.processSelectedPayment()"><svg class="ico" aria-hidden="true"><use href="#i-credit"/></svg> Pagar Cuota</button>
+            <!-- Comprobante en revisión -->
+            <div id="socio-pending-box" style="display:none; background: rgba(245,158,11,.1); border:1px solid rgba(245,158,11,.35); border-radius: var(--radius-sm); padding: 13px; margin-bottom: 14px; font-size:0.84rem;">
+              <strong>Comprobante enviado.</strong> El gimnasio lo va a revisar y tu cuota se actualiza cuando lo confirme.
+              <div id="socio-pending-detail" style="color:var(--text-muted); margin-top:5px;"></div>
+            </div>
+
+            <!-- Último comprobante rechazado -->
+            <div id="socio-rejected-box" style="display:none; background: rgba(239,68,68,.1); border:1px solid rgba(239,68,68,.35); border-radius: var(--radius-sm); padding: 13px; margin-bottom: 14px; font-size:0.84rem;">
+              <strong>El último comprobante fue rechazado.</strong>
+              <div id="socio-rejected-detail" style="color:var(--text-muted); margin-top:5px;"></div>
+            </div>
+
+            <div id="socio-pay-block">
+              <button class="btn" style="width: 100%; margin-bottom: 12px;" id="socio-pay-btn" onclick="FitApp.openPaymentLink()">
+                <svg class="ico" aria-hidden="true"><use href="#i-credit"/></svg> Pagar cuota
+              </button>
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">Ya pagué — subir el comprobante:</label>
+                <input type="file" id="socio-proof-input" class="form-input" accept="image/*" onchange="FitApp.uploadPaymentProof(this)">
+                <span class="form-hint">Una captura del pago. El gimnasio la confirma y tu cuota se renueva.</span>
+              </div>
+            </div>
+
+            <div id="socio-pay-staff" style="display:none; margin-top:12px;">
+              <button class="btn btn-secondary" style="width:100%;" onclick="FitApp.processSelectedPayment()">
+                <svg class="ico" aria-hidden="true"><use href="#i-money"/></svg> Cobrar en mostrador
+              </button>
+            </div>
           </div>
 
           <div id="stab-apto" class="socio-tab" style="display: none;">
@@ -1473,6 +1503,15 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
             <label class="form-label">Vigencia del QR (segundos):</label>
             <input type="number" id="gym-qr-ttl" class="form-input" min="10" max="300" onchange="FitApp.updateGymSetting('qrTtlSeconds', parseInt(this.value,10))">
           </div>
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label class="form-label">Link de pago de Mercado Pago:</label>
+            <input type="url" id="gym-payment-link" class="form-input" placeholder="https://link.mercadopago.com.ar/tugimnasio" oninput="FitApp.updatePaymentLink(this.value)">
+            <span class="form-hint">
+              Creá un link de pago en tu cuenta de Mercado Pago y pegalo acá. Es el que
+              se le abre al socio cuando toca "Pagar cuota". Después sube el comprobante
+              y vos lo confirmás desde "Pendientes de revisión".
+            </span>
+          </div>
           <div class="form-group">
             <label class="form-label">Acceso entre sedes:</label>
             <select id="gym-cross-branch" class="form-select" onchange="FitApp.updateGymSetting('crossBranchAccess', this.value === 'true')">
@@ -1480,6 +1519,34 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
               <option value="false">Restringido — sólo en su sede</option>
             </select>
             <span class="form-hint">El padrón es del gimnasio: la sede de la ficha es la habitual del socio.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bandejas de revisión: pagos y aptos que mandaron los socios -->
+      <div class="glass-card" id="pending-card" style="margin-bottom: 24px; display:none;">
+        <div class="glass-card-header">
+          <div>
+            <h3 class="card-title">
+              <svg class="ico" aria-hidden="true"><use href="#i-clipboard"/></svg> Pendientes de revisión
+            </h3>
+            <p class="section-note">Lo que enviaron los socios desde su celular y espera tu confirmación.</p>
+          </div>
+          <span id="pending-count" class="status-badge badge-green">todo al día</span>
+        </div>
+
+        <div class="grid-2">
+          <div>
+            <h4 style="font-size:0.95rem; font-weight:800; margin-bottom:10px; display:flex; align-items:center; gap:8px;">
+              <svg class="ico" aria-hidden="true"><use href="#i-credit"/></svg> Pagos por confirmar
+            </h4>
+            <div id="queue-payments" style="display:flex; flex-direction:column; gap:10px;"></div>
+          </div>
+          <div>
+            <h4 style="font-size:0.95rem; font-weight:800; margin-bottom:10px; display:flex; align-items:center; gap:8px;">
+              <svg class="ico" aria-hidden="true"><use href="#i-pulse"/></svg> Aptos por validar
+            </h4>
+            <div id="queue-aptos" style="display:flex; flex-direction:column; gap:10px;"></div>
           </div>
         </div>
       </div>
@@ -1606,6 +1673,92 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
   <!-- =====================================================================
        MODALES
        ===================================================================== -->
+
+  <!-- Vista previa de la credencial antes de enviarla por WhatsApp -->
+  <div id="modal-credential" class="modal-overlay" style="display:none;">
+    <div class="modal-card" style="max-width: 430px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <h3 class="card-title">
+          <svg class="ico" aria-hidden="true"><use href="#i-card"/></svg> Credencial del socio
+        </h3>
+        <button class="btn btn-secondary btn-tiny" onclick="FitApp.hideModal('modal-credential')">
+          <svg class="ico" aria-hidden="true"><use href="#i-x"/></svg>
+        </button>
+      </div>
+      <img id="credential-preview-img" alt="Credencial" style="width:100%; border-radius:14px; border:1px solid var(--hairline-2); display:block;">
+      <div id="credential-preview-code" class="credential-print" style="margin-top:12px; text-align:center;"></div>
+      <p class="section-note" style="margin-top:10px;">
+        Se envía la imagen junto con el enlace de activación. Con eso el socio entra al
+        gimnasio y puede usar la app desde su celular.
+      </p>
+      <button class="btn" style="width:100%; margin-top:12px; padding:12px;" onclick="FitApp.sendPreviewedCredential()">
+        <svg class="ico" aria-hidden="true"><use href="#i-chat"/></svg> Enviar por WhatsApp
+      </button>
+    </div>
+  </div>
+
+  <!-- Ver comprobante o certificado adjunto -->
+  <div id="modal-attachment" class="modal-overlay" style="display:none;">
+    <div class="modal-card" style="max-width: 560px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <h3 class="card-title" id="attachment-title">Adjunto</h3>
+        <button class="btn btn-secondary btn-tiny" onclick="FitApp.hideModal('modal-attachment')">
+          <svg class="ico" aria-hidden="true"><use href="#i-x"/></svg>
+        </button>
+      </div>
+      <img id="attachment-img" alt="" style="width:100%; border-radius:12px; border:1px solid var(--hairline); display:block; background:#fff;">
+      <a id="attachment-link" class="btn btn-secondary" style="display:none; margin-top:12px;" target="_blank" rel="noopener">
+        <svg class="ico" aria-hidden="true"><use href="#i-download"/></svg> Abrir el archivo
+      </a>
+    </div>
+  </div>
+
+  <!-- Activación de la cuenta del socio con el código de WhatsApp -->
+  <div id="modal-activation" class="modal-overlay" style="display:none; z-index: 99997;">
+    <div class="modal-card" style="max-width: 460px;">
+      <div style="text-align:center; margin-bottom:16px;">
+        <div class="portal-icon" style="margin:0 auto 10px;">
+          <svg class="ico" aria-hidden="true"><use href="#i-key"/></svg>
+        </div>
+        <h3 style="font-size:1.3rem; font-weight:900;">Activar mi cuenta</h3>
+        <p class="section-note">Con el código que te mandó el gimnasio por WhatsApp.</p>
+        <div id="act-gym-info" class="chip-inline" style="display:none; margin-top:10px;"></div>
+      </div>
+
+      <form onsubmit="event.preventDefault(); FitApp.submitActivation();">
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">Número de socio:</label>
+            <input type="text" id="act-member" class="form-input" placeholder="SOC-1001" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Código:</label>
+            <input type="text" id="act-code" class="form-input" placeholder="ABCD-2345" required style="text-transform:uppercase;">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tu correo:</label>
+          <input type="email" id="act-email" class="form-input" required autocomplete="email">
+          <span class="form-hint">Con este correo vas a entrar de ahora en más.</span>
+        </div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">Contraseña:</label>
+            <input type="password" id="act-pass" class="form-input" minlength="8" required autocomplete="new-password">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Repetir:</label>
+            <input type="password" id="act-pass2" class="form-input" minlength="8" required autocomplete="new-password">
+          </div>
+        </div>
+        <div id="act-status" style="font-size:0.82rem; text-align:center; min-height:18px; margin-bottom:8px;"></div>
+        <div style="display:flex; gap:10px;">
+          <button type="button" class="btn btn-secondary" style="flex:1;" onclick="FitApp.closeActivation()">Cancelar</button>
+          <button type="submit" class="btn" style="flex:2; padding:12px;">Activar</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <!-- Puesta en marcha: pasar de la demo a un gimnasio real -->
   <div id="modal-setup" class="modal-overlay" style="display: none; z-index: 99998;">
@@ -2107,9 +2260,12 @@ const PRESET_THEMES = {
 
 /* Gráficos locales en lugar de URLs remotas: se ven siempre, también sin
    internet y en la tablet del mostrador, y no dependen de un tercero. */
-const DEFAULT_PHOTO = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Crect width='96' height='96' fill='%23151b29'/%3E%3Ccircle cx='48' cy='37' r='15' fill='%233a4560'/%3E%3Cpath d='M17 93c0-17.1 13.9-31 31-31s31 13.9 31 31z' fill='%233a4560'/%3E%3C/svg%3E";
+/* Ojo con el width/height explícitos: sin dimensiones intrínsecas, Chrome no
+   puede rasterizar un SVG dentro de un canvas y la foto sale vacía en la
+   credencial que se manda por WhatsApp. */
+const DEFAULT_PHOTO = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 96 96'%3E%3Crect width='96' height='96' fill='%23151b29'/%3E%3Ccircle cx='48' cy='37' r='15' fill='%233a4560'/%3E%3Cpath d='M17 93c0-17.1 13.9-31 31-31s31 13.9 31 31z' fill='%233a4560'/%3E%3C/svg%3E";
 
-const BRAND_MARK = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%232dd4bf'/%3E%3Cstop offset='1' stop-color='%230d9488'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='17' fill='url(%23g)'/%3E%3Cg stroke='%23ffffff' stroke-width='5' stroke-linecap='round'%3E%3Cpath d='M21 22v20M15 27v10M43 22v20M49 27v10M21 32h22'/%3E%3C/g%3E%3C/svg%3E";
+const BRAND_MARK = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%232dd4bf'/%3E%3Cstop offset='1' stop-color='%230d9488'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='17' fill='url(%23g)'/%3E%3Cg stroke='%23ffffff' stroke-width='5' stroke-linecap='round'%3E%3Cpath d='M21 22v20M15 27v10M43 22v20M49 27v10M21 32h22'/%3E%3C/g%3E%3C/svg%3E";
 
 /* ==========================================================================
    2. UTILIDADES
@@ -2121,6 +2277,30 @@ const BRAND_MARK = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'
 const ic = (name, extra = "") => `<svg class="ico ${extra}" aria-hidden="true"><use href="#i-${name}"/></svg>`;
 
 const uid = (prefix) => `${prefix}-${Date.now().toString(36)}${Math.floor(Math.random() * 1e4).toString(36)}`;
+
+/* Código de activación del socio. Sin caracteres ambiguos (0/O, 1/I/L) porque
+   se dicta por teléfono y se tipea en un celular. 8 caracteres en dos grupos
+   dan ~1.100 millones de combinaciones: no se adivina. */
+const randomClaimCode = () => {
+  const abc = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+  const pick = n => Array.from({ length: n }, () => abc[Math.floor(Math.random() * abc.length)]).join("");
+  return `${pick(4)}-${pick(4)}`;
+};
+
+/* El enlace de activación lleva gimnasio, socio y código en un solo parámetro,
+   así el socio no tiene que elegir su gimnasio de una lista ni tipear su
+   número: toca el link de WhatsApp y sólo pone email y contraseña. */
+const encodeActivation = (gymId, memberId, code) => {
+  try { return btoa(`${gymId}|${memberId}|${code}`).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
+  catch (e) { return ""; }
+};
+const decodeActivation = (token) => {
+  try {
+    const s = atob(String(token).replace(/-/g, "+").replace(/_/g, "/"));
+    const [gymId, memberId, code] = s.split("|");
+    return gymId && memberId && code ? { gymId, memberId, code } : null;
+  } catch (e) { return null; }
+};
 const todayISO = () => new Date().toISOString().split("T")[0];
 const dPlus = (days) => { const d = new Date(); d.setDate(d.getDate() + days); return d.toISOString().split("T")[0]; };
 const slugify = (s) => String(s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
@@ -2231,13 +2411,25 @@ function buildSeed() {
   ];
 
   const members = [
-    { id: "SOC-1001", gymId: "gym-powerhouse", branchId: "br-ph-1", name: "Carlos Tevez", dni: "38450123", phone: "+54 9 11 4455-8899", email: "carlos@powerhousegym.com", planId: "pl-ph-3", photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80", subscriptionStatus: "al_dia", dueDate: dPlus(22), aptoMedico: "vigente", aptoDueDate: dPlus(120), aptoFile: null, createdAt: new Date().toISOString() },
-    { id: "SOC-1002", gymId: "gym-powerhouse", branchId: "br-ph-1", name: "Lucía Fernández", dni: "40123987", phone: "+54 9 11 6677-2233", email: "lucia@powerhousegym.com", planId: "pl-ph-1", photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80", subscriptionStatus: "al_dia", dueDate: dPlus(2), aptoMedico: "vigente", aptoDueDate: dPlus(70), aptoFile: null, createdAt: new Date().toISOString() },
-    { id: "SOC-1003", gymId: "gym-powerhouse", branchId: "br-ph-2", name: "Marcos Rojo", dni: "35999888", phone: "+54 9 11 8899-0011", email: "marcos@powerhousegym.com", planId: "pl-ph-2", photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80", subscriptionStatus: "vencido", dueDate: dPlus(-11), aptoMedico: "vigente", aptoDueDate: dPlus(45), aptoFile: null, createdAt: new Date().toISOString() },
-    { id: "SOC-1004", gymId: "gym-powerhouse", branchId: "br-ph-2", name: "Sofía Martínez", dni: "42888111", phone: "+54 9 11 1122-3344", email: "sofia@powerhousegym.com", planId: "pl-ph-1", photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80", subscriptionStatus: "al_dia", dueDate: dPlus(16), aptoMedico: "vencido", aptoDueDate: dPlus(-34), aptoFile: null, createdAt: new Date().toISOString() },
+    { id: "SOC-1001", gymId: "gym-powerhouse", branchId: "br-ph-1", name: "Carlos Tevez", dni: "38450123", phone: "+54 9 11 4455-8899", email: "carlos@powerhousegym.com", planId: "pl-ph-3", photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80", subscriptionStatus: "al_dia", dueDate: dPlus(22), aptoMedico: "vigente", aptoDueDate: dPlus(120), aptoFile: null,
+          claimCode: randomClaimCode(), claimedUid: null, claimedAt: null,
+          pendingPayment: null, createdAt: new Date().toISOString() },
+    { id: "SOC-1002", gymId: "gym-powerhouse", branchId: "br-ph-1", name: "Lucía Fernández", dni: "40123987", phone: "+54 9 11 6677-2233", email: "lucia@powerhousegym.com", planId: "pl-ph-1", photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80", subscriptionStatus: "al_dia", dueDate: dPlus(2), aptoMedico: "vigente", aptoDueDate: dPlus(70), aptoFile: null,
+          claimCode: randomClaimCode(), claimedUid: null, claimedAt: null,
+          pendingPayment: null, createdAt: new Date().toISOString() },
+    { id: "SOC-1003", gymId: "gym-powerhouse", branchId: "br-ph-2", name: "Marcos Rojo", dni: "35999888", phone: "+54 9 11 8899-0011", email: "marcos@powerhousegym.com", planId: "pl-ph-2", photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80", subscriptionStatus: "vencido", dueDate: dPlus(-11), aptoMedico: "vigente", aptoDueDate: dPlus(45), aptoFile: null,
+          claimCode: randomClaimCode(), claimedUid: null, claimedAt: null,
+          pendingPayment: null, createdAt: new Date().toISOString() },
+    { id: "SOC-1004", gymId: "gym-powerhouse", branchId: "br-ph-2", name: "Sofía Martínez", dni: "42888111", phone: "+54 9 11 1122-3344", email: "sofia@powerhousegym.com", planId: "pl-ph-1", photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80", subscriptionStatus: "al_dia", dueDate: dPlus(16), aptoMedico: "vencido", aptoDueDate: dPlus(-34), aptoFile: null,
+          claimCode: randomClaimCode(), claimedUid: null, claimedAt: null,
+          pendingPayment: null, createdAt: new Date().toISOString() },
 
-    { id: "SOC-2001", gymId: "gym-velox", branchId: "br-vx-1", name: "Pablo Gutiérrez", dni: "37654321", phone: "+54 9 11 3344-5566", email: "pablo@veloxtraining.com", planId: "pl-vx-2", photo: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=150&auto=format&fit=crop&q=80", subscriptionStatus: "al_dia", dueDate: dPlus(12), aptoMedico: "vigente", aptoDueDate: dPlus(200), aptoFile: null, createdAt: new Date().toISOString() },
-    { id: "SOC-2002", gymId: "gym-velox", branchId: "br-vx-1", name: "Ana Rossi", dni: "41222333", phone: "+54 9 11 7788-9900", email: "ana@veloxtraining.com", planId: "pl-vx-1", photo: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80", subscriptionStatus: "vencido", dueDate: dPlus(-4), aptoMedico: "pendiente", aptoDueDate: null, aptoFile: null, createdAt: new Date().toISOString() }
+    { id: "SOC-2001", gymId: "gym-velox", branchId: "br-vx-1", name: "Pablo Gutiérrez", dni: "37654321", phone: "+54 9 11 3344-5566", email: "pablo@veloxtraining.com", planId: "pl-vx-2", photo: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=150&auto=format&fit=crop&q=80", subscriptionStatus: "al_dia", dueDate: dPlus(12), aptoMedico: "vigente", aptoDueDate: dPlus(200), aptoFile: null,
+          claimCode: randomClaimCode(), claimedUid: null, claimedAt: null,
+          pendingPayment: null, createdAt: new Date().toISOString() },
+    { id: "SOC-2002", gymId: "gym-velox", branchId: "br-vx-1", name: "Ana Rossi", dni: "41222333", phone: "+54 9 11 7788-9900", email: "ana@veloxtraining.com", planId: "pl-vx-1", photo: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80", subscriptionStatus: "vencido", dueDate: dPlus(-4), aptoMedico: "pendiente", aptoDueDate: null, aptoFile: null,
+          claimCode: randomClaimCode(), claimedUid: null, claimedAt: null,
+          pendingPayment: null, createdAt: new Date().toISOString() }
   ];
 
   const now = new Date().toISOString();
@@ -2503,6 +2695,7 @@ const FitApp = {
     this.setupInstall();
     this.watchConnection();
     this.checkLibraries();
+    this.checkActivationLink();
   },
 
   /* Si el CDN está bloqueado o no hay internet en la primera carga, el QR y el
@@ -2817,8 +3010,13 @@ const FitApp = {
       // Los datos se traen ANTES de validar el tenant, porque en modo nube el
       // gimnasio vive en Firestore, no en este navegador.
       if (statusEl) statusEl.textContent = "⏳ Trayendo los datos del gimnasio…";
-      if (local.user.gymId) await this.pullTenant(local.user.gymId);
-      else await this.pullAllGyms();
+      if (local.user.gymId) {
+        await this.pullTenant(local.user.gymId);
+        this.activeGymId = local.user.gymId;
+        this.startLiveSync();
+      } else {
+        await this.pullAllGyms();
+      }
 
       return this.finishPortalLogin(local.user, portal, fail);
     }
@@ -2942,6 +3140,7 @@ const FitApp = {
     this.currentActiveMember = null;
     localStorage.removeItem(LS.session);
     if (window.FitScanner) FitScanner.stopCamera();
+    this.stopLiveSync();
     if (this.cloudOn()) FirebaseSaaS.signOut();
     this.applyTheme();
     this.renderCloudBadge();
@@ -3120,6 +3319,7 @@ const FitApp = {
     this.renderGymSettings();
     this.renderConsole();
     this.renderReceptionPanel();
+    this.renderPendingQueues();
   },
 
   /* Los indicadores cuentan hasta el valor en vez de aparecer de golpe.
@@ -3374,6 +3574,7 @@ const FitApp = {
     set("gym-require-apto", String(gym.settings.requireApto));
     set("gym-qr-ttl", gym.settings.qrTtlSeconds);
     set("gym-cross-branch", String(gym.settings.crossBranchAccess !== false));
+    set("gym-payment-link", (gym.settings && gym.settings.paymentLink) || "");
     set("wl-logo-url", gym.branding.logoUrl || "");
     set("wl-color-primary", gym.branding.primaryColor);
     set("wl-color-primary-text", gym.branding.primaryColor);
@@ -3568,9 +3769,10 @@ Object.assign(FitApp, {
           <td data-l="Acciones">
             <div style="display:flex; gap:6px;">
               <button class="btn btn-secondary btn-tiny" onclick="FitApp.viewMemberCard('${m.id}')" title="Ver carnet">${ic("card")}</button>
+              <button class="btn btn-secondary btn-tiny" onclick="FitApp.previewCredential('${m.id}')" title="Enviar credencial por WhatsApp">${ic("chat")}</button>
               <button class="btn btn-secondary btn-tiny" onclick="FitApp.printMemberCard('${m.id}')" title="Imprimir credencial">${ic("printer")}</button>
               ${canEdit ? `<button class="btn btn-secondary btn-tiny" onclick="FitApp.openEditMemberModal('${m.id}')" title="Editar">${ic("pencil")}</button>` : ""}
-              <button class="btn btn-secondary btn-tiny" onclick="FitApp.sendWhatsAppReminder('${m.id}')" title="WhatsApp">${ic("chat")}</button>
+              <button class="btn btn-secondary btn-tiny" onclick="FitApp.regenerateCode('${m.id}')" title="Regenerar código de activación">${ic("key")}</button>
               ${this.can("members:delete") ? `<button class="btn btn-secondary btn-tiny" style="color:var(--status-red);" onclick="FitApp.deleteMember('${m.id}')" title="Eliminar">${ic("trash")}</button>` : ""}
             </div>
           </td>
@@ -3651,6 +3853,8 @@ Object.assign(FitApp, {
       aptoMedico: g("new-m-apto").value,
       aptoDueDate: g("new-m-apto").value === "vigente" ? dPlus(365) : null,
       aptoFile: null,
+          claimCode: randomClaimCode(), claimedUid: null, claimedAt: null,
+          pendingPayment: null,
       payments: [],
       createdAt: new Date().toISOString(),
       createdBy: this.session.userId
@@ -4042,6 +4246,8 @@ Object.assign(FitApp, {
           aptoMedico: "pendiente",
           aptoDueDate: null,
           aptoFile: null,
+          claimCode: randomClaimCode(), claimedUid: null, claimedAt: null,
+          pendingPayment: null,
           payments: [],
           createdAt: new Date().toISOString(),
           createdBy: this.session.userId
@@ -4275,9 +4481,31 @@ Object.assign(FitApp, {
 
     const payBtn = document.getElementById("socio-pay-btn");
     if (payBtn) {
-      payBtn.textContent = `💳 Pagar cuota · ${this.money(plan.price, gym.id)}`;
-      const allowed = this.can("self:pay") || this.can("payments:charge");
-      payBtn.style.display = allowed ? "" : "none";
+      payBtn.innerHTML = `${ic("credit")} Pagar cuota · ${this.money(plan.price, gym.id)}`;
+    }
+
+    /* El socio paga por Mercado Pago y sube el comprobante. El staff, además,
+       puede cobrar en mostrador. */
+    const esSocio = this.role() === "socio";
+    const payBlock = document.getElementById("socio-pay-block");
+    const payStaff = document.getElementById("socio-pay-staff");
+    if (payBlock) payBlock.style.display = (esSocio || this.can("payments:charge")) ? "" : "none";
+    if (payStaff) payStaff.style.display = this.can("payments:charge") ? "" : "none";
+
+    const pend = document.getElementById("socio-pending-box");
+    const pendDet = document.getElementById("socio-pending-detail");
+    if (pend) {
+      pend.style.display = m.pendingPayment ? "block" : "none";
+      if (m.pendingPayment && pendDet) {
+        pendDet.textContent = `Enviado el ${new Date(m.pendingPayment.at).toLocaleString("es-AR")} por ${this.money(m.pendingPayment.amount, gym.id)}.`;
+      }
+    }
+    const rej = document.getElementById("socio-rejected-box");
+    const rejDet = document.getElementById("socio-rejected-detail");
+    if (rej) {
+      const mostrar = !!m.paymentRejection && !m.pendingPayment;
+      rej.style.display = mostrar ? "block" : "none";
+      if (mostrar && rejDet) rejDet.textContent = `Motivo: ${m.paymentRejection.reason}. Podés subir uno nuevo.`;
     }
 
     this.qrSeconds = (gym.settings && gym.settings.qrTtlSeconds) || 30;
@@ -4359,6 +4587,8 @@ Object.assign(FitApp, {
     // El socio sube, el staff valida: no se auto-aprueba.
     if (this.role() === "socio") {
       m.aptoMedico = "pendiente";
+      m.aptoRequestedAt = new Date().toISOString();
+      m.aptoRejection = null;
       this.showToast("🩺 Certificado enviado. Queda pendiente de validación por el gimnasio.");
     } else {
       m.aptoMedico = "vigente";
@@ -4520,18 +4750,30 @@ Object.assign(FitApp, {
     if (Date.now() - last < 6000) return;
     this.lastScanAt[member.id] = Date.now();
 
+    /* Segundo ingreso del día. La credencial es una imagen y se puede reenviar,
+       así que si el mismo socio ya entró hoy conviene avisarlo. No bloquea:
+       hay gente que entrena dos veces por día. */
+    const hoy = todayISO();
+    const previo = this.scopedLogs().find(l =>
+      l.memberId === member.id && (l.at || "").startsWith(hoy) &&
+      (l.status === "GREEN" || l.status === "YELLOW"));
+
     const st = this.memberAccessState(member);
     // La visita entre sedes no cambia el color: sólo se informa y se registra.
-    const visitTag = st.visitNote ? ` · 🔄 ${st.visitNote}` : "";
+    const visitTag = st.visitNote ? ` · visita · socio de ${st.homeBranch ? st.homeBranch.name : "otra sede"}` : "";
+    const reTag = previo ? ` · ya ingresó hoy a las ${previo.time}` : "";
 
     if (st.color === "red") {
       this.trafficLight("red", "ACCESO DENEGADO", st.reasons.join(" · ") + visitTag, member, st.canCharge);
       this.playSound("red");
       this.addLog(member, "RED", st.reasons.join(" · "), st.visit);
-    } else if (st.color === "yellow") {
-      this.trafficLight("yellow", "ACCESO CON ADVERTENCIA", `¡Bienvenido/a ${member.name}! ${st.reasons.join(" · ")}.${visitTag}`, member, st.canCharge);
+    } else if (st.color === "yellow" || previo) {
+      // Un reingreso no bloquea, pero baja a amarillo para que recepción mire
+      const motivos = st.reasons.length ? st.reasons.join(" · ") : `Segundo ingreso del día (el primero fue a las ${previo.time})`;
+      const titulo = st.reasons.length ? "ACCESO CON ADVERTENCIA" : "YA INGRESÓ HOY";
+      this.trafficLight("yellow", titulo, `¡Hola ${member.name}! ${motivos}.${visitTag}`, member, st.canCharge);
       this.playSound("yellow");
-      this.addLog(member, "YELLOW", st.reasons.join(" · "), st.visit);
+      this.addLog(member, "YELLOW", motivos + (previo && st.reasons.length ? reTag : ""), st.visit);
     } else {
       this.trafficLight("green", "ACCESO PERMITIDO",
         `¡Bienvenido/a ${member.name}! ${this.planOf(member).name}${visitTag}`, member);
@@ -4898,6 +5140,542 @@ const FitScanner = {
 };
 
 /* ==========================================================================
+   17. SOCIOS: ACTIVACIÓN POR CÓDIGO, CREDENCIAL POR WHATSAPP Y PAGOS
+   ========================================================================== */
+Object.assign(FitApp, {
+
+  /* ---------------------------------------------------------- utilidades */
+  loadImage(src) {
+    return new Promise(res => {
+      const i = new Image();
+      i.crossOrigin = "anonymous";
+      i.onload = () => res(i);
+      i.onerror = () => res(null);
+      i.src = src;
+    });
+  },
+
+  /* DNI parcial: si la credencial se reenvía, no viaja el documento completo.
+     Recepción igual verifica por foto, que es la defensa que importa. */
+  maskDni(dni) {
+    const d = String(dni || "");
+    return d.length > 3 ? "•".repeat(d.length - 3) + d.slice(-3) : d;
+  },
+
+  activationLink(member) {
+    const token = encodeActivation(member.gymId, member.id, member.claimCode || "");
+    const base = location.origin + location.pathname;
+    return `${base}?a=${token}`;
+  },
+
+  paymentLinkFor(member) {
+    const gym = this.gymById(member.gymId);
+    const plan = this.planOf(member);
+    return (plan && plan.mpLink) || (gym.settings && gym.settings.paymentLink) || "";
+  },
+
+  /* ==================================================================
+     CREDENCIAL COMO IMAGEN
+     Se dibuja en un canvas en vez de convertir HTML: no necesita librerías
+     externas y el resultado es idéntico en todos los dispositivos.
+     El QR se probó contra compresión de mensajería y se sigue leyendo.
+     ================================================================== */
+  async buildCredentialImage(member) {
+    const gym = this.gymById(member.gymId);
+    const branch = this.branchOf(member);
+    const plan = this.planOf(member);
+    const color = (gym.branding && gym.branding.primaryColor) || "#14b8a6";
+
+    const W = 1080, H = 1350;
+    const c = document.createElement("canvas");
+    c.width = W; c.height = H;
+    const x = c.getContext("2d");
+
+    // Fondo con degradado y halo de la marca
+    const bg = x.createLinearGradient(0, 0, W * 0.4, H);
+    bg.addColorStop(0, "#141a2b");
+    bg.addColorStop(1, "#05070d");
+    x.fillStyle = bg; x.fillRect(0, 0, W, H);
+    const halo = x.createRadialGradient(W * 0.5, H * 0.34, 40, W * 0.5, H * 0.34, W * 0.75);
+    halo.addColorStop(0, color + "44");
+    halo.addColorStop(1, "transparent");
+    x.fillStyle = halo; x.fillRect(0, 0, W, H);
+    x.fillStyle = color; x.fillRect(0, 0, W, 16);
+
+    // Encabezado
+    x.textBaseline = "alphabetic";
+    x.fillStyle = "#ffffff";
+    x.font = "800 58px Outfit, system-ui, sans-serif";
+    x.fillText(gym.name, 72, 128);
+    x.fillStyle = "#8f9ab0";
+    x.font = "700 30px Outfit, system-ui, sans-serif";
+    x.fillText((branch ? branch.name : "").toUpperCase(), 72, 176);
+    x.fillStyle = color;
+    x.font = "800 26px Outfit, system-ui, sans-serif";
+    x.fillText("CREDENCIAL DE SOCIO", 72, 224);
+
+    // QR sobre panel blanco, centrado
+    const QR = 440, PAD = 46;
+    const px = (W - QR - PAD * 2) / 2, py = 286;
+    x.fillStyle = "#ffffff";
+    if (x.roundRect) { x.beginPath(); x.roundRect(px, py, QR + PAD * 2, QR + PAD * 2, 34); x.fill(); }
+    else x.fillRect(px, py, QR + PAD * 2, QR + PAD * 2);
+
+    const qrData = this.qrDataUrl(this.staticQrPayload(member), QR);
+    if (qrData) {
+      const qi = await this.loadImage(qrData);
+      if (qi) x.drawImage(qi, px + PAD, py + PAD, QR, QR);
+    } else {
+      x.fillStyle = "#111"; x.font = "800 34px Outfit, sans-serif"; x.textAlign = "center";
+      x.fillText("Mostrá este número", W / 2, py + QR / 2);
+      x.font = "800 64px monospace";
+      x.fillText(member.id, W / 2, py + QR / 2 + 80);
+      x.textAlign = "left";
+    }
+
+    // Foto circular con anillo
+    const R = 92, cx = W / 2, cy = 940;
+    const pi = await this.loadImage(member.photo || DEFAULT_PHOTO) || await this.loadImage(DEFAULT_PHOTO);
+    x.save();
+    x.beginPath(); x.arc(cx, cy, R, 0, Math.PI * 2); x.closePath(); x.clip();
+    x.fillStyle = "#1a2133"; x.fillRect(cx - R, cy - R, R * 2, R * 2);
+    if (pi) {
+      const lado = Math.min(pi.width, pi.height);
+      x.drawImage(pi, (pi.width - lado) / 2, (pi.height - lado) / 2, lado, lado, cx - R, cy - R, R * 2, R * 2);
+    }
+    x.restore();
+    x.strokeStyle = color; x.lineWidth = 6;
+    x.beginPath(); x.arc(cx, cy, R + 5, 0, Math.PI * 2); x.stroke();
+
+    // Datos del socio
+    x.textAlign = "center";
+    x.fillStyle = "#ffffff"; x.font = "800 66px Outfit, system-ui, sans-serif";
+    x.fillText(member.name, W / 2, cy + R + 92);
+    x.fillStyle = "#8f9ab0"; x.font = "500 34px Outfit, system-ui, sans-serif";
+    x.fillText(`Socio ${member.id}   ·   DNI ${this.maskDni(member.dni)}`, W / 2, cy + R + 144);
+    x.fillStyle = color; x.font = "800 36px Outfit, system-ui, sans-serif";
+    x.fillText(plan.name, W / 2, cy + R + 196);
+
+    // Pie
+    x.fillStyle = "#5d6779"; x.font = "500 26px Outfit, system-ui, sans-serif";
+    x.fillText(gym.phone ? `Presentá esta credencial en recepción  ·  ${gym.phone}` : "Presentá esta credencial en recepción", W / 2, H - 46);
+    x.textAlign = "left";
+
+    return c;
+  },
+
+  credentialMessage(member) {
+    const gym = this.gymById(member.gymId);
+    const plan = this.planOf(member);
+    const nombre = (member.name || "").split(" ")[0];
+    const lineas = [
+      `¡Hola ${nombre}! Esta es tu credencial de ${gym.name}.`,
+      ``,
+      `Mostrá el código QR de la imagen en recepción para entrar.`
+    ];
+
+    if (member.claimCode && !member.claimedUid) {
+      lineas.push(
+        ``,
+        `Si querés ver tu cuota, pagar y subir el apto médico desde el celular, activá tu cuenta acá:`,
+        this.activationLink(member),
+        ``,
+        `Tu código de activación: ${member.claimCode}`
+      );
+    }
+
+    const vencida = member.subscriptionStatus === "vencido";
+    const link = this.paymentLinkFor(member);
+    if (vencida && link) {
+      lineas.push(``, `Tu cuota está vencida (${member.dueDate}). Podés pagarla acá: ${link}`);
+    } else if (vencida) {
+      lineas.push(``, `Tu cuota está vencida (${member.dueDate}). Pasá por recepción para regularizarla.`);
+    }
+
+    return lineas.join("\n");
+  },
+
+  /* Comparte la imagen por el menú del sistema (WhatsApp incluido).
+     En escritorio no existe esa API: se descarga y se abre el chat. */
+  async shareCredential(memberId) {
+    const m = this.findMember(memberId);
+    if (!m) return;
+    this.showToast("Generando la credencial…");
+
+    let canvas;
+    try { canvas = await this.buildCredentialImage(m); }
+    catch (e) { return this.showToast("No se pudo generar la imagen: " + e.message); }
+
+    /* JPEG al 92%: un PNG de esta imagen pesa 1,5 MB y JPEG la deja en ~200 KB.
+       El QR aguanta de sobra — se probó hasta calidad 35% y seguía leyéndose. */
+    const blob = await new Promise(r => canvas.toBlob(r, "image/jpeg", 0.92));
+    if (!blob) return this.showToast("No se pudo generar la imagen.");
+    const nombreArchivo = `credencial-${m.id}-${(m.name || "").split(" ")[0].toLowerCase()}.jpg`;
+    const texto = this.credentialMessage(m);
+
+    const file = new File([blob], nombreArchivo, { type: "image/jpeg" });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], text: texto });
+        this.logAudit("member:credential_sent", `Compartió la credencial de ${m.name}`, "member", m.id);
+        return;
+      } catch (e) {
+        if (e && e.name === "AbortError") return;   // el usuario canceló
+      }
+    }
+
+    // Respaldo: descarga + chat de WhatsApp con el mensaje ya escrito
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = nombreArchivo; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+
+    const tel = (m.phone || "").replace(/[^0-9]/g, "");
+    if (tel) window.open(`https://wa.me/${tel}?text=${encodeURIComponent(texto)}`, "_blank");
+    this.showToast("Imagen descargada. Adjuntala en el chat que se abrió.");
+    this.logAudit("member:credential_sent", `Descargó la credencial de ${m.name} para enviar`, "member", m.id);
+  },
+
+  /* Vista previa antes de enviar, para que el staff vea qué le llega al socio */
+  async previewCredential(memberId) {
+    const m = this.findMember(memberId);
+    if (!m) return;
+    const canvas = await this.buildCredentialImage(m);
+    const box = document.getElementById("credential-preview-img");
+    const codeBox = document.getElementById("credential-preview-code");
+    if (box) box.src = canvas.toDataURL("image/png");
+    if (codeBox) {
+      codeBox.textContent = m.claimedUid
+        ? "Este socio ya activó su cuenta."
+        : `Código de activación: ${m.claimCode || "(sin código)"}`;
+    }
+    this.previewMemberId = m.id;
+    document.getElementById("modal-credential").style.display = "flex";
+  },
+
+  sendPreviewedCredential() {
+    this.hideModal("modal-credential");
+    if (this.previewMemberId) this.shareCredential(this.previewMemberId);
+  },
+
+  /* ==================================================================
+     ACTIVACIÓN DE LA CUENTA DEL SOCIO
+     El código viaja por WhatsApp. La app lo valida contra la ficha, y en
+     modo nube lo valida además Firestore: aunque alguien modifique la
+     página, sin el código correcto no se vincula a ningún gimnasio.
+     ================================================================== */
+  checkActivationLink() {
+    const p = new URLSearchParams(location.search);
+    const token = p.get("a");
+    if (!token) return;
+    const datos = decodeActivation(token);
+    // La URL se limpia para que el código no quede en el historial
+    history.replaceState(null, "", location.pathname);
+    if (datos) setTimeout(() => this.openActivation(datos), 400);
+  },
+
+  openActivation(prefill) {
+    this.hideLoginModal();
+    const set = (id, v) => { const e = document.getElementById(id); if (e) e.value = v || ""; };
+    set("act-code", prefill && prefill.code);
+    set("act-member", prefill && prefill.memberId);
+    this.activationGymId = (prefill && prefill.gymId) || null;
+
+    const info = document.getElementById("act-gym-info");
+    if (info) {
+      const gym = this.activationGymId ? this.gymById(this.activationGymId) : null;
+      info.textContent = gym ? `Gimnasio: ${gym.name}` : "";
+      info.style.display = gym ? "block" : "none";
+    }
+    const st = document.getElementById("act-status");
+    if (st) st.textContent = "";
+    document.getElementById("modal-activation").style.display = "flex";
+  },
+
+  closeActivation() {
+    this.hideModal("modal-activation");
+    if (!this.session) this.showLoginModal();
+  },
+
+  async submitActivation() {
+    const val = id => (document.getElementById(id).value || "").trim();
+    const st = document.getElementById("act-status");
+    const fail = (m) => { if (st) { st.textContent = m; st.style.color = "var(--status-red)"; } };
+    const code = val("act-code").toUpperCase();
+    const memberId = val("act-member").toUpperCase();
+    const email = val("act-email").toLowerCase();
+    const pass = document.getElementById("act-pass").value;
+    const pass2 = document.getElementById("act-pass2").value;
+
+    if (!code || !memberId) return fail("Completá tu número de socio y el código.");
+    if (pass !== pass2) return fail("Las contraseñas no coinciden.");
+    if (pass.length < 8) return fail("La contraseña necesita al menos 8 caracteres.");
+    if (!email) return fail("Escribí un correo.");
+
+    if (st) { st.textContent = "Verificando el código…"; st.style.color = "var(--text-muted)"; }
+
+    /* Modo nube: la validación real la hacen las reglas de Firestore.
+       Modo local: se valida contra la ficha guardada en el dispositivo. */
+    if (this.cloudOn()) {
+      const res = await FirebaseSaaS.activateMember({
+        gymId: this.activationGymId, memberId, code, email, password: pass
+      });
+      if (!res.ok) return fail(res.message);
+      this.showToast("Cuenta activada. Ya podés entrar con tu correo y contraseña.");
+      this.hideModal("modal-activation");
+      this.selectAccessPortal("socio");
+      document.getElementById("portal-login-email").value = email;
+      this.showLoginModal();
+      return;
+    }
+
+    const gymId = this.activationGymId || (this.gyms[0] || {}).id;
+    const m = this.members.find(x => x.id === memberId && x.gymId === gymId);
+    if (!m) return fail("No encontramos ese número de socio.");
+    if (!m.claimCode || m.claimCode.toUpperCase() !== code) return fail("El código no es correcto. Pedile uno nuevo al gimnasio.");
+    if (m.claimedUid) return fail("Esa ficha ya tiene una cuenta activada. Si perdiste el acceso, pedí al gimnasio que te reenvíe el código.");
+    if (this.users.some(u => (u.email || "").toLowerCase() === email)) return fail("Ese correo ya está registrado. Usá otro.");
+
+    const sec = await Security.make(pass);
+    const nuevo = {
+      id: uid("usr"), gymId, name: m.name, email,
+      role: "socio", memberId: m.id, branchId: m.branchId,
+      active: true, isDemo: false, createdAt: new Date().toISOString(), ...sec
+    };
+    this.users.push(nuevo);
+    m.claimedUid = nuevo.id;
+    m.claimedAt = new Date().toISOString();
+    this.persist("users"); this.persist("members");
+    this.logAudit("member:activated", `${m.name} activó su cuenta (${email})`, "member", m.id, gymId);
+
+    this.hideModal("modal-activation");
+    this.showToast("Listo, tu cuenta quedó activa.");
+    this.selectAccessPortal("socio");
+    document.getElementById("portal-login-email").value = email;
+    document.getElementById("portal-login-password").value = "";
+    this.showLoginModal();
+  },
+
+  /* El staff puede regenerar el código si el socio lo perdió */
+  regenerateCode(memberId) {
+    if (!this.can("members:edit") && !this.can("members:*")) return;
+    const m = this.findMember(memberId);
+    if (!m) return;
+    if (m.claimedUid && !confirm(`${m.name} ya tiene cuenta activa. ¿Generar un código nuevo de todas formas? La cuenta actual seguirá funcionando.`)) return;
+    m.claimCode = randomClaimCode();
+    if (!m.claimedUid) { m.claimedAt = null; }
+    this.persist("members");
+    this.pushCloud("member", m);
+    this.logAudit("member:code_reset", `Regeneró el código de activación de ${m.name}`, "member", m.id);
+    this.renderMembersTable();
+    this.showToast(`Código nuevo: ${m.claimCode}`);
+  },
+
+  /* ==================================================================
+     PAGOS — el socio paga por Mercado Pago y sube el comprobante
+     ================================================================== */
+  openPaymentLink() {
+    const m = this.currentActiveMember;
+    if (!m) return;
+    const link = this.paymentLinkFor(m);
+    if (!link) {
+      return this.showToast("El gimnasio todavía no configuró el link de pago. Consultá en recepción.");
+    }
+    window.open(link, "_blank");
+    this.showToast("Cuando termines el pago, subí el comprobante para que el gimnasio lo confirme.");
+  },
+
+  async uploadPaymentProof(input) {
+    const m = this.currentActiveMember;
+    if (!m) return;
+    if (this.role() === "socio" && m.id !== this.session.memberId) return;
+
+    const b64 = await this.readImageInput(input, 1300, 0.68);
+    if (!b64) return;
+    if (b64.length > 900000) return this.showToast("La imagen es muy grande. Sacá la captura con menos resolución.");
+
+    const plan = this.planOf(m);
+    m.pendingPayment = {
+      at: new Date().toISOString(),
+      amount: plan.price,
+      planId: m.planId,
+      proof: b64,
+      byUserId: this.session.userId
+    };
+    this.persist("members");
+    this.pushCloud("member", m, m.gymId);
+    this.logAudit("payment:proof_uploaded", `${m.name} subió un comprobante por ${this.money(plan.price, m.gymId)}`, "member", m.id, m.gymId);
+    this.renderMemberView(m.id);
+    this.showToast("Comprobante enviado. El gimnasio lo va a confirmar.");
+  },
+
+  /* ------------------------------------------- bandejas de revisión */
+  pendingPayments() { return this.scopedMembers().filter(m => m.pendingPayment); },
+  pendingAptos() { return this.scopedMembers().filter(m => m.aptoMedico === "pendiente" && m.aptoFile); },
+
+  renderPendingQueues() {
+    const card = document.getElementById("pending-card");
+    if (!card) return;
+    const puede = this.can("payments:charge") || this.can("members:*");
+    const pagos = puede ? this.pendingPayments() : [];
+    const aptos = puede ? this.pendingAptos() : [];
+    const total = pagos.length + aptos.length;
+
+    card.style.display = (puede && this.activeGymId) ? "" : "none";
+    const chip = document.getElementById("pending-count");
+    if (chip) {
+      chip.textContent = total ? `${total} pendiente${total > 1 ? "s" : ""}` : "todo al día";
+      chip.className = `status-badge ${total ? "badge-yellow" : "badge-green"}`;
+    }
+
+    const cPagos = document.getElementById("queue-payments");
+    if (cPagos) {
+      cPagos.innerHTML = pagos.length ? pagos.map(m => {
+        const p = m.pendingPayment;
+        const fecha = new Date(p.at).toLocaleString("es-AR");
+        return `
+          <div class="list-row" style="align-items:flex-start; flex-direction:column; gap:10px;">
+            <div style="display:flex; justify-content:space-between; width:100%; gap:10px; flex-wrap:wrap;">
+              <div>
+                <strong>${esc(m.name)}</strong>
+                <div style="font-size:0.78rem; color:var(--text-muted);">${esc(m.id)} · declara ${this.money(p.amount, m.gymId)} · ${esc(fecha)}</div>
+              </div>
+              <button class="btn btn-secondary btn-tiny" onclick="FitApp.viewAttachment('${m.id}','pago')">${ic("eye")} Ver comprobante</button>
+            </div>
+            <div style="display:flex; gap:8px; width:100%; flex-wrap:wrap;">
+              <button class="btn btn-tiny" onclick="FitApp.confirmPayment('${m.id}')">${ic("check")} Confirmar y renovar 30 días</button>
+              <button class="btn btn-secondary btn-tiny" style="color:var(--status-red);" onclick="FitApp.rejectPayment('${m.id}')">${ic("x")} Rechazar</button>
+            </div>
+          </div>`;
+      }).join("") : `<div class="empty-state" style="padding:16px;">${ic("check-circle")}<div>Sin pagos por confirmar.</div></div>`;
+    }
+
+    const cAptos = document.getElementById("queue-aptos");
+    if (cAptos) {
+      cAptos.innerHTML = aptos.length ? aptos.map(m => {
+        const fecha = m.aptoRequestedAt ? new Date(m.aptoRequestedAt).toLocaleString("es-AR") : "—";
+        return `
+          <div class="list-row" style="align-items:flex-start; flex-direction:column; gap:10px;">
+            <div style="display:flex; justify-content:space-between; width:100%; gap:10px; flex-wrap:wrap;">
+              <div>
+                <strong>${esc(m.name)}</strong>
+                <div style="font-size:0.78rem; color:var(--text-muted);">${esc(m.id)} · subido ${esc(fecha)}</div>
+              </div>
+              <button class="btn btn-secondary btn-tiny" onclick="FitApp.viewAttachment('${m.id}','apto')">${ic("eye")} Ver certificado</button>
+            </div>
+            <div style="display:flex; gap:8px; width:100%; flex-wrap:wrap; align-items:center;">
+              <label class="form-label" style="margin:0;">Vence:</label>
+              <input type="date" class="form-input" id="apto-due-${m.id}" value="${dPlus(365)}" style="max-width:170px; padding:7px 10px; font-size:0.82rem;">
+              <button class="btn btn-tiny" onclick="FitApp.approveApto('${m.id}')">${ic("check")} Aprobar</button>
+              <button class="btn btn-secondary btn-tiny" style="color:var(--status-red);" onclick="FitApp.rejectApto('${m.id}')">${ic("x")} Rechazar</button>
+            </div>
+          </div>`;
+      }).join("") : `<div class="empty-state" style="padding:16px;">${ic("check-circle")}<div>Sin aptos por validar.</div></div>`;
+    }
+  },
+
+  viewAttachment(memberId, tipo) {
+    const m = this.findMember(memberId);
+    if (!m) return;
+    const src = tipo === "pago" ? (m.pendingPayment && m.pendingPayment.proof) : m.aptoFile;
+    if (!src) return this.showToast("No hay archivo adjunto.");
+    const titulo = tipo === "pago" ? `Comprobante de ${m.name}` : `Certificado de ${m.name}`;
+    document.getElementById("attachment-title").textContent = titulo;
+    const img = document.getElementById("attachment-img");
+    const link = document.getElementById("attachment-link");
+    const esImagen = String(src).startsWith("data:image");
+    img.style.display = esImagen ? "block" : "none";
+    if (esImagen) img.src = src;
+    link.href = src;
+    link.style.display = esImagen ? "none" : "inline-flex";
+    document.getElementById("modal-attachment").style.display = "flex";
+  },
+
+  confirmPayment(memberId) {
+    if (!this.can("payments:charge")) return this.showToast("Sin permiso para confirmar pagos.");
+    const m = this.findMember(memberId);
+    if (!m || !m.pendingPayment) return;
+    const p = m.pendingPayment;
+
+    const base = (m.dueDate && new Date(m.dueDate) > new Date()) ? new Date(m.dueDate) : new Date();
+    base.setDate(base.getDate() + 30);
+    m.dueDate = base.toISOString().split("T")[0];
+    m.subscriptionStatus = "al_dia";
+    m.payments = m.payments || [];
+    m.payments.unshift({
+      at: new Date().toISOString(), amount: p.amount, planId: p.planId,
+      method: "mercadopago", proof: p.proof,
+      confirmedBy: this.session.userId, confirmedAt: new Date().toISOString()
+    });
+    m.pendingPayment = null;
+
+    this.persist("members");
+    this.pushCloud("member", m);
+    this.logAudit("payment:confirmed", `Confirmó ${this.money(p.amount)} de ${m.name}. Vence el ${m.dueDate}`, "member", m.id);
+    this.renderAll();
+    this.showToast(`Pago de ${m.name} confirmado. Vence el ${m.dueDate}.`);
+  },
+
+  rejectPayment(memberId) {
+    if (!this.can("payments:charge")) return;
+    const m = this.findMember(memberId);
+    if (!m || !m.pendingPayment) return;
+    const motivo = prompt(`¿Por qué se rechaza el comprobante de ${m.name}?\n(el socio lo va a ver)`, "El comprobante no corresponde al monto de la cuota");
+    if (motivo === null) return;
+    m.pendingPayment = null;
+    m.paymentRejection = { at: new Date().toISOString(), reason: motivo || "Sin especificar" };
+    this.persist("members");
+    this.pushCloud("member", m);
+    this.logAudit("payment:rejected", `Rechazó el comprobante de ${m.name}: ${motivo}`, "member", m.id);
+    this.renderAll();
+    this.showToast(`Comprobante de ${m.name} rechazado.`);
+  },
+
+  approveApto(memberId) {
+    if (!this.can("members:edit") && !this.can("members:*")) return this.showToast("Sin permiso para validar aptos.");
+    const m = this.findMember(memberId);
+    if (!m) return;
+    const input = document.getElementById(`apto-due-${m.id}`);
+    const vence = input && input.value ? input.value : dPlus(365);
+    m.aptoMedico = "vigente";
+    m.aptoDueDate = vence;
+    m.aptoValidatedBy = this.session.userId;
+    m.aptoValidatedAt = new Date().toISOString();
+    m.aptoRejection = null;
+    this.persist("members");
+    this.pushCloud("member", m);
+    this.logAudit("apto:approved", `Validó el apto de ${m.name}, vence el ${vence}`, "member", m.id);
+    this.renderAll();
+    this.showToast(`Apto de ${m.name} aprobado hasta ${vence}.`);
+  },
+
+  rejectApto(memberId) {
+    if (!this.can("members:edit") && !this.can("members:*")) return;
+    const m = this.findMember(memberId);
+    if (!m) return;
+    const motivo = prompt(`¿Por qué se rechaza el certificado de ${m.name}?\n(el socio lo va a ver)`, "La foto está ilegible");
+    if (motivo === null) return;
+    m.aptoMedico = "vencido";
+    m.aptoFile = null;
+    m.aptoRejection = { at: new Date().toISOString(), reason: motivo || "Sin especificar" };
+    this.persist("members");
+    this.pushCloud("member", m);
+    this.logAudit("apto:rejected", `Rechazó el apto de ${m.name}: ${motivo}`, "member", m.id);
+    this.renderAll();
+    this.showToast(`Certificado de ${m.name} rechazado.`);
+  },
+
+  /* ----------------------------------------- link de pago del gimnasio */
+  updatePaymentLink(v) {
+    if (!this.can("gym:settings")) return;
+    const gym = this.activeGym();
+    if (!gym) return;
+    gym.settings.paymentLink = (v || "").trim();
+    this.persistGym();
+    this.logAudit("gym:settings", "Actualizó el link de pago", "gym", gym.id);
+  }
+});
+/* ==========================================================================
    16. PUENTE CON LA NUBE
    El modo local (localStorage) es el de demo y el que corre sin backend.
    El modo nube delega en Firebase: Auth valida la contraseña y el ROL viaja
@@ -4961,6 +5739,37 @@ Object.assign(FitApp, {
     if (res.audit) this.audit = this.audit.filter(a => a.gymId !== gymId).concat(res.audit);
     if (res.users) this.users = this.users.filter(u => u.gymId !== gymId).concat(res.users);
     this.persist();
+  },
+
+  /* Se queda escuchando los cambios del gimnasio activo. Cuando recepción
+     cobra en la tablet, en el celular del dueño se actualiza solo. */
+  startLiveSync() {
+    if (!this.cloudOn() || !this.activeGymId) return;
+    const gymId = this.activeGymId;
+    FirebaseSaaS.listen(gymId,
+      (members) => {
+        this.members = this.members.filter(m => m.gymId !== gymId).concat(members);
+        Store.write(LS.members, this.members);
+        this.updateStats();
+        this.renderMembersTable();
+        this.renderPendingQueues();
+        this.updateDemoMemberSelect();
+        if (this.currentActiveMember && this.currentActiveMember.gymId === gymId) {
+          const fresco = this.members.find(m => m.id === this.currentActiveMember.id);
+          if (fresco) { this.currentActiveMember = fresco; this.renderMemberView(fresco.id); }
+        }
+      },
+      (logs) => {
+        this.logs = this.logs.filter(l => l.gymId !== gymId).concat(logs);
+        Store.write(LS.logs, this.logs);
+        this.renderLogTable();
+        this.updateStats();
+      }
+    );
+  },
+
+  stopLiveSync() {
+    if (window.FirebaseSaaS && FirebaseSaaS.stopListening) FirebaseSaaS.stopListening();
   },
 
   async pullAllGyms() {
@@ -5269,11 +6078,12 @@ document.addEventListener("DOMContentLoaded", () => FitApp.init());
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
     import {
-      getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, signOut
+      getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+      sendPasswordResetEmail, signOut
     } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
     import {
       initializeFirestore, doc, getDoc, setDoc, collection, getDocs, deleteDoc,
-      query, orderBy, limit, serverTimestamp,
+      query, orderBy, limit, serverTimestamp, writeBatch, onSnapshot,
       persistentLocalCache, persistentMultipleTabManager
     } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
     import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-functions.js";
@@ -5428,6 +6238,42 @@ document.addEventListener("DOMContentLoaded", () => FitApp.init());
         }
       },
 
+      /* ------------------------------------------- sincronización en vivo
+         Sin esto, la tablet de recepción y el celular del dueño sólo se
+         enterarían de los cambios al recargar. Con onSnapshot, lo que uno
+         guarda aparece en el otro en el momento. */
+      listen(gymId, onMembers, onLogs) {
+        this.stopListening();
+        if (!this.db || !gymId) return;
+        try {
+          this._unsubMembers = onSnapshot(
+            collection(this.db, "gyms", gymId, "members"),
+            (snap) => {
+              const members = [];
+              snap.forEach(d => members.push({ id: d.id, gymId, ...d.data() }));
+              onMembers(members);
+            },
+            (e) => console.warn("Escucha de socios interrumpida:", e && e.code)
+          );
+          this._unsubLogs = onSnapshot(
+            query(collection(this.db, "gyms", gymId, "accessLogs"), orderBy("at", "desc"), limit(80)),
+            (snap) => {
+              const logs = [];
+              snap.forEach(d => logs.push({ id: d.id, gymId, ...d.data() }));
+              onLogs(logs);
+            },
+            (e) => console.warn("Escucha de ingresos interrumpida:", e && e.code)
+          );
+        } catch (e) {
+          console.warn("No se pudo suscribir a los cambios:", e);
+        }
+      },
+
+      stopListening() {
+        if (this._unsubMembers) { try { this._unsubMembers(); } catch (e) {} this._unsubMembers = null; }
+        if (this._unsubLogs) { try { this._unsubLogs(); } catch (e) {} this._unsubLogs = null; }
+      },
+
       /* --------------------------------------------------- escrituras
          Sólo lo que las reglas permiten desde el cliente: fichas de socios y
          registros de acceso. Usuarios, roles y auditoría van por función. */
@@ -5474,6 +6320,59 @@ document.addEventListener("DOMContentLoaded", () => FitApp.init());
         } catch (e) {
           return { ok: false, message: (e && e.message) || `Falló ${name}.` };
         }
+      },
+
+      /* Activación del socio SIN Cloud Functions, o sea sin plan Blaze.
+         El socio se crea su propia cuenta (eso es gratis) y después escribe su
+         vínculo con el gimnasio. Lo que impide que mienta es la REGLA de
+         Firestore: sólo acepta el vínculo si el código coincide con el de la
+         ficha y la ficha no fue reclamada antes. La app no valida nada por su
+         cuenta; se lo pide al servidor. */
+      async activateMember({ gymId, memberId, code, email, password }) {
+        if (!this.auth || !this.db) return { ok: false, message: "Firebase no está inicializado." };
+        if (!gymId) return { ok: false, message: "Abrí el enlace que te mandó el gimnasio por WhatsApp." };
+
+        let cred;
+        try {
+          cred = await createUserWithEmailAndPassword(this.auth, email, password);
+        } catch (e) {
+          if (e && e.code === "auth/email-already-in-use") {
+            // Puede estar reintentando: se intenta entrar con esa cuenta
+            try { cred = await signInWithEmailAndPassword(this.auth, email, password); }
+            catch (e2) { return { ok: false, message: "Ese correo ya tiene cuenta y la contraseña no coincide." }; }
+          } else {
+            return { ok: false, message: this.authErrorMessage(e) };
+          }
+        }
+
+        const uid = cred.user.uid;
+        try {
+          // Dos escrituras en lote: el vínculo y la marca de código usado.
+          // Firestore evalúa las reglas de cada documento por separado, así que
+          // las dos tienen que pasar o no se escribe nada.
+          const lote = writeBatch(this.db);
+          lote.set(doc(this.db, "users", uid), {
+            uid, email, name: cred.user.displayName || email,
+            gymId, role: "socio", memberId,
+            claimCode: String(code).toUpperCase(),
+            active: true, claimedAt: new Date().toISOString()
+          });
+          lote.update(doc(this.db, "gyms", gymId, "members", memberId), {
+            claimedUid: uid, claimedAt: new Date().toISOString()
+          });
+          await lote.commit();
+        } catch (e) {
+          await signOut(this.auth).catch(() => {});
+          const msg = (e && e.code || "").includes("permission-denied")
+            ? "El código no es válido, o esa ficha ya tiene una cuenta activada. Pedile al gimnasio que te reenvíe el código."
+            : this.ruleErrorMessage(e);
+          return { ok: false, message: msg };
+        }
+
+        // Se cierra la sesión para que entre por el portal normal y el token
+        // llegue ya con los datos del vínculo.
+        await signOut(this.auth).catch(() => {});
+        return { ok: true };
       },
 
       createUser(payload) { return this.call("createGymUser", payload); },
