@@ -2,7 +2,19 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <!-- viewport-fit=cover: aprovecha la pantalla completa en celulares con notch.
+       Se quitó user-scalable=no: bloquear el zoom es una barrera de
+       accesibilidad, y en el mostrador puede hacer falta agrandar un DNI. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+  <!-- Instalable como aplicación -->
+  <link rel="icon" type="image/png" sizes="64x64" href="./icons/favicon-64.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="FitAccess">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
   <title>FitAccess - Control de Acceso & Gestión de Gimnasio</title>
   <meta name="theme-color" content="#14b8a6">
   <meta name="description" content="FitAccess - Plataforma SaaS multi-gimnasio: control de acceso QR, cobros y credencial digital de socios.">
@@ -702,16 +714,127 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
 
 .data-table-wrap { overflow-x: auto; margin: 0 -4px; padding: 0 4px; }
 
-@media (max-width: 720px) {
-  .app-header { padding: 12px 16px; }
-  .brand-container { flex: 1 1 100%; }
-  .header-actions { flex: 1 1 100%; }
-  .view-nav { flex: 1; overflow-x: auto; }
-  .app-container { padding: 20px 14px 80px; }
-  .glass-card { padding: 18px; border-radius: var(--radius-md); }
-  .metric-value { font-size: 2.1rem; }
-  .traffic-light-banner h2 { font-size: 1.9rem; }
-  .toast-notification { left: 14px; right: 14px; max-width: none; }
+/* ==========================================================================
+   CELULAR
+   El mostrador de un gimnasio se opera con una mano. La navegación baja al
+   pulgar, las tablas se convierten en fichas y los modales suben como hojas.
+   ========================================================================== */
+.nav-short { display: none; }
+
+@media (max-width: 760px) {
+  .app-header { padding: 10px 14px; gap: 10px; }
+  #header-subtitle, .brand-tag { display: none; }
+  .brand-name { font-size: 1.06rem; max-width: 52vw; }
+  .gym-logo-img { width: 36px; height: 36px; border-radius: 11px; }
+  .header-actions { gap: 8px; }
+  .user-profile-pill { padding: 5px 9px; font-size: .74rem; max-width: 44vw; gap: 6px; }
+  .user-profile-pill > .ico { display: none; }
+
+  /* El backdrop-filter del header crea un contexto de posicionamiento y
+     atraparía a la barra fija adentro del header. En celular se cambia por un
+     fondo casi opaco: la barra inferior importa más que el vidrio del header. */
+  .app-header {
+    backdrop-filter: none; -webkit-backdrop-filter: none;
+    background: color-mix(in srgb, var(--ink-950) 97%, transparent);
+  }
+
+  /* Navegación inferior fija: como una app nativa */
+  .view-nav {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 200;
+    gap: 2px; padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
+    background: color-mix(in srgb, var(--ink-950) 94%, transparent);
+    backdrop-filter: blur(26px) saturate(180%);
+    -webkit-backdrop-filter: blur(26px) saturate(180%);
+    border: none; border-top: 1px solid var(--hairline);
+    border-radius: 0; box-shadow: 0 -8px 26px -10px rgba(0,0,0,.8);
+  }
+  .nav-btn {
+    flex: 1; flex-direction: column; gap: 3px;
+    padding: 7px 3px; min-height: 52px;
+    font-size: .6rem; font-weight: 700; letter-spacing: .02em;
+    border-radius: 10px;
+  }
+  .nav-btn .ico { width: 21px; height: 21px; }
+  .nav-btn.active { background: transparent; color: var(--primary-color); box-shadow: none; }
+  .nav-btn.active .ico { filter: drop-shadow(0 0 9px var(--primary-glow)); }
+  .nav-full { display: none; }
+  .nav-short { display: inline; }
+
+  .app-container { padding: 18px 13px calc(96px + env(safe-area-inset-bottom)); }
+  .glass-card { padding: 17px 15px; border-radius: var(--radius-md); }
+  .glass-card-header { margin-bottom: 16px; }
+  .grid-4 { gap: 12px; }
+  .metric-card { padding: 14px 16px 13px; }
+  .metric-value { font-size: 2.1rem; margin: 6px 0 4px; }
+  .metric-label { font-size: .62rem; letter-spacing: .1em; }
+
+  .traffic-light-banner { padding: 26px 18px; }
+  .traffic-light-banner h2 { font-size: 1.95rem; }
+  .traffic-icon-wrap { width: 62px; height: 62px; }
+  .traffic-icon-wrap .ico { width: 31px; height: 31px; }
+  #traffic-desc { font-size: .9rem; }
+  .traffic-member { width: 100%; border-radius: 16px; padding: 12px; }
+
+  .toast-notification { top: auto; bottom: calc(78px + env(safe-area-inset-bottom)); left: 13px; right: 13px; max-width: none; }
+  #update-bar { bottom: calc(78px + env(safe-area-inset-bottom)); left: 13px; right: 13px; transform: none; flex-wrap: wrap; }
+
+  /* Modales como hoja que sube desde abajo */
+  .modal-overlay { padding: 0; align-items: flex-end; }
+  .modal-card {
+    max-width: none; max-height: 94vh;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    border-bottom: none;
+    padding: 26px 17px calc(24px + env(safe-area-inset-bottom));
+    animation: sheetIn .4s var(--ease-out);
+  }
+  /* Barrita de agarre, como en las hojas nativas */
+  .modal-card::after {
+    content: ''; position: absolute; top: 9px; left: 50%; transform: translateX(-50%);
+    width: 40px; height: 4px; border-radius: 3px; background: var(--hairline-3);
+  }
+  @keyframes sheetIn { from { transform: translateY(100%); } to { transform: none; } }
+
+  /* Tablas convertidas en fichas: nada de scroll horizontal */
+  .log-table thead { display: none; }
+  .log-table, .log-table tbody, .log-table tr, .log-table td { display: block; width: 100%; }
+  .log-table tr {
+    margin-bottom: 10px; padding: 5px 0;
+    background: var(--surface-1); border: 1px solid var(--hairline);
+    border-radius: 14px; box-shadow: var(--sheen);
+  }
+  .log-table td {
+    display: flex; align-items: center; justify-content: space-between; gap: 14px;
+    padding: 7px 14px; border: none; text-align: right;
+  }
+  .log-table td::before {
+    content: attr(data-l);
+    flex: none; text-align: left;
+    font-size: .62rem; font-weight: 800; text-transform: uppercase;
+    letter-spacing: .1em; color: var(--text-dim);
+  }
+  .log-table td:not([data-l]) { justify-content: flex-end; }
+  .log-table tbody tr:hover td { background: transparent; }
+  /* La celda de acciones ocupa todo el ancho, con botones grandes */
+  .log-table td[data-l="Acciones"] { padding-top: 10px; border-top: 1px solid var(--hairline); }
+  .log-table td[data-l="Acciones"] > div { flex-wrap: wrap; justify-content: flex-end; }
+  .log-table .btn-tiny { min-height: 34px; min-width: 38px; padding: 6px 11px; }
+  /* Fila de "sin resultados": una sola celda, centrada */
+  .log-table td[colspan] { text-align: center; justify-content: center; }
+  .log-table td[colspan]::before { content: none; }
+
+  .list-row { flex-wrap: wrap; }
+  .tab-link { font-size: .78rem; padding: 9px 8px; }
+  .digital-credential-card { padding: 22px 18px 24px; border-radius: var(--radius-xl); }
+  .member-name { font-size: 1.3rem; }
+  .notice-bar, .tenant-bar { padding: 8px 14px; font-size: .78rem; gap: 10px; }
+  .form-input, .form-select { font-size: 16px; } /* 16px evita que iOS haga zoom al enfocar */
+  .btn { min-height: 42px; }
+}
+
+/* Cuando está instalada como app, el header respeta el área segura de arriba */
+@media (display-mode: standalone) {
+  .app-header { padding-top: calc(13px + env(safe-area-inset-top)); }
+  .notice-bar, .tenant-bar { padding-top: 9px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -980,11 +1103,17 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
 
     <div class="header-actions">
       <nav class="view-nav" id="main-view-nav">
-        <button class="nav-btn" id="nav-console" onclick="FitApp.switchView('console')"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg> Consola SaaS</button>
-        <button class="nav-btn" id="nav-socio" onclick="FitApp.switchView('socio')"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg> Mi Carnet</button>
-        <button class="nav-btn" id="nav-reception" onclick="FitApp.switchView('reception')"><svg class="ico" aria-hidden="true"><use href="#i-scan"/></svg> Recepción</button>
-        <button class="nav-btn" id="nav-admin" onclick="FitApp.switchView('admin')"><svg class="ico" aria-hidden="true"><use href="#i-gear"/></svg> Panel Gimnasio</button>
+        <button class="nav-btn" id="nav-console" onclick="FitApp.switchView('console')"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg> <span class="nav-full">Consola SaaS</span><span class="nav-short">Consola</span></button>
+        <button class="nav-btn" id="nav-socio" onclick="FitApp.switchView('socio')"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg> <span class="nav-full">Mi Carnet</span><span class="nav-short">Carnet</span></button>
+        <button class="nav-btn" id="nav-reception" onclick="FitApp.switchView('reception')"><svg class="ico" aria-hidden="true"><use href="#i-scan"/></svg> <span class="nav-full">Recepción</span><span class="nav-short">Recepción</span></button>
+        <button class="nav-btn" id="nav-admin" onclick="FitApp.switchView('admin')"><svg class="ico" aria-hidden="true"><use href="#i-gear"/></svg> <span class="nav-full">Panel Gimnasio</span><span class="nav-short">Panel</span></button>
       </nav>
+
+      <!-- Aparece sólo si el navegador ofrece instalar la app -->
+      <button id="btn-install" class="btn btn-secondary btn-tiny" style="display:none;" onclick="FitApp.installApp()">
+        <svg class="ico" aria-hidden="true"><use href="#i-download"/></svg>
+        <span class="nav-full">Instalar app</span><span class="nav-short">Instalar</span>
+      </button>
 
       <span id="header-cloud-badge" class="status-badge badge-neutral" title="Origen de los datos">Local</span>
 
@@ -2371,6 +2500,7 @@ const FitApp = {
     // Marca por defecto en los <img> que no tienen logo de gimnasio todavía
     document.querySelectorAll("[data-brand-mark]").forEach(img => { if (!img.src) img.src = BRAND_MARK; });
     this.registerServiceWorker();
+    this.setupInstall();
     this.watchConnection();
     this.checkLibraries();
   },
@@ -3071,12 +3201,12 @@ const FitApp = {
               </div>
             </div>
           </td>
-          <td><code>${esc(g.slug)}</code><br><span style="font-size:0.72rem;color:var(--text-dim);">${esc(g.id)}</span></td>
-          <td>${esc(plan.label)}</td>
-          <td>${members}${plan.maxMembers === Infinity ? "" : ` / ${plan.maxMembers}`}</td>
-          <td>${staff}</td>
-          <td>${statusBadge}</td>
-          <td>
+          <td data-l="Slug"><code>${esc(g.slug)}</code><br><span style="font-size:0.72rem;color:var(--text-dim);">${esc(g.id)}</span></td>
+          <td data-l="Plan">${esc(plan.label)}</td>
+          <td data-l="Socios">${members}${plan.maxMembers === Infinity ? "" : ` / ${plan.maxMembers}`}</td>
+          <td data-l="Staff">${staff}</td>
+          <td data-l="Estado">${statusBadge}</td>
+          <td data-l="Acciones">
             <div style="display:flex; gap:6px; flex-wrap:wrap;">
               <button class="btn btn-tiny" onclick="FitApp.enterGymContext('${g.id}')">${ic("chevron-left","flip-x")}Entrar</button>
               <button class="btn btn-secondary btn-tiny" onclick="FitApp.toggleGymActive('${g.id}')">${g.active ? ic("pause") + " Suspender" : ic("play") + " Reactivar"}</button>
@@ -3425,17 +3555,17 @@ Object.assign(FitApp, {
       };
       return `
         <tr>
-          <td><img onerror="this.onerror=null;this.src=DEFAULT_PHOTO" src="${esc(m.photo || DEFAULT_PHOTO)}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;"></td>
-          <td><strong>${esc(m.name)}</strong><br>
+          <td data-l="Foto"><img onerror="this.onerror=null;this.src=DEFAULT_PHOTO" src="${esc(m.photo || DEFAULT_PHOTO)}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;"></td>
+          <td data-l="Socio"><strong>${esc(m.name)}</strong><br>
             <span style="font-size:0.75rem;color:var(--text-muted);">DNI ${esc(m.dni)} · ${esc(m.id)}</span></td>
-          <td style="font-size:0.82rem;">${esc(branch ? branch.name : "—")}</td>
-          <td style="font-size:0.82rem;">${esc(plan.name)}<br>
+          <td data-l="Sede" style="font-size:0.82rem;">${esc(branch ? branch.name : "—")}</td>
+          <td data-l="Plan" style="font-size:0.82rem;">${esc(plan.name)}<br>
             <span style="font-size:0.74rem;color:var(--text-dim);">${this.money(plan.price)}</span></td>
-          <td>${okCuota
+          <td data-l="Cuota">${okCuota
             ? `<span class="status-badge badge-green">Al día (${esc(m.dueDate)})</span>`
             : `<span class="status-badge badge-red">Vencida (${esc(m.dueDate)})</span>`}</td>
-          <td>${aptoMap[m.aptoMedico] || aptoMap.pendiente}</td>
-          <td>
+          <td data-l="Apto">${aptoMap[m.aptoMedico] || aptoMap.pendiente}</td>
+          <td data-l="Acciones">
             <div style="display:flex; gap:6px;">
               <button class="btn btn-secondary btn-tiny" onclick="FitApp.viewMemberCard('${m.id}')" title="Ver carnet">${ic("card")}</button>
               <button class="btn btn-secondary btn-tiny" onclick="FitApp.printMemberCard('${m.id}')" title="Imprimir credencial">${ic("printer")}</button>
@@ -3779,13 +3909,13 @@ Object.assign(FitApp, {
       const canManage = this.can("users:manage") && !isSelf && this.canAssignRole(u.role);
       return `
         <tr>
-          <td><strong>${esc(u.name)}</strong>${isSelf ? ` <span style="font-size:0.7rem;color:var(--text-dim);">(vos)</span>` : ""}</td>
-          <td><code style="font-size:0.8rem;">${esc(u.email)}</code></td>
-          <td><span class="role-tag-badge role-badge-${u.role}">${ROLES[u.role].label}</span></td>
-          <td style="font-size:0.8rem;">${esc(this.gymName(u.gymId))}</td>
-          <td style="font-size:0.8rem;color:var(--text-muted);">${member ? esc(member.name) + " · " + esc(member.id) : "—"}</td>
-          <td>${u.active ? `<span class="status-badge badge-green">Activo</span>` : `<span class="status-badge badge-red">Inactivo</span>`}</td>
-          <td>
+          <td data-l="Usuario"><strong>${esc(u.name)}</strong>${isSelf ? ` <span style="font-size:0.7rem;color:var(--text-dim);">(vos)</span>` : ""}</td>
+          <td data-l="Email"><code style="font-size:0.8rem;">${esc(u.email)}</code></td>
+          <td data-l="Rol"><span class="role-tag-badge role-badge-${u.role}">${ROLES[u.role].label}</span></td>
+          <td data-l="Gimnasio" style="font-size:0.8rem;">${esc(this.gymName(u.gymId))}</td>
+          <td data-l="Socio" style="font-size:0.8rem;color:var(--text-muted);">${member ? esc(member.name) + " · " + esc(member.id) : "—"}</td>
+          <td data-l="Estado">${u.active ? `<span class="status-badge badge-green">Activo</span>` : `<span class="status-badge badge-red">Inactivo</span>`}</td>
+          <td data-l="Acciones">
             <div style="display:flex; gap:6px; flex-wrap:wrap;">
               ${canManage ? `<button class="btn btn-secondary btn-tiny" onclick="FitApp.toggleUserActive('${u.id}')">${u.active ? ic("pause") : ic("play")}</button>` : ""}
               ${canManage ? `<button class="btn btn-secondary btn-tiny" onclick="FitApp.resetUserPassword('${u.id}')" title="Resetear contraseña">${ic("key")}</button>` : ""}
@@ -4483,11 +4613,11 @@ Object.assign(FitApp, {
     tbody.innerHTML = list.map(l => {
       const cls = l.status === "GREEN" ? "badge-green" : (l.status === "YELLOW" ? "badge-yellow" : "badge-red");
       return `<tr>
-        <td><strong>${esc(l.time)}</strong></td>
-        <td>${esc(l.memberName)} <span style="font-size:0.75rem;color:var(--text-muted);">(${esc(l.memberId)})</span></td>
-        <td style="font-size:0.8rem;">${esc(l.branchName || "—")}</td>
-        <td><span class="status-badge ${cls}">${esc(l.status)}</span></td>
-        <td>${esc(l.reason)}</td>
+        <td data-l="Hora"><strong>${esc(l.time)}</strong></td>
+        <td data-l="Socio">${esc(l.memberName)} <span style="font-size:0.75rem;color:var(--text-muted);">(${esc(l.memberId)})</span></td>
+        <td data-l="Sede" style="font-size:0.8rem;">${esc(l.branchName || "—")}</td>
+        <td data-l="Resultado"><span class="status-badge ${cls}">${esc(l.status)}</span></td>
+        <td data-l="Detalle">${esc(l.reason)}</td>
       </tr>`;
     }).join("");
   },
@@ -4512,11 +4642,11 @@ Object.assign(FitApp, {
     }
     tbody.innerHTML = list.map(a => `
       <tr>
-        <td style="font-size:0.8rem;white-space:nowrap;">${new Date(a.at).toLocaleString("es-AR")}</td>
-        <td style="font-size:0.8rem;">${esc(a.actorEmail)}<br>
+        <td data-l="Fecha" style="font-size:0.8rem;">${new Date(a.at).toLocaleString("es-AR")}</td>
+        <td data-l="Usuario" style="font-size:0.8rem;">${esc(a.actorEmail)}<br>
           <span class="role-tag-badge role-badge-${a.actorRole || "admin"}">${ROLES[a.actorRole] ? ROLES[a.actorRole].label : "sistema"}</span></td>
-        <td><code style="font-size:0.78rem;">${esc(a.action)}</code></td>
-        <td style="font-size:0.82rem;">${esc(a.detail)}</td>
+        <td data-l="Acción"><code style="font-size:0.78rem;">${esc(a.action)}</code></td>
+        <td data-l="Detalle" style="font-size:0.82rem;">${esc(a.detail)}</td>
       </tr>`).join("");
   },
 
@@ -5043,6 +5173,47 @@ Object.assign(FitApp, {
     if (bar) bar.style.display = "none";
     if (this.pendingWorker) this.pendingWorker.postMessage({ type: "SKIP_WAITING" });
     else window.location.reload();
+  },
+
+  /* ------------------------------------------------------- instalación
+     Chrome y Edge disparan beforeinstallprompt cuando la app cumple los
+     requisitos (HTTPS, manifest con iconos y service worker registrado).
+     Guardamos el evento para poder ofrecer la instalación cuando el usuario
+     quiera, no cuando al navegador se le ocurra. */
+  setupInstall() {
+    const btn = document.getElementById("btn-install");
+    const yaInstalada = window.matchMedia("(display-mode: standalone)").matches
+      || window.navigator.standalone === true;
+    if (yaInstalada) return;
+
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();               // evita el cartel automático del navegador
+      this.installEvent = e;
+      if (btn) btn.style.display = "inline-flex";
+    });
+
+    window.addEventListener("appinstalled", () => {
+      this.installEvent = null;
+      if (btn) btn.style.display = "none";
+      this.showToast("La app quedó instalada en este dispositivo.");
+    });
+  },
+
+  async installApp() {
+    const btn = document.getElementById("btn-install");
+    if (!this.installEvent) {
+      // Safari y Firefox no exponen la API: se instala a mano.
+      const esIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      alert(esIOS
+        ? "En iPhone o iPad: tocá el botón Compartir y elegí «Agregar a inicio»."
+        : "Tu navegador no ofrece instalación automática.\n\nEn Chrome o Edge de escritorio: menú ⋮ → «Instalar FitAccess».\nEn Firefox no está disponible: usá Chrome o Edge.");
+      return;
+    }
+    this.installEvent.prompt();
+    const res = await this.installEvent.userChoice;
+    this.installEvent = null;
+    if (btn) btn.style.display = "none";
+    if (res && res.outcome === "accepted") this.showToast("Instalando la app…");
   },
 
   watchConnection() {
