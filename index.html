@@ -3053,7 +3053,17 @@ const FitApp = {
      funcione igual, y se descarta cualquier rol local que no coincida. */
   applyCloudIdentity(identity) {
     if (!identity || !identity.role) {
-      return { ok: false, message: "❌ Tu cuenta no tiene permisos asignados todavía. El gimnasio tiene que habilitarte." };
+      /* Mensaje concreto en lugar de un "sin permisos" genérico: casi siempre
+         es que falta el documento de perfil o le falta un campo. */
+      const uid = identity ? identity.uid : "(desconocido)";
+      const detalle = identity && identity.sinPerfil
+        ? `Falta el documento <code>users/${esc(uid)}</code> en Firestore.`
+        : `El documento <code>users/${esc(uid)}</code> existe pero no tiene <code>role</code> ni <code>gymId</code>.`;
+      return {
+        ok: false,
+        message: `❌ Tu cuenta no tiene permisos asignados. ${detalle}<br>` +
+                 `<span style="font-size:.78rem">Revisá que el ID del documento sea exactamente <code>${esc(uid)}</code>.</span>`
+      };
     }
     let user = this.users.find(u => u.id === identity.uid)
       || this.users.find(u => (u.email || "").toLowerCase() === identity.email);
@@ -3381,10 +3391,13 @@ const FitApp = {
       return;
     }
 
-    tbody.innerHTML = this.gyms.map(g => {
+    tbody.innerHTML = this.gyms.map(gRaw => {
+      /* Defensivo: un gimnasio creado a mano en la consola de Firebase puede no
+         tener branding, saas ni sedes. Antes esto rompía toda la tabla. */
+      const g = this.normalizeGym(gRaw).gym;
       const members = this.members.filter(m => m.gymId === g.id).length;
       const staff = this.users.filter(u => u.gymId === g.id && u.role !== "socio").length;
-      const plan = SAAS_PLANS[g.saas.plan] || SAAS_PLANS.pro;
+      const plan = SAAS_PLANS[(g.saas && g.saas.plan) || "pro"] || SAAS_PLANS.pro;
       const statusBadge = !g.active
         ? `<span class="status-badge badge-red">Suspendido</span>`
         : (g.saas.status === "trial"
@@ -5827,7 +5840,8 @@ Object.assign(FitApp, {
     if (!this.cloudOn()) return;
     const res = await window.FirebaseSaaS.pullGyms();
     if (!res.ok) { this.showToast(res.message || "⚠️ No se pudo listar los gimnasios."); return; }
-    this.gyms = res.gyms;
+    // Los gimnasios creados a mano vienen incompletos: se completan antes de usarlos
+    this.gyms = res.gyms.map(g => this.normalizeGym(g).gym);
     this.persistGym();
   },
 
@@ -6198,21 +6212,36 @@ document.addEventListener("DOMContentLoaded", () => FitApp.init());
         const token = await user.getIdTokenResult(true);
         const c = token.claims || {};
         let profile = {};
+        let snapExiste = false;
         try {
           const snap = await getDoc(doc(this.db, "users", user.uid));
-          if (snap.exists()) profile = snap.data();
-        } catch (e) { /* las reglas pueden negar la lectura: no es crítico */ }
+          if (snap.exists()) { profile = snap.data(); snapExiste = true; }
+        } catch (e) {
+          console.warn("[FitAccess] no se pudo leer /users/" + user.uid, e && e.code);
+        }
+
+        /* El rol se resuelve igual que en firestore.rules: primero el claim
+           firmado, y si no hay, el documento /users/{uid}.
+           Este respaldo es lo que permite trabajar sin Cloud Functions, o sea
+           sin plan Blaze: los documentos se crean a mano en la consola y nadie
+           los puede modificar desde el navegador porque las reglas lo prohíben. */
+        const esPlataforma = c.platform === true || (!c.role && profile.platform === true);
+        const rol = esPlataforma ? "superadmin" : (c.role || profile.role || null);
+        const gym = esPlataforma ? null : (c.gymId || profile.gymId || null);
+
+        console.log(`[FitAccess] rol "${rol}" leído de: ${c.role || c.platform ? "custom claims" : "documento /users"}`);
 
         return {
           uid: user.uid,
           email: user.email,
           name: profile.name || user.displayName || user.email,
-          platform: c.platform === true,
-          role: c.platform === true ? "superadmin" : (c.role || null),
-          gymId: c.platform === true ? null : (c.gymId || null),
+          platform: esPlataforma,
+          role: rol,
+          gymId: gym,
           memberId: c.memberId || profile.memberId || null,
           branchId: c.branchId || profile.branchId || null,
-          active: profile.active !== false
+          active: profile.active !== false,
+          sinPerfil: !snapExiste && !c.role && c.platform !== true
         };
       },
 
