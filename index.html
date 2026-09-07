@@ -848,16 +848,41 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
        del gimnasio permita salir a cdnjs, y el service worker las cachea sin
        problemas de CORS. Ver vendor/README.md para bajarlas (2 comandos).
        =================================================================== -->
-  <script src="./vendor/qrcode.min.js" onerror="window.__qrLocalFail=true"></script>
-  <script src="./vendor/jsQR.js" onerror="window.__jsqrLocalFail=true"></script>
+  <script src="./vendor/qrcode.min.js"></script>
+  <script src="./vendor/jsQR.js"></script>
   <script>
-    // Respaldo por CDN sólo si la copia local no está.
-    if (!window.QRCode) {
-      document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>');
-    }
-    if (!window.jsQR) {
-      document.write('<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"><\/script>');
-    }
+    /* Respaldo por CDN si faltan las copias locales.
+       Se inyecta como <script> creado por DOM en lugar de document.write:
+       Chrome bloquea los scripts cross-origin insertados con document.write
+       cuando la conexión es lenta, que es exactamente el wifi de un gimnasio.
+       Como la carga pasa a ser asíncrona, al terminar se vuelve a evaluar el
+       estado y se redibuja el QR si había un carnet en pantalla. */
+    (function () {
+      var respaldos = [
+        { falta: function () { return !window.QRCode; }, url: "https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" },
+        { falta: function () { return !window.jsQR; },  url: "https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js" }
+      ].filter(function (r) { return r.falta(); });
+
+      if (!respaldos.length) return;   // las copias locales están: nada que bajar
+
+      var pendientes = respaldos.length;
+      var alTerminar = function () {
+        if (--pendientes > 0) return;
+        if (!window.FitApp) return;
+        if (FitApp.checkLibraries) FitApp.checkLibraries();
+        if (FitApp.currentActiveMember && FitApp.generateDynamicQR) {
+          FitApp.generateDynamicQR(FitApp.currentActiveMember);
+        }
+      };
+
+      respaldos.forEach(function (r) {
+        var s = document.createElement("script");
+        s.src = r.url;
+        s.onload = alTerminar;
+        s.onerror = alTerminar;
+        document.head.appendChild(s);
+      });
+    })();
   </script>
 </head>
 <body>
