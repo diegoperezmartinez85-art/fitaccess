@@ -556,29 +556,85 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
 /* ==========================================================================
    PORTALES DE INGRESO
    ========================================================================== */
+.portal-question {
+  font-size: 1.12rem; font-weight: 800; text-align: center;
+  letter-spacing: -.02em; margin-bottom: 15px;
+}
+.portal-list { display: flex; flex-direction: column; gap: 10px; }
+
 .role-login-card-btn {
   position: relative; overflow: hidden;
-  display: flex; align-items: center; gap: 15px;
-  padding: 15px 18px; border-radius: var(--radius-md);
+  display: flex; align-items: center; gap: 14px; width: 100%;
+  padding: 15px 17px; border-radius: var(--radius-md);
   background: var(--surface-1); border: 1px solid var(--hairline);
   box-shadow: var(--sheen);
   cursor: pointer; text-align: left;
+  font-family: inherit; color: inherit;
   transition: transform .3s var(--ease-out), background .25s, border-color .25s, box-shadow .3s;
 }
 .role-login-card-btn:hover {
-  transform: translateY(-3px);
-  background: var(--surface-2); border-color: var(--hairline-2);
+  transform: translateY(-2px);
+  background: var(--surface-2);
   box-shadow: var(--shadow-md), var(--sheen-strong);
 }
+.portal-text { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.portal-name { font-weight: 800; font-size: 1.04rem; letter-spacing: -.015em; }
+.portal-desc { font-size: .8rem; color: var(--text-muted); line-height: 1.35; }
+
 .portal-icon {
   display: grid; place-items: center; flex: none;
   width: 46px; height: 46px; border-radius: 13px;
   background: var(--surface-2); border: 1px solid var(--hairline-2);
   box-shadow: var(--sheen);
+  transition: background .25s, border-color .25s, box-shadow .3s;
 }
 .portal-icon .ico { width: 22px; height: 22px; color: var(--primary-color); }
-.role-login-card-btn:nth-child(1) .portal-icon .ico { color: var(--secondary-color); }
-.role-login-card-btn:nth-child(2) .portal-icon .ico { color: var(--accent-warm); }
+
+/* Color por rol.
+   Antes el azulejo del ícono era gris en las tres opciones y el color estaba
+   sólo en una línea al costado: las tres se veían iguales de reojo. Ahora el
+   color va en el ícono, que es lo que el ojo busca primero, y el borde
+   izquierdo lo acompaña. Se elige por clase y no por :nth-child para que no
+   se rompa si mañana se reordenan o se agrega una opción. */
+.portal-staff     { border-left: 3px solid var(--secondary-color); }
+.portal-recepcion { border-left: 3px solid var(--accent-warm); }
+.portal-socio     { border-left: 3px solid var(--primary-color); }
+
+.portal-staff .portal-icon {
+  background: color-mix(in srgb, var(--secondary-color) 16%, transparent);
+  border-color: color-mix(in srgb, var(--secondary-color) 38%, transparent);
+}
+.portal-staff .portal-icon .ico { color: var(--secondary-color); }
+.portal-recepcion .portal-icon {
+  background: color-mix(in srgb, var(--accent-warm) 16%, transparent);
+  border-color: color-mix(in srgb, var(--accent-warm) 38%, transparent);
+}
+.portal-recepcion .portal-icon .ico { color: var(--accent-warm); }
+.portal-socio .portal-icon {
+  background: color-mix(in srgb, var(--primary-color) 16%, transparent);
+  border-color: color-mix(in srgb, var(--primary-color) 38%, transparent);
+}
+.portal-socio .portal-icon .ico { color: var(--primary-color); }
+
+/* Al pasar el mouse, el azulejo se enciende: confirma cuál está elegida. */
+.portal-staff:hover     { border-color: color-mix(in srgb, var(--secondary-color) 45%, transparent); }
+.portal-recepcion:hover { border-color: color-mix(in srgb, var(--accent-warm) 45%, transparent); }
+.portal-socio:hover     { border-color: color-mix(in srgb, var(--primary-color) 45%, transparent); }
+.portal-staff:hover .portal-icon     { box-shadow: 0 0 16px -3px var(--secondary-glow), var(--sheen); }
+.portal-recepcion:hover .portal-icon { box-shadow: 0 0 16px -3px rgba(251,146,60,.5), var(--sheen); }
+.portal-socio:hover .portal-icon     { box-shadow: 0 0 16px -3px var(--primary-glow), var(--sheen); }
+
+/* Enlace apagado: para lo que casi nadie tiene que tocar. Antes la consola de
+   plataforma era un botón con ícono, y competía con las tres opciones reales
+   siendo la que menos gente usa. */
+.quiet-link {
+  background: none; border: none; padding: 4px 8px;
+  font-family: inherit; font-size: .76rem; color: var(--text-dim);
+  cursor: pointer; text-decoration: underline;
+  text-decoration-color: var(--hairline-2); text-underline-offset: 3px;
+  transition: color .25s, text-decoration-color .25s;
+}
+.quiet-link:hover { color: var(--text-muted); text-decoration-color: var(--text-dim); }
 
 /* --------------------------------------------------------------------------
    FIRMA DE NEXOS
@@ -1115,56 +1171,44 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
         <p style="font-size: 0.84rem; color: var(--text-muted);">Plataforma de control de acceso y gestión para gimnasios</p>
       </div>
 
-      <!-- PASO 1: Selector de Portal -->
+      <!-- PASO 1: ¿quién sos?
+           El texto está escrito desde la persona que está mirando la pantalla,
+           no desde el sistema. Antes decía "Molinete/escáner QR, semáforo" y
+           "QR dinámico de 30s": son especificaciones, y no ayudan a decidir si
+           esa es tu puerta. Ahora cada opción se reconoce por lo que la persona
+           HACE en el gimnasio. -->
       <div id="login-portal-selector">
-        <p style="font-size: 0.88rem; font-weight: 700; text-align: center; margin-bottom: 16px;">
-          Seleccioná tu tipo de acceso:
-        </p>
+        <p class="portal-question">¿Cómo vas a entrar?</p>
 
-        <div style="display: flex; flex-direction: column; gap: 12px;">
-          <div class="role-login-card-btn" style="border-left: 4px solid var(--secondary-color);" onclick="FitApp.selectAccessPortal('staff')">
-            <div class="portal-icon"><svg class="ico" aria-hidden="true"><use href="#i-gear"/></svg></div>
-            <div style="flex: 1;">
-              <div style="font-weight: 800; font-size: 1.05rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                <span style="white-space: nowrap;">Portal Staff / Gerencia</span>
-                <span class="role-tag-badge role-badge-admin">Dueño · Admin</span>
-              </div>
-              <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">
-                Panel de tu gimnasio: padrón, cobros, usuarios y branding.
-              </div>
-            </div>
-          </div>
+        <div class="portal-list">
+          <button type="button" class="role-login-card-btn portal-staff" onclick="FitApp.selectAccessPortal('staff')">
+            <span class="portal-icon"><svg class="ico" aria-hidden="true"><use href="#i-gear"/></svg></span>
+            <span class="portal-text">
+              <span class="portal-name">Administro el gimnasio</span>
+              <span class="portal-desc">Socios, cobros, caja y configuración</span>
+            </span>
+          </button>
 
-          <div class="role-login-card-btn" style="border-left: 4px solid var(--accent-warm);" onclick="FitApp.selectAccessPortal('recepcion')">
-            <div class="portal-icon"><svg class="ico" aria-hidden="true"><use href="#i-scan"/></svg></div>
-            <div style="flex: 1;">
-              <div style="font-weight: 800; font-size: 1.05rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                <span style="white-space: nowrap;">Portal Recepción</span>
-                <span class="role-tag-badge role-badge-recepcion">Mostrador</span>
-              </div>
-              <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">
-                Molinete/escáner QR, búsqueda por DNI, semáforo y cobro rápido.
-              </div>
-            </div>
-          </div>
+          <button type="button" class="role-login-card-btn portal-recepcion" onclick="FitApp.selectAccessPortal('recepcion')">
+            <span class="portal-icon"><svg class="ico" aria-hidden="true"><use href="#i-scan"/></svg></span>
+            <span class="portal-text">
+              <span class="portal-name">Estoy en el mostrador</span>
+              <span class="portal-desc">Controlar quién entra y cobrar cuotas</span>
+            </span>
+          </button>
 
-          <div class="role-login-card-btn" style="border-left: 4px solid var(--primary-color);" onclick="FitApp.selectAccessPortal('socio')">
-            <div class="portal-icon"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg></div>
-            <div style="flex: 1;">
-              <div style="font-weight: 800; font-size: 1.05rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                <span style="white-space: nowrap;">Portal Socio</span>
-                <span class="role-tag-badge role-badge-socio">Socio</span>
-              </div>
-              <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">
-                Carnet digital, QR dinámico de 30s, pagos y apto médico.
-              </div>
-            </div>
-          </div>
+          <button type="button" class="role-login-card-btn portal-socio" onclick="FitApp.selectAccessPortal('socio')">
+            <span class="portal-icon"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg></span>
+            <span class="portal-text">
+              <span class="portal-name">Soy socio</span>
+              <span class="portal-desc">Mi credencial, mis pagos y mi apto médico</span>
+            </span>
+          </button>
         </div>
 
-        <div style="text-align: center; margin-top: 16px;">
-          <button type="button" class="btn btn-secondary btn-tiny" onclick="FitApp.selectAccessPortal('console')">
-            <svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg> Consola de la plataforma (operador FitAccess)
+        <div style="text-align: center; margin-top: 18px;">
+          <button type="button" class="quiet-link" onclick="FitApp.selectAccessPortal('console')">
+            Soy el operador de FitAccess
           </button>
         </div>
       </div>
@@ -2684,11 +2728,14 @@ const PORTAL_ROLES = {
   socio:     ["socio"]
 };
 
+/* Los títulos del paso 2 repiten la opción elegida en el paso 1, para que la
+   persona confirme que no se equivocó de puerta. Por eso hablan igual que las
+   tarjetas: "Soy el dueño" -> "Ingreso del dueño". */
 const PORTAL_META = {
-  console:   { icon: "globe", title: "Consola de Plataforma", subtitle: "Operador FitAccess · todos los gimnasios" },
-  staff:     { icon: "gear", title: "Ingreso Staff / Gerencia", subtitle: "Panel de gestión de tu gimnasio" },
-  recepcion: { icon: "scan", title: "Terminal de Recepción", subtitle: "Molinete, escáner y cobros" },
-  socio:     { icon: "user", title: "App del Socio", subtitle: "Tu carnet digital y tus pagos" }
+  console:   { icon: "globe", title: "Administración de la plataforma", subtitle: "Operador · todos los gimnasios" },
+  staff:     { icon: "gear", title: "Ingreso de gestión", subtitle: "Dueño, administrador o entrenador" },
+  recepcion: { icon: "scan", title: "Ingreso de recepción", subtitle: "La terminal del mostrador" },
+  socio:     { icon: "user", title: "Ingreso de socios", subtitle: "Tu credencial y tus pagos" }
 };
 
 const PRESET_THEMES = {
