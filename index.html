@@ -527,10 +527,13 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
 /* ==========================================================================
    TOAST
    ========================================================================== */
+/* Abajo a la derecha, no arriba: el encabezado es fijo y con la barra de
+   demostración visible el aviso caía justo encima de "Instalar app" y del
+   botón de salir. Abajo no tapa nada y se lee igual. */
 .toast-notification {
-  position: fixed; top: 86px; right: 24px; z-index: 9999;
-  display: none; max-width: 380px;
-  padding: 13px 18px; border-radius: 14px;
+  position: fixed; bottom: 26px; right: 26px; z-index: 9999;
+  display: none; align-items: flex-start; gap: 11px; max-width: 390px;
+  padding: 13px 17px; border-radius: 15px;
   background: linear-gradient(180deg, var(--ink-700), var(--ink-800));
   border: 1px solid var(--hairline-2);
   border-left: 3px solid var(--primary-color);
@@ -538,6 +541,16 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
   font-size: .86rem; font-weight: 600; line-height: 1.45;
   animation: toastIn .45s var(--ease-spring);
 }
+.toast-ico { display: grid; place-items: center; flex: none; margin-top: 1px; }
+.toast-ico .ico { width: 18px; height: 18px; }
+.toast-info    { border-left-color: var(--primary-color); }
+.toast-info    .toast-ico .ico { color: var(--primary-color); }
+.toast-success { border-left-color: var(--status-green); }
+.toast-success .toast-ico .ico { color: var(--status-green); }
+.toast-warn    { border-left-color: var(--status-yellow); }
+.toast-warn    .toast-ico .ico { color: var(--status-yellow); }
+.toast-error   { border-left-color: var(--status-red); }
+.toast-error   .toast-ico .ico { color: var(--status-red); }
 @keyframes toastIn { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: none; } }
 
 /* ==========================================================================
@@ -567,8 +580,139 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
 .role-login-card-btn:nth-child(1) .portal-icon .ico { color: var(--secondary-color); }
 .role-login-card-btn:nth-child(2) .portal-icon .ico { color: var(--accent-warm); }
 
+/* --------------------------------------------------------------------------
+   MARCA NEXOS EN EL INICIO
+   El logo de Nexos va más chico que el del gimnasio y a su lado: firma de
+   quien hizo el sistema, sin competirle a la marca del cliente.
+   -------------------------------------------------------------------------- */
+.brand-lockup {
+  display: flex; align-items: center; justify-content: center;
+  gap: 14px; margin-bottom: 12px;
+}
+.brand-lockup .login-logo-img { width: 66px; height: 66px; margin: 0; }
+.lockup-sep {
+  width: 1px; height: 34px; flex: none;
+  background: linear-gradient(180deg, transparent, var(--hairline-3), transparent);
+}
+.nexos-chip {
+  display: grid; place-items: center; flex: none;
+  border-radius: 13px; text-decoration: none; line-height: 0;
+  transition: transform .35s var(--ease-spring), filter .3s;
+}
+/* El borde neón son dos sombras de color: cian arriba y magenta abajo, los
+   dos extremos del degradado del logo. Se hace con box-shadow y no con un
+   border para que el brillo salga hacia afuera y no recorte el ícono. */
+.nexos-mark {
+  width: 40px; height: 40px; border-radius: 12px; display: block;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, .20),
+    0 0 10px rgba(37, 217, 239, .50),
+    0 0 20px rgba(240, 76, 143, .38),
+    0 2px 6px rgba(0, 0, 0, .45);
+  animation: nexosPulse 3.6s ease-in-out infinite;
+}
+.nexos-chip:hover { transform: translateY(-2px) scale(1.06); }
+.nexos-chip:hover .nexos-mark {
+  animation-play-state: paused;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, .34),
+    0 0 16px rgba(37, 217, 239, .72),
+    0 0 34px rgba(240, 76, 143, .58),
+    0 3px 10px rgba(0, 0, 0, .5);
+}
+.nexos-chip:focus-visible { outline: 2px solid var(--primary-color); outline-offset: 4px; }
+
+/* Respiración muy leve del neón. Con prefers-reduced-motion se apaga. */
+@keyframes nexosPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 1px rgba(255,255,255,.20), 0 0 10px rgba(37,217,239,.50),
+                0 0 20px rgba(240,76,143,.38), 0 2px 6px rgba(0,0,0,.45);
+  }
+  50% {
+    box-shadow: 0 0 0 1px rgba(255,255,255,.28), 0 0 15px rgba(37,217,239,.66),
+                0 0 30px rgba(240,76,143,.52), 0 2px 6px rgba(0,0,0,.45);
+  }
+}
+
+.powered-by {
+  display: inline-flex; align-items: center; gap: 7px;
+  margin-top: 12px; padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--surface-1); border: 1px solid var(--hairline);
+  font-size: .74rem; color: var(--text-muted); text-decoration: none;
+  letter-spacing: .01em;
+  transition: color .25s, border-color .25s, background .25s;
+}
+.powered-by strong { color: var(--text-main); font-weight: 800; }
+.powered-by .powered-handle { color: var(--text-dim); }
+.powered-by:hover {
+  color: var(--text-main); background: var(--surface-2);
+  border-color: rgba(240, 76, 143, .45);
+}
+.powered-by:hover .powered-handle { color: #f04c8f; }
+
+@media (prefers-reduced-motion: reduce) {
+  .nexos-mark { animation: none; }
+}
+
 /* Chevron reutilizado como flecha hacia la derecha */
 .flip-x { transform: scaleX(-1); }
+
+/* ==========================================================================
+   TERMINACIONES
+   Detalles chicos que separan "una tabla con estilo" de una app que se siente
+   terminada: que lo tocable se vea tocable, que responda al toque, y que se
+   pueda usar con teclado sin quedar a ciegas.
+   ========================================================================== */
+
+/* Las tarjetas de portal no se leían como botones. Una punta de flecha alcanza
+   para que se entienda que llevan a algún lado. Va con bordes en CSS en lugar
+   de un carácter tipográfico: no depende de ninguna fuente. */
+.role-login-card-btn::after {
+  content: ''; flex: none;
+  width: 8px; height: 8px; margin-left: 2px;
+  border-right: 2px solid var(--text-dim);
+  border-bottom: 2px solid var(--text-dim);
+  border-radius: 1px;
+  transform: rotate(-45deg);
+  transition: transform .35s var(--ease-out), border-color .3s;
+}
+.role-login-card-btn:hover::after {
+  border-color: var(--text-main);
+  transform: rotate(-45deg) translate(2.5px, 2.5px);
+}
+
+/* Reflejo que cruza la tarjeta al pasar el mouse. */
+.role-login-card-btn::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(105deg, transparent 32%, rgba(255,255,255,.07) 46%, transparent 62%);
+  transform: translateX(-110%);
+  transition: transform .75s var(--ease-out);
+}
+.role-login-card-btn:hover::before { transform: translateX(110%); }
+
+/* Filo de luz sobre los indicadores: los vuelve un panel de datos y no cajas. */
+.metric-card::before {
+  content: ''; position: absolute; top: 0; left: 14px; right: 14px; height: 1px;
+  background: linear-gradient(90deg, transparent,
+    color-mix(in srgb, var(--primary-color) 55%, transparent), transparent);
+}
+.metric-card:hover { transform: translateY(-2px); border-color: var(--hairline-2); }
+
+/* Respuesta al toque. Sin esto, en el celular no se siente que el botón
+   registró el toque hasta que la pantalla cambia. */
+.btn:active { transform: translateY(1px) scale(.99); }
+.role-login-card-btn:active { transform: translateY(-1px) scale(.995); }
+.list-row { transition: background .2s, border-color .2s; }
+
+/* Foco visible para quien usa teclado. El mostrador se opera con Tab y Enter
+   mucho más de lo que uno cree. */
+:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+.form-input:focus-visible, .form-select:focus-visible { outline-offset: 0; }
 
 /* ==========================================================================
    CREDENCIAL DIGITAL — el elemento hero de la app
@@ -952,7 +1096,10 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
     <div class="glow-orb glow-orb-2"></div>
   </div>
 
-  <div id="toast-alert" class="toast-notification">¡Operación realizada con éxito!</div>
+  <div id="toast-alert" class="toast-notification">
+    <span class="toast-ico" id="toast-icon"></span>
+    <span id="toast-text">¡Operación realizada con éxito!</span>
+  </div>
 
   <!-- Aviso de versión nueva: el usuario decide cuándo recargar -->
   <div id="update-bar" style="display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:9998; background:#0f172a; border:1px solid var(--primary-color); border-radius:var(--radius-md); padding:12px 18px; box-shadow:0 10px 30px rgba(0,0,0,0.6); align-items:center; gap:14px; font-size:0.86rem; font-weight:700;">
@@ -990,9 +1137,20 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
     <div class="modal-card" style="max-width: 500px; width: 100%; padding: 32px 28px;">
 
       <div style="text-align: center; margin-bottom: 22px;">
-        <img alt="FitAccess" data-brand-mark="1" class="login-logo-img gym-logo-img" style="width:68px; height:68px; margin:0 auto 10px auto;">
-        <h2 style="font-size: 1.6rem; font-weight: 900;">FitAccess</h2>
+        <div class="brand-lockup">
+          <img alt="FitAccess" data-brand-mark="1" class="login-logo-img gym-logo-img">
+          <span class="lockup-sep" aria-hidden="true"></span>
+          <a class="nexos-chip" href="https://instagram.com/nexosmaps" target="_blank" rel="noopener"
+             title="Nexos · @nexosmaps en Instagram" aria-label="Nexos, abrir @nexosmaps en Instagram">
+            <img alt="Nexos" data-nexos-mark="1" class="nexos-mark">
+          </a>
+        </div>
+        <h2 style="font-size: 1.6rem; font-weight: 900; letter-spacing: -.02em;">FitAccess</h2>
         <p style="font-size: 0.84rem; color: var(--text-muted);">Plataforma de control de acceso y gestión para gimnasios</p>
+        <a class="powered-by" href="https://instagram.com/nexosmaps" target="_blank" rel="noopener">
+          Powered by <strong>Nexos</strong>
+          <span class="powered-handle">@nexosmaps</span>
+        </a>
       </div>
 
       <!-- PASO 1: Selector de Portal -->
@@ -1005,8 +1163,9 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
           <div class="role-login-card-btn" style="border-left: 4px solid var(--secondary-color);" onclick="FitApp.selectAccessPortal('staff')">
             <div class="portal-icon"><svg class="ico" aria-hidden="true"><use href="#i-gear"/></svg></div>
             <div style="flex: 1;">
-              <div style="font-weight: 800; font-size: 1.05rem; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-                Portal Staff / Gerencia <span class="role-tag-badge role-badge-admin">Dueño · Admin</span>
+              <div style="font-weight: 800; font-size: 1.05rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <span style="white-space: nowrap;">Portal Staff / Gerencia</span>
+                <span class="role-tag-badge role-badge-admin">Dueño · Admin</span>
               </div>
               <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">
                 Panel de tu gimnasio: padrón, cobros, usuarios y branding.
@@ -1017,8 +1176,9 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
           <div class="role-login-card-btn" style="border-left: 4px solid var(--accent-warm);" onclick="FitApp.selectAccessPortal('recepcion')">
             <div class="portal-icon"><svg class="ico" aria-hidden="true"><use href="#i-scan"/></svg></div>
             <div style="flex: 1;">
-              <div style="font-weight: 800; font-size: 1.05rem; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-                Portal Recepción <span class="role-tag-badge role-badge-recepcion">Mostrador</span>
+              <div style="font-weight: 800; font-size: 1.05rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <span style="white-space: nowrap;">Portal Recepción</span>
+                <span class="role-tag-badge role-badge-recepcion">Mostrador</span>
               </div>
               <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">
                 Molinete/escáner QR, búsqueda por DNI, semáforo y cobro rápido.
@@ -1029,8 +1189,9 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
           <div class="role-login-card-btn" style="border-left: 4px solid var(--primary-color);" onclick="FitApp.selectAccessPortal('socio')">
             <div class="portal-icon"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg></div>
             <div style="flex: 1;">
-              <div style="font-weight: 800; font-size: 1.05rem; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-                Portal Socio <span class="role-tag-badge role-badge-socio">Socio</span>
+              <div style="font-weight: 800; font-size: 1.05rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <span style="white-space: nowrap;">Portal Socio</span>
+                <span class="role-tag-badge role-badge-socio">Socio</span>
               </div>
               <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">
                 Carnet digital, QR dinámico de 30s, pagos y apto médico.
@@ -2337,8 +2498,8 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
           <div class="form-group">
             <label class="form-label">Estado de cuota:</label>
             <select id="new-m-cuota" class="form-select">
-              <option value="al_dia">🟢 Al día</option>
-              <option value="vencido">🔴 Vencida</option>
+              <option value="al_dia">Al día</option>
+              <option value="vencido">Vencida</option>
             </select>
           </div>
           <div class="form-group">
@@ -2351,9 +2512,9 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
           <div class="form-group">
             <label class="form-label">Apto médico:</label>
             <select id="new-m-apto" class="form-select">
-              <option value="vigente">🟢 Vigente</option>
-              <option value="vencido">🔴 Vencido</option>
-              <option value="pendiente">🟡 Pendiente</option>
+              <option value="vigente">Vigente</option>
+              <option value="vencido">Vencido</option>
+              <option value="pendiente">Pendiente</option>
             </select>
           </div>
           <div class="form-group">
@@ -2416,8 +2577,8 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
           <div class="form-group">
             <label class="form-label">Estado de cuota:</label>
             <select id="edit-m-cuota" class="form-select">
-              <option value="al_dia">🟢 Al día</option>
-              <option value="vencido">🔴 Vencida</option>
+              <option value="al_dia">Al día</option>
+              <option value="vencido">Vencida</option>
             </select>
           </div>
           <div class="form-group">
@@ -2429,9 +2590,9 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
         <div class="form-group">
           <label class="form-label">Apto médico:</label>
           <select id="edit-m-apto" class="form-select">
-            <option value="vigente">🟢 Vigente</option>
-            <option value="vencido">🔴 Vencido</option>
-            <option value="pendiente">🟡 Pendiente</option>
+            <option value="vigente">Vigente</option>
+            <option value="vencido">Vencido</option>
+            <option value="pendiente">Pendiente</option>
           </select>
         </div>
 
@@ -2571,6 +2732,46 @@ const PRESET_THEMES = {
 const DEFAULT_PHOTO = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 96 96'%3E%3Crect width='96' height='96' fill='%23151b29'/%3E%3Ccircle cx='48' cy='37' r='15' fill='%233a4560'/%3E%3Cpath d='M17 93c0-17.1 13.9-31 31-31s31 13.9 31 31z' fill='%233a4560'/%3E%3C/svg%3E";
 
 const BRAND_MARK = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%232dd4bf'/%3E%3Cstop offset='1' stop-color='%230d9488'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='17' fill='url(%23g)'/%3E%3Cg stroke='%23ffffff' stroke-width='5' stroke-linecap='round'%3E%3Cpath d='M21 22v20M15 27v10M43 22v20M49 27v10M21 32h22'/%3E%3C/g%3E%3C/svg%3E";
+
+/* --------------------------------------------------------------------------
+   MARCA NEXOS
+   El logo va embebido como data URI en base64, así que no depende de ningún
+   archivo ni de internet: se ve igual en la tablet del mostrador sin conexión.
+   Se guarda el SVG legible y se codifica con btoa() en lugar de pegar el blob
+   ya codificado: el resultado es el mismo data URI, pero acá se puede leer y
+   corregir un color sin tener que decodificar 2.700 caracteres a mano.
+   El SVG es ASCII puro a propósito, porque btoa() no acepta otra cosa.
+   -------------------------------------------------------------------------- */
+const NEXOS_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 64 64">'
+  + '<defs>'
+  + '<linearGradient id="nxT" x1="0" y1="0" x2="1" y2="1">'
+  + '<stop offset="0" stop-color="#25d9ef"/><stop offset=".3" stop-color="#3b82f6"/>'
+  + '<stop offset=".58" stop-color="#7c4ddb"/><stop offset=".82" stop-color="#d63bb0"/>'
+  + '<stop offset="1" stop-color="#f04c8f"/></linearGradient>'
+  + '<linearGradient id="nxP" x1=".15" y1="0" x2=".8" y2="1">'
+  + '<stop offset="0" stop-color="#8f7bf0"/><stop offset=".4" stop-color="#d8348f"/>'
+  + '<stop offset="1" stop-color="#ef4a7f"/></linearGradient>'
+  + '<radialGradient id="nxG" cx=".24" cy=".16" r=".8">'
+  + '<stop offset="0" stop-color="#ffffff" stop-opacity=".26"/>'
+  + '<stop offset=".5" stop-color="#ffffff" stop-opacity=".04"/>'
+  + '<stop offset="1" stop-color="#ffffff" stop-opacity="0"/></radialGradient>'
+  + '<clipPath id="nxC"><rect width="64" height="64" rx="15.5"/></clipPath>'
+  + '</defs>'
+  + '<rect width="64" height="64" rx="15.5" fill="url(#nxT)"/>'
+  + '<g clip-path="url(#nxC)" fill="#ffffff">'
+  + '<path d="M-6 44 C10 32 22 48 40 36 C52 28 60 32 72 26 L72 74 L-6 74 Z" opacity=".09"/>'
+  + '<path d="M-6 54 C12 44 24 56 42 46 C54 39 62 42 72 37 L72 74 L-6 74 Z" opacity=".07"/>'
+  + '<ellipse cx="18" cy="12" rx="27" ry="17" opacity=".08"/></g>'
+  + '<rect width="64" height="64" rx="15.5" fill="url(#nxG)"/>'
+  + '<ellipse cx="32" cy="51.6" rx="7.6" ry="2.2" fill="#6b1447" opacity=".34"/>'
+  + '<path d="M32 11.6c-8.06 0-14.6 6.54-14.6 14.6 0 3.95 2.04 8.32 4.77 12.2 2.74 3.9 6.03 7.24 8.07 9.2a2.52 2.52 0 0 0 3.49 0c2.04-1.96 5.33-5.3 8.07-9.2 2.73-3.88 4.77-8.25 4.77-12.2 0-8.06-6.54-14.6-14.6-14.6z" fill="url(#nxP)"/>'
+  + '<path d="M32 11.6c-8.06 0-14.6 6.54-14.6 14.6 0 3.95 2.04 8.32 4.77 12.2 2.74 3.9 6.03 7.24 8.07 9.2a2.52 2.52 0 0 0 3.49 0c2.04-1.96 5.33-5.3 8.07-9.2 2.73-3.88 4.77-8.25 4.77-12.2 0-8.06-6.54-14.6-14.6-14.6z" fill="none" stroke="#ffffff" stroke-opacity=".28" stroke-width="1.1"/>'
+  + '<circle cx="32" cy="25.4" r="6.4" fill="#d6ecfa"/>'
+  + '<circle cx="32" cy="25.4" r="6.4" fill="none" stroke="#ffffff" stroke-opacity=".6" stroke-width=".85"/>'
+  + '</svg>';
+
+const NEXOS_MARK = "data:image/svg+xml;base64," + btoa(NEXOS_SVG);
+const NEXOS_INSTAGRAM = "https://instagram.com/nexosmaps";
 
 /* ==========================================================================
    2. UTILIDADES
@@ -2999,6 +3200,7 @@ const FitApp = {
     this.renderCloudBadge();
     // Marca por defecto en los <img> que no tienen logo de gimnasio todavía
     document.querySelectorAll("[data-brand-mark]").forEach(img => { if (!img.src) img.src = BRAND_MARK; });
+    document.querySelectorAll("[data-nexos-mark]").forEach(img => { if (!img.src) img.src = NEXOS_MARK; });
     this.registerServiceWorker();
     this.setupInstall();
     this.watchConnection();
@@ -3348,11 +3550,43 @@ const FitApp = {
     this.renderAuditTable();
   },
 
-  showToast(msg) {
+  /* Aviso flotante.
+     Los mensajes de toda la app venían con un emoji adelante (⚠️, 🚫, ✅…).
+     Un emoji no hereda el color de la marca, se dibuja distinto en cada
+     sistema operativo y en equipos viejos aparece como un cuadrado vacío.
+     Acá se traduce ese emoji al tipo de aviso y se dibuja con el mismo juego
+     de iconos que el resto de la app, así que los 180 llamados que ya existen
+     quedan prolijos sin tocar ninguno.
+     El tipo también se puede pasar explícito: showToast("texto", "success"). */
+  showToast(msg, type) {
     const el = document.getElementById("toast-alert");
-    if (!el) return;
-    el.textContent = msg;
-    el.style.display = "block";
+    const ico = document.getElementById("toast-icon");
+    const txt = document.getElementById("toast-text");
+    if (!el || !txt) return;
+
+    let texto = String(msg == null ? "" : msg);
+
+    if (!type) {
+      if (/^[\s\uFE0F]*[\u{1F6AB}\u274C\u26D4\u{1F512}]/u.test(texto)) type = "error";
+      else if (/^[\s\uFE0F]*[\u26A0\u{1F4A5}]/u.test(texto)) type = "warn";
+      else if (/^[\s\uFE0F]*[\u2705\u2714\u{1F44B}\u{1F4AA}\u{1F3C1}]/u.test(texto)) type = "success";
+      else type = "info";
+    }
+
+    /* Sólo se quitan los símbolos del ARRANQUE, y sólo de los rangos de
+       emoji: un `replace` genérico de "todo lo que no sea letra" se comería
+       el signo $ de mensajes como "$26.000 acreditados a...". */
+    texto = texto.replace(
+      /^(?:[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u2139\u{23E9}-\u{23FA}\uFE0F\u200D]|\s)+/u,
+      ""
+    );
+
+    const iconos = { success: "check-circle", warn: "alert", error: "ban", info: "bolt" };
+    if (ico) ico.innerHTML = ic(iconos[type] || "bolt");
+    txt.textContent = texto;
+
+    el.className = `toast-notification toast-${type}`;
+    el.style.display = "flex";
     clearTimeout(this._toastT);
     this._toastT = setTimeout(() => { el.style.display = "none"; }, 3600);
   },
