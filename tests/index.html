@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FitAccess · Pruebas</title>
+<style>
+  :root { --ok:#22c55e; --bad:#ef4444; --warn:#f59e0b; --ink:#0b0e18; --line:rgba(255,255,255,.1); }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--ink); color:#f5f7fb;
+    font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; padding:26px 20px 60px; }
+  .wrap { max-width:900px; margin:0 auto; }
+  h1 { font-size:1.5rem; margin:0 0 4px; }
+  .sub { color:#98a2b7; font-size:.88rem; margin:0 0 22px; }
+  .bar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:20px; }
+  button { background:#14b8a6; color:#052; border:0; padding:10px 18px; border-radius:9px;
+    font:inherit; font-weight:800; cursor:pointer; }
+  button:disabled { opacity:.5; cursor:default; }
+  .score { font-weight:900; font-size:1.1rem; }
+  .score.ok { color:var(--ok); } .score.bad { color:var(--bad); }
+  .grupo { margin-bottom:8px; border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  .grupo > h2 { font-size:.82rem; text-transform:uppercase; letter-spacing:.08em;
+    margin:0; padding:10px 14px; background:rgba(255,255,255,.04); color:#98a2b7; }
+  .t { display:flex; gap:11px; padding:8px 14px; border-top:1px solid var(--line); font-size:.87rem; align-items:flex-start; }
+
+  /* El tilde y la cruz se dibujan con CSS y no con caracteres.
+     La primera versión usaba ✔ y ✘: en un equipo sin esos glifos en la fuente
+     salen como cuadraditos vacíos, y un informe de pruebas donde no se
+     distingue lo que pasó de lo que falló no sirve para nada. Es el mismo
+     motivo por el que la app dejó de usar emojis. */
+  .t .mark { flex:none; width:16px; height:16px; position:relative; margin-top:3px; }
+  .t.pass .mark::before {
+    content:''; position:absolute; left:3px; top:0;
+    width:6px; height:11px;
+    border-right:2.5px solid var(--ok); border-bottom:2.5px solid var(--ok);
+    transform:rotate(42deg);
+  }
+  .t.fail .mark::before, .t.fail .mark::after {
+    content:''; position:absolute; left:7px; top:1px;
+    width:2.5px; height:14px; border-radius:2px; background:var(--bad);
+  }
+  .t.fail .mark::before { transform:rotate(45deg); }
+  .t.fail .mark::after  { transform:rotate(-45deg); }
+  .t .why { color:#98a2b7; font-size:.8rem; margin-top:3px; }
+  iframe { width:100%; height:220px; border:1px solid var(--line); border-radius:10px; margin-top:26px; background:#000; }
+  .nota { font-size:.8rem; color:#7c8798; margin-top:8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Pruebas de FitAccess</h1>
+  <p class="sub">
+    Corren contra la app de verdad, cargada en el marco de abajo. No hace falta instalar nada:
+    abrí esta página y apretá el botón.
+  </p>
+
+  <div class="bar">
+    <button id="run">Correr las pruebas</button>
+    <span id="score" class="score">—</span>
+  </div>
+
+  <div id="out"></div>
+
+  <iframe id="app" src="../index.html" title="Aplicación bajo prueba"></iframe>
+  <p class="nota">
+    La app se carga con datos de demostración en modo local. Las pruebas no tocan Firebase
+    ni los datos de ningún gimnasio real.
+  </p>
+</div>
+
+<script>
+/* ============================================================================
+   Por qué así y no con un framework:
+
+   La app es un solo archivo que tiene que funcionar sin conexión y sin build.
+   Meterle npm, un bundler y un runner para poder probarla contradice esa
+   decisión y agrega una cadena de dependencias que el dueño de un gimnasio no
+   puede mantener. Estas pruebas cargan index.html en un iframe del mismo
+   origen y hablan con FitApp igual que lo haría una persona.
+
+   Son pruebas de humo: no cubren todo, cubren lo que duele si se rompe. Están
+   ordenadas por lo que costaría más caro que falle: el aislamiento entre
+   gimnasios primero, después la plata, después el acceso.
+   ============================================================================ */
+
+const grupos = [];
+let actual = null;
+function grupo(nombre, fn) { actual = { nombre, tests: [] }; grupos.push(actual); fn(); }
+function test(nombre, fn) { actual.tests.push({ nombre, fn }); }
+
+function esperar(cond, ms = 8000) {
+  return new Promise((res, rej) => {
+    const t0 = Date.now();
+    (function ver() {
+      let ok = false;
+      try { ok = cond(); } catch (e) { ok = false; }
+      if (ok) return res();
+      if (Date.now() - t0 > ms) return rej(new Error("tiempo agotado esperando la app"));
+      setTimeout(ver, 60);
+    })();
+  });
+}
+
+function igual(a, b, msg) {
+  const sa = JSON.stringify(a), sb = JSON.stringify(b);
+  if (sa !== sb) throw new Error((msg || "") + ` — esperaba ${sb}, llegó ${sa}`);
+}
+function cierto(v, msg) { if (!v) throw new Error(msg || "esperaba que fuera cierto"); }
+function falso(v, msg) { if (v) throw new Error(msg || "esperaba que fuera falso"); }
+
+let W = null, App = null;
+
+async function entrarComo(portal, email) {
+  App.logout && App.logout();
+  App.selectAccessPortal(portal);
+  W.document.getElementById("portal-login-email").value = email;
+  W.document.getElementById("portal-login-password").value = "FitAccess123!";
+  App.submitPortalLogin();
+  await esperar(() => App.session && App.session.role);
+}
+
+/* ------------------------------------------------------------------ pruebas */
+
+grupo("Aislamiento entre gimnasios", () => {
+  test("el dueño sólo ve los socios de su gimnasio", async () => {
+    await entrarComo("staff", "dueno@powerhousegym.com");
+    const ajenos = App.scopedMembers().filter(m => m.gymId !== App.activeGymId);
+    igual(ajenos.length, 0, "aparecieron socios de otro gimnasio");
+  });
+
+  test("buscar un socio de otro gimnasio devuelve nada", async () => {
+    igual(App.findMember("SOC-2001"), null, "encontró un socio de otro tenant");
+  });
+
+  test("no se le puede cobrar a un socio de otro gimnasio", async () => {
+    const r = App.chargeMembership("SOC-2001", "reception", { method: "efectivo" });
+    falso(r, "permitió cobrarle a un socio ajeno");
+  });
+
+  test("no se puede congelar la cuota de un socio ajeno", async () => {
+    App.openFreezeModal("SOC-2001");
+    falso(App.freezeTarget === "SOC-2001", "abrió el congelamiento de un socio ajeno");
+  });
+
+  test("la caja sólo suma cobros del gimnasio propio", async () => {
+    const propios = App.paymentsOn("20").every(p => p.memberId === "pase" || App.findMember(p.memberId));
+    cierto(propios, "la caja incluyó cobros de otro gimnasio");
+  });
+});
+
+grupo("Plata", () => {
+  test("un plan trimestral acredita 90 días, no 30", async () => {
+    await entrarComo("staff", "dueno@powerhousegym.com");
+    const trimestral = App.activeGym().plans.find(p => App.planDuration(p) === 90);
+    cierto(trimestral, "el gimnasio de demo no tiene plan trimestral");
+    const m = App.scopedMembers()[0];
+    m.planId = trimestral.id;
+    App.openChargeModal(m.id, "reception");
+    App.submitCharge();
+    igual(App.findMember(m.id).payments[0].days, 90, "acreditó una cantidad de días equivocada");
+  });
+
+  test("un plan sin duración definida sigue valiendo 30 días", async () => {
+    igual(App.planDuration({ name: "viejo", price: 100 }), 30, "cambió el comportamiento de los planes viejos");
+    igual(App.planDuration({ durationDays: 0 }), 30, "una duración en cero debería caer en 30");
+  });
+
+  test("el medio de pago queda registrado", async () => {
+    const m = App.scopedMembers()[1];
+    App.openChargeModal(m.id, "reception");
+    W.document.getElementById("charge-method").value = "transferencia";
+    App.submitCharge();
+    igual(App.findMember(m.id).payments[0].method, "transferencia", "no guardó el medio de pago");
+  });
+
+  test("anular un cobro devuelve el vencimiento exacto", async () => {
+    const m = App.scopedMembers()[2];
+    const original = m.dueDate;
+    App.openChargeModal(m.id, "reception");
+    App.submitCharge();
+    cierto(App.findMember(m.id).dueDate !== original, "el cobro no movió el vencimiento");
+    W.prompt = () => "prueba automática";
+    App.voidPayment(m.id, App.findMember(m.id).payments[0].at);
+    igual(App.findMember(m.id).dueDate, original, "no restauró la fecha original");
+    cierto(App.findMember(m.id).payments[0].voided, "no quedó marcado como anulado");
+  });
+
+  test("un cobro anulado no suma en la caja", async () => {
+    const todos = App.paymentsOn(new Date().toISOString().slice(0, 10));
+    const validos = App.cobrosValidos(todos);
+    cierto(todos.length > validos.length, "no hay ningún anulado para comparar");
+    falso(validos.some(p => p.voided), "un anulado entró en los cobros válidos");
+  });
+
+  test("un descuento nunca deja el importe en negativo", async () => {
+    const d = { type: "amount", value: 999999 };
+    igual(App.discountAmountFor(d, 1000), 1000, "el descuento superó el precio");
+  });
+});
+
+grupo("Puerta", () => {
+  test("una cuota vencida da rojo", async () => {
+    const m = App.scopedMembers().find(x => x.subscriptionStatus === "vencido")
+           || App.scopedMembers()[0];
+    m.subscriptionStatus = "vencido";
+    m.dueDate = "2020-01-01";
+    m.freeze = null;
+    igual(App.memberAccessState(m).color, "red", "dejó pasar una cuota vencida");
+  });
+
+  test("una cuota congelada da rojo aunque la fecha esté al día", async () => {
+    const m = App.scopedMembers()[0];
+    m.subscriptionStatus = "al_dia";
+    m.dueDate = "2030-01-01";
+    m.aptoMedico = "vigente";
+    m.freeze = { from: "2020-01-01", until: "2030-01-01", days: 30 };
+    igual(App.memberAccessState(m).color, "red", "un socio congelado pudo entrar");
+    cierto(App.memberAccessState(m).frozen, "no marcó el estado como congelado");
+    m.freeze = null;
+  });
+
+  test("al día y con apto vigente da verde", async () => {
+    const m = App.scopedMembers()[0];
+    m.subscriptionStatus = "al_dia";
+    m.dueDate = "2030-01-01";
+    m.aptoMedico = "vigente";
+    m.freeze = null;
+    m.branchId = App.activeBranchId;
+    igual(App.memberAccessState(m).color, "green", "no dejó pasar a un socio en regla");
+  });
+
+  test("el segundo escaneo del mismo socio registra la salida", async () => {
+    await entrarComo("recepcion", "recepcion@powerhousegym.com");
+    const m = App.scopedMembers()[0];
+    m.subscriptionStatus = "al_dia"; m.dueDate = "2030-01-01";
+    m.aptoMedico = "vigente"; m.freeze = null;
+
+    /* Se parte de un estado conocido. Cobrar en el mostrador también evalúa el
+       acceso, así que un cobro de una prueba anterior puede haber dejado a este
+       socio adentro: sin esto, el primer escaneo de acá sería la SALIDA y la
+       prueba fallaría por el orden en que se corrieron las demás, no por un
+       error de la app. */
+    if (App.isInside(m.id)) { App.lastScanAt = {}; App.evaluateAccess(m.id); }
+    falso(App.isInside(m.id), "no se pudo dejar al socio afuera antes de empezar");
+
+    App.lastScanAt = {};
+    App.evaluateAccess(m.id);
+    cierto(App.isInside(m.id), "no quedó registrado como adentro al entrar");
+
+    App.lastScanAt = {};
+    App.evaluateAccess(m.id);
+    falso(App.isInside(m.id), "el segundo escaneo no registró la salida");
+  });
+});
+
+grupo("Permisos", () => {
+  test("recepción no puede borrar el registro de ingresos", async () => {
+    await entrarComo("recepcion", "recepcion@powerhousegym.com");
+    App.evaluateAccess(App.scopedMembers()[0].id);
+    const antes = App.scopedLogs().length;
+    W.confirm = () => true;
+    App.clearGymLogs();
+    igual(App.scopedLogs().length, antes, "recepción pudo borrar el registro");
+  });
+
+  test("recepción no puede congelar cuotas", async () => {
+    falso(App.can("members:*"), "recepción tiene permisos de gestión de socios");
+  });
+
+  test("el entrenador no puede cobrar", async () => {
+    await entrarComo("staff", "entrenador@powerhousegym.com");
+    falso(App.can("payments:charge"), "el entrenador puede cobrar");
+  });
+
+  test("el socio sólo alcanza su propia ficha", async () => {
+    await entrarComo("socio", "carlos@powerhousegym.com");
+    falso(App.can("members:view"), "el socio puede ver el padrón");
+    cierto(App.can("self:card"), "el socio no puede ver su propio carnet");
+  });
+});
+
+grupo("Importar planilla", () => {
+  test("separa bien una celda con coma adentro", async () => {
+    await entrarComo("staff", "dueno@powerhousegym.com");
+    const filas = App.parseCSV('Nombre,DNI\n"Pérez, Juan",123');
+    igual(filas[1][0], "Pérez, Juan", "partió la celda por la coma interna");
+  });
+
+  test("reconoce encabezados con acentos y sinónimos", async () => {
+    const mapa = App.mapearColumnas(["Nombre y Apellido", "Documento", "Teléfono", "Correo"]);
+    cierto(mapa.name !== undefined && mapa.dni !== undefined
+        && mapa.phone !== undefined && mapa.email !== undefined,
+        "no reconoció alguna columna");
+  });
+
+  test("los socios importados reciben números distintos", async () => {
+    const gym = App.activeGym();
+    const a = App.nextMemberId(gym, 0), b = App.nextMemberId(gym, 1), c = App.nextMemberId(gym, 2);
+    igual(new Set([a, b, c]).size, 3, "generó números repetidos");
+  });
+});
+
+grupo("Interfaz", () => {
+  test("los avisos convierten el emoji en icono y no se comen el signo peso", async () => {
+    App.showToast("🚫 sin permiso");
+    igual(W.document.getElementById("toast-alert").className, "toast-notification toast-error", "no detectó el tipo de aviso");
+    App.showToast("$ 26.000 acreditados");
+    cierto(W.document.getElementById("toast-text").textContent.startsWith("$"), "se comió el signo peso");
+  });
+
+  test("ningún icono queda con trazo menor a un píxel", async () => {
+    const flojos = [...W.document.querySelectorAll(".ico")].filter(i => {
+      const w = i.getBoundingClientRect().width;
+      if (!w) return false;
+      const sw = parseFloat(W.getComputedStyle(i).strokeWidth) || 0;
+      return (sw / 24) * w < 1;
+    });
+    igual(flojos.length, 0, "hay iconos que se van a ver borrosos");
+  });
+
+  test("la tipografía propia está cargada y no es la del sistema", async () => {
+    cierto([...W.document.fonts].some(f => f.family.includes("Outfit")), "no cargó Outfit desde el repo");
+  });
+
+  test("los botones de sólo icono tienen etiqueta accesible", async () => {
+    const sinEtiqueta = [...W.document.querySelectorAll("button.btn-tiny")]
+      .filter(b => !b.textContent.trim() && !b.getAttribute("aria-label"));
+    igual(sinEtiqueta.length, 0, "hay botones que un lector de pantalla no puede anunciar");
+  });
+
+  test("en recepción se ve un solo panel de pestañas a la vez", async () => {
+    await entrarComo("recepcion", "recepcion@powerhousegym.com");
+    const abiertos = [...W.document.querySelectorAll(".reception-tab")]
+      .filter(p => W.getComputedStyle(p).display !== "none");
+    igual(abiertos.length, 1, "hay más de un panel abierto");
+  });
+});
+
+/* ------------------------------------------------------------------ corrida */
+
+async function correr() {
+  const btn = document.getElementById("run");
+  const out = document.getElementById("out");
+  const score = document.getElementById("score");
+  btn.disabled = true;
+  out.innerHTML = "";
+  score.textContent = "corriendo…";
+  score.className = "score";
+
+  const marco = document.getElementById("app");
+  marco.src = "../index.html?test=1";
+  await new Promise(r => { marco.onload = r; });
+
+  W = marco.contentWindow;
+  await esperar(() => W.FitApp && W.FitApp.session !== undefined);
+  App = W.FitApp;
+
+  // La app no debe pedir confirmaciones durante las pruebas.
+  W.confirm = () => true;
+  W.alert = () => {};
+  W.prompt = () => "prueba automática";
+  W.open = () => null;
+
+  // Se arranca de cero, con los datos de demostración.
+  W.localStorage.clear();
+  marco.src = "../index.html?test=1";
+  await new Promise(r => { marco.onload = r; });
+  W = marco.contentWindow;
+  await esperar(() => W.FitApp && W.FitApp.scopedMembers);
+  App = W.FitApp;
+  W.confirm = () => true; W.alert = () => {};
+  W.prompt = () => "prueba automática"; W.open = () => null;
+
+  let pasaron = 0, fallaron = 0;
+
+  for (const g of grupos) {
+    const cont = document.createElement("div");
+    cont.className = "grupo";
+    cont.innerHTML = `<h2>${g.nombre}</h2>`;
+    out.appendChild(cont);
+
+    for (const t of g.tests) {
+      const fila = document.createElement("div");
+      fila.className = "t";
+      let ok = true, detalle = "";
+      try {
+        await t.fn();
+      } catch (e) {
+        ok = false;
+        detalle = e && e.message ? e.message : String(e);
+      }
+      ok ? pasaron++ : fallaron++;
+      fila.classList.add(ok ? "pass" : "fail");
+      fila.innerHTML = `<span class="mark" role="img" aria-label="${ok ? "pasó" : "falló"}"></span>
+        <span>${t.nombre}${detalle ? `<div class="why">${detalle}</div>` : ""}</span>`;
+      cont.appendChild(fila);
+    }
+  }
+
+  score.textContent = `${pasaron} pasaron · ${fallaron} fallaron`;
+  score.className = "score " + (fallaron ? "bad" : "ok");
+  btn.disabled = false;
+
+  // Para poder leerlo desde afuera con un navegador automatizado.
+  window.__resultado = { pasaron, fallaron };
+}
+
+document.getElementById("run").addEventListener("click", correr);
+</script>
+</body>
+</html>

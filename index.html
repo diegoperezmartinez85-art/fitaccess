@@ -1853,6 +1853,24 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
         </div>
       </div>
 
+      <!-- Consumo del plan gratuito de Firebase -->
+      <div class="glass-card" id="quota-card" style="margin-bottom: 24px; display:none;" data-cap="gym:settings">
+        <div class="glass-card-header">
+          <div>
+            <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-cloud"/></svg> Consumo de hoy</h3>
+            <p class="section-note">Estimación de lecturas contra el límite diario del plan gratuito.</p>
+          </div>
+          <div style="text-align:right;">
+            <div id="quota-count" class="tabular" style="font-size:1.5rem; font-weight:900; line-height:1;">—</div>
+            <div id="quota-limit" style="font-size:0.74rem; color:var(--text-muted); margin-top:3px;">de 50.000</div>
+          </div>
+        </div>
+        <div style="height:7px; border-radius:999px; background:var(--surface-2); overflow:hidden;">
+          <div id="quota-bar" style="height:100%; width:0%; background:var(--status-green); transition:width .5s var(--ease-out), background .3s;"></div>
+        </div>
+        <p class="section-note" id="quota-note" style="margin-top:10px;"></p>
+      </div>
+
       <!-- Recordatorios de vencimiento -->
       <div class="glass-card" id="reminders-card" style="margin-bottom: 24px; display:none;" data-cap="members:*">
         <div class="glass-card-header">
@@ -1876,6 +1894,10 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
             <p class="section-note" id="cash-subtitle">Lo cobrado hoy, separado por medio de pago.</p>
           </div>
           <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <div class="tab-row" id="cash-period-row" style="margin:0; padding:3px;">
+              <button class="tab-link active" data-period="dia" style="padding:6px 14px; font-size:.78rem;" onclick="FitApp.setCashPeriod('dia')">Día</button>
+              <button class="tab-link" data-period="mes" style="padding:6px 14px; font-size:.78rem;" onclick="FitApp.setCashPeriod('mes')">Mes</button>
+            </div>
             <input type="date" id="cash-date" class="form-input" style="max-width:165px; padding:8px 12px; font-size:0.85rem;" onchange="FitApp.renderCashRegister()">
             <button class="btn btn-secondary btn-tiny" data-cap="data:export" onclick="FitApp.exportCashCSV()"><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg> CSV</button>
           </div>
@@ -1887,6 +1909,7 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
             <div id="cash-total" style="font-size:2rem; font-weight:900; color:var(--status-green); line-height:1.1;">—</div>
             <div id="cash-count" style="font-size:0.82rem; color:var(--text-muted); margin-top:4px;">—</div>
             <div id="cash-methods" style="display:flex; flex-direction:column; gap:7px; margin-top:14px;"></div>
+            <div id="cash-by-user"></div>
           </div>
           <div>
             <div style="font-size:0.78rem; color:var(--text-muted); font-weight:700; text-transform:uppercase; letter-spacing:.6px; margin-bottom:8px;">Detalle</div>
@@ -2093,10 +2116,21 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
             <select id="member-branch-filter" class="form-select" style="max-width: 190px; padding: 8px 12px; font-size: 0.85rem;" onchange="FitApp.renderMembersTable()"></select>
             <input type="text" id="member-search" class="form-input" placeholder="Buscar por nombre, DNI o ID..." style="max-width: 240px; padding: 8px 12px; font-size: 0.85rem;">
             <button class="btn" data-cap="members:create" onclick="FitApp.showAddMemberModal()"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg> Nuevo Socio</button>
-            <button class="btn btn-secondary" onclick="FitApp.printAllCards()" title="Imprime las credenciales de la sede filtrada"><svg class="ico" aria-hidden="true"><use href="#i-printer"/></svg> Credenciales</button>
+            <button class="btn btn-secondary" onclick="FitApp.printAllCards()" title="Imprime las credenciales de la sede filtrada" aria-label="Imprimir las credenciales de la sede filtrada"><svg class="ico" aria-hidden="true"><use href="#i-printer"/></svg> Credenciales</button>
             <button class="btn btn-secondary" data-cap="data:export" onclick="FitApp.exportMembersCSV()"><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg> CSV</button>
+            <label class="btn btn-secondary" data-cap="members:create" style="cursor:pointer;" title="Cargar socios desde una planilla" aria-label="Importar socios desde una planilla CSV">
+              <svg class="ico" aria-hidden="true"><use href="#i-upload"/></svg> Importar
+              <input type="file" accept=".csv,text/csv" style="display:none;" onchange="FitApp.importMembersCSV(this)">
+            </label>
           </div>
         </div>
+
+        <div id="import-help" style="display:none;"></div>
+        <div id="import-result" style="display:none; background:var(--surface-2); border:1px solid var(--hairline); border-radius:var(--radius-sm); padding:12px 14px; margin-bottom:14px; font-size:.86rem;"></div>
+        <p class="section-note" data-cap="members:create" style="margin-bottom:14px;">
+          Para cargar muchos socios de una vez usá <strong>Importar</strong> con un archivo CSV.
+          <button class="quiet-link" onclick="FitApp.downloadImportTemplate()">Descargar plantilla de ejemplo</button>
+        </p>
 
         <div style="overflow-x: auto;">
           <table class="log-table">
@@ -2188,7 +2222,7 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
         <h3 class="card-title">
           <svg class="ico" aria-hidden="true"><use href="#i-card"/></svg> Credencial del socio
         </h3>
-        <button class="btn btn-secondary btn-tiny" onclick="FitApp.hideModal('modal-credential')">
+        <button class="btn btn-secondary btn-tiny" onclick="FitApp.hideModal('modal-credential')" aria-label="Cerrar">
           <svg class="ico" aria-hidden="true"><use href="#i-x"/></svg>
         </button>
       </div>
@@ -2209,7 +2243,7 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
     <div class="modal-card" style="max-width: 440px;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
         <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-hand"/></svg> Pase diario</h3>
-        <button class="btn btn-secondary btn-tiny" onclick="FitApp.hideModal('modal-daypass')"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
+        <button class="btn btn-secondary btn-tiny" onclick="FitApp.hideModal('modal-daypass')" aria-label="Cerrar"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
       </div>
 
       <p class="section-note" style="margin-bottom:16px;">
@@ -2259,7 +2293,7 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
     <div class="modal-card" style="max-width: 440px;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
         <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-pause"/></svg> Congelar cuota</h3>
-        <button class="btn btn-secondary btn-tiny" onclick="FitApp.hideModal('modal-freeze')"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
+        <button class="btn btn-secondary btn-tiny" onclick="FitApp.hideModal('modal-freeze')" aria-label="Cerrar"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
       </div>
 
       <div style="background: var(--surface-2); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 16px;">
@@ -2302,7 +2336,7 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
     <div class="modal-card" style="max-width: 460px;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
         <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-money"/></svg> Registrar cobro</h3>
-        <button class="btn btn-secondary btn-tiny" onclick="FitApp.hideModal('modal-charge')"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
+        <button class="btn btn-secondary btn-tiny" onclick="FitApp.hideModal('modal-charge')" aria-label="Cerrar"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
       </div>
 
       <div style="background: var(--surface-2); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 16px;">
@@ -2363,7 +2397,7 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
     <div class="modal-card" style="max-width: 560px;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
         <h3 class="card-title" id="attachment-title">Adjunto</h3>
-        <button class="btn btn-secondary btn-tiny" onclick="FitApp.hideModal('modal-attachment')">
+        <button class="btn btn-secondary btn-tiny" onclick="FitApp.hideModal('modal-attachment')" aria-label="Cerrar">
           <svg class="ico" aria-hidden="true"><use href="#i-x"/></svg>
         </button>
       </div>
@@ -2517,7 +2551,7 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
     <div class="modal-card">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
         <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg> Alta de Gimnasio (Tenant)</h3>
-        <button class="btn btn-secondary btn-tiny" onclick="FitApp.hideModal('modal-create-gym')"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
+        <button class="btn btn-secondary btn-tiny" onclick="FitApp.hideModal('modal-create-gym')" aria-label="Cerrar"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
       </div>
 
       <form onsubmit="event.preventDefault(); FitApp.saveNewGym();">
@@ -2573,7 +2607,7 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
     <div class="modal-card">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
         <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg> Crear Usuario</h3>
-        <button class="btn btn-secondary btn-tiny" onclick="FitApp.hideModal('modal-create-user')"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
+        <button class="btn btn-secondary btn-tiny" onclick="FitApp.hideModal('modal-create-user')" aria-label="Cerrar"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
       </div>
 
       <form onsubmit="event.preventDefault(); FitApp.saveNewUser();">
@@ -2648,7 +2682,7 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
     <div class="modal-card">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
         <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg> Nuevo Socio</h3>
-        <button class="btn btn-secondary btn-tiny" onclick="FitApp.hideModal('modal-add-member')"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
+        <button class="btn btn-secondary btn-tiny" onclick="FitApp.hideModal('modal-add-member')" aria-label="Cerrar"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
       </div>
 
       <form onsubmit="event.preventDefault(); FitApp.saveNewMember();">
@@ -2735,7 +2769,7 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
     <div class="modal-card">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
         <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-pencil"/></svg> Editar Socio</h3>
-        <button class="btn btn-secondary btn-tiny" onclick="FitApp.hideModal('modal-edit-member')"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
+        <button class="btn btn-secondary btn-tiny" onclick="FitApp.hideModal('modal-edit-member')" aria-label="Cerrar"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
       </div>
 
       <form onsubmit="event.preventDefault(); FitApp.saveEditedMember();">
@@ -4233,6 +4267,74 @@ const FitApp = {
     this.renderCashRegister();
     this.renderOccupancy();
     this.renderReminders();
+    this.renderQuota();
+  },
+
+  /* ============================================================
+     CONTADOR DE LECTURAS DE FIRESTORE
+     El plan gratuito da 50.000 lecturas de documento por día. Cuando se
+     agota, Firestore empieza a rechazar y la app deja de funcionar a media
+     tarde sin decir por qué: para el gimnasio es "se colgó el sistema".
+
+     Firestore no le informa al cliente cuánto consumió, así que se cuentan
+     los documentos que llegan, que es de dónde sale la mayor parte del gasto.
+     Es una ESTIMACIÓN y está etiquetada como tal: no incluye el `get()` que
+     hacen las reglas contra /users en cada operación, así que el número real
+     es más alto. Sirve para ver la tendencia y darse cuenta antes de chocar.
+
+     Vive acá y no dentro del módulo de Firebase a propósito: es contabilidad
+     local, y si el módulo no carga —sin internet, por ejemplo— el contador
+     tiene que seguir existiendo igual.
+     ============================================================ */
+  readCount() {
+    const hoy = todayISO();
+    let d = {};
+    try { d = JSON.parse(localStorage.getItem("fitaccess_reads") || "{}"); } catch (e) { d = {}; }
+    if (d.date !== hoy) d = { date: hoy, n: 0 };
+    return d;
+  },
+
+  countReads(n) {
+    if (!n) return;
+    const d = this.readCount();
+    d.n += n;
+    try { localStorage.setItem("fitaccess_reads", JSON.stringify(d)); } catch (e) {}
+  },
+
+  /* Muestra el consumo estimado contra el límite gratuito. Sólo tiene sentido
+     en modo nube: en local no hay cuota que gastar. */
+  renderQuota() {
+    const card = document.getElementById("quota-card");
+    if (!card) return;
+    const mostrar = this.cloudOn() && this.can("gym:settings");
+    card.style.display = mostrar ? "" : "none";
+    if (!mostrar) return;
+
+    const LIMITE = 50000;
+    const n = this.readCount().n || 0;
+    const pct = Math.min(100, Math.round((n / LIMITE) * 100));
+
+    const c = document.getElementById("quota-count");
+    if (c) c.textContent = n.toLocaleString("es-AR");
+    const bar = document.getElementById("quota-bar");
+    if (bar) {
+      bar.style.width = Math.max(1, pct) + "%";
+      bar.style.background = pct >= 80 ? "var(--status-red)"
+        : (pct >= 55 ? "var(--status-yellow)" : "var(--status-green)");
+    }
+    const note = document.getElementById("quota-note");
+    if (note) {
+      if (pct >= 80) {
+        note.textContent = "Estás cerca del límite diario. Si se agota, la app deja de leer datos hasta mañana. Conviene recargar menos veces la terminal, o pasar el proyecto a plan de pago.";
+        note.style.color = "var(--status-red)";
+      } else if (pct >= 55) {
+        note.textContent = "Consumo alto para un día. Cada recarga de la app relee el padrón completo.";
+        note.style.color = "var(--status-yellow)";
+      } else {
+        note.textContent = `Vas bien. Es una estimación: cuenta los datos que bajó la app, no incluye la verificación de permisos, así que el número real es algo mayor.`;
+        note.style.color = "";
+      }
+    }
   },
 
   /* Los indicadores cuentan hasta el valor en vez de aparecer de golpe.
@@ -4510,7 +4612,7 @@ const FitApp = {
         const count = this.scopedMembers().filter(m => m.branchId === b.id).length;
         return `<div class="list-row">
           <span>${ic("pin")} <strong>${esc(b.name)}</strong> <span style="color:var(--text-dim); font-size:0.78rem;">· sede habitual de ${count} socio(s)</span></span>
-          <button class="btn btn-secondary btn-tiny" style="color:var(--status-red);" onclick="FitApp.removeBranch('${b.id}')"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
+          <button class="btn btn-secondary btn-tiny" style="color:var(--status-red);" onclick="FitApp.removeBranch('${b.id}')" title="Borrar sede" aria-label="Borrar la sede ${esc(b.name)}"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
         </div>`;
       }).join("") || `<span class="form-hint">Sin sedes cargadas.</span>`;
     }
@@ -4522,7 +4624,7 @@ const FitApp = {
             <span>${ic("bolt")} <strong>${esc(d.name)}</strong></span>
             <span style="display:flex; align-items:center; gap:8px;">
               <strong style="color:var(--primary-color);">${esc(this.discountLabel(d))}</strong>
-              <button class="btn btn-secondary btn-tiny" style="color:var(--status-red);" onclick="FitApp.removeDiscount('${d.id}')" title="Borrar">${ic("trash")}</button>
+              <button class="btn btn-secondary btn-tiny" style="color:var(--status-red);" onclick="FitApp.removeDiscount('${d.id}')" title="Borrar" aria-label="Borrar el descuento ${esc(d.name)}">${ic("trash")}</button>
             </span>
           </div>`).join("")
         : `<span class="form-hint">Todavía no cargaste descuentos.</span>`;
@@ -4536,7 +4638,7 @@ const FitApp = {
           <span>${ic("credit")} <strong>${esc(p.name)}</strong> <span style="color:var(--text-dim); font-size:0.78rem;">· ${this.planDurationLabel(p)} · ${count} socio(s)</span></span>
           <span style="display:flex; align-items:center; gap:8px;">
             <strong style="color:var(--primary-color);">${this.money(p.price)}</strong>
-            <button class="btn btn-secondary btn-tiny" style="color:var(--status-red);" onclick="FitApp.removePlan('${p.id}')"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
+            <button class="btn btn-secondary btn-tiny" style="color:var(--status-red);" onclick="FitApp.removePlan('${p.id}')" title="Borrar plan" aria-label="Borrar el plan ${esc(p.name)}"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
           </span>
         </div>`;
       }).join("") || `<span class="form-hint">Sin planes cargados.</span>`;
@@ -4711,15 +4813,16 @@ Object.assign(FitApp, {
           <td data-l="Apto">${aptoMap[m.aptoMedico] || aptoMap.pendiente}</td>
           <td data-l="Acciones">
             <div style="display:flex; gap:6px;">
-              <button class="btn btn-secondary btn-tiny" onclick="FitApp.viewMemberCard('${m.id}')" title="Ver carnet">${ic("card")}</button>
-              <button class="btn btn-secondary btn-tiny" onclick="FitApp.previewCredential('${m.id}')" title="Enviar credencial por WhatsApp">${ic("chat")}</button>
-              <button class="btn btn-secondary btn-tiny" onclick="FitApp.printMemberCard('${m.id}')" title="Imprimir credencial">${ic("printer")}</button>
-              ${canEdit ? `<button class="btn btn-secondary btn-tiny" onclick="FitApp.openEditMemberModal('${m.id}')" title="Editar">${ic("pencil")}</button>` : ""}
+              <button class="btn btn-secondary btn-tiny" onclick="FitApp.viewMemberCard('${m.id}')" title="Ver carnet" aria-label="Ver el carnet de ${esc(m.name)}">${ic("card")}</button>
+              <button class="btn btn-secondary btn-tiny" onclick="FitApp.previewCredential('${m.id}')" title="Enviar credencial por WhatsApp" aria-label="Enviar por WhatsApp la credencial de ${esc(m.name)}">${ic("chat")}</button>
+              <button class="btn btn-secondary btn-tiny" onclick="FitApp.printMemberCard('${m.id}')" title="Imprimir credencial" aria-label="Imprimir la credencial de ${esc(m.name)}">${ic("printer")}</button>
+              ${canEdit ? `<button class="btn btn-secondary btn-tiny" onclick="FitApp.openEditMemberModal('${m.id}')" title="Editar" aria-label="Editar los datos de ${esc(m.name)}">${ic("pencil")}</button>` : ""}
               ${this.can("members:*") ? (this.isFrozen(m)
-                ? `<button class="btn btn-secondary btn-tiny" style="color:var(--status-yellow);" onclick="FitApp.unfreezeMember('${m.id}')" title="Reactivar la cuota (está congelada)">${ic("play")}</button>`
-                : `<button class="btn btn-secondary btn-tiny" onclick="FitApp.openFreezeModal('${m.id}')" title="Congelar la cuota">${ic("pause")}</button>`) : ""}
-              <button class="btn btn-secondary btn-tiny" onclick="FitApp.regenerateCode('${m.id}')" title="Regenerar código de activación">${ic("key")}</button>
-              ${this.can("members:delete") ? `<button class="btn btn-secondary btn-tiny" style="color:var(--status-red);" onclick="FitApp.deleteMember('${m.id}')" title="Eliminar">${ic("trash")}</button>` : ""}
+                ? `<button class="btn btn-secondary btn-tiny" style="color:var(--status-yellow);" onclick="FitApp.unfreezeMember('${m.id}')" title="Reactivar la cuota (está congelada)" aria-label="Reactivar la cuota congelada de ${esc(m.name)}">${ic("play")}</button>`
+                : `<button class="btn btn-secondary btn-tiny" onclick="FitApp.openFreezeModal('${m.id}')" title="Congelar la cuota" aria-label="Congelar la cuota de ${esc(m.name)}">${ic("pause")}</button>`) : ""}
+              <button class="btn btn-secondary btn-tiny" onclick="FitApp.regenerateCode('${m.id}')" title="Regenerar código de activación" aria-label="Regenerar el código de activación de ${esc(m.name)}">${ic("key")}</button>
+              ${(m.claimedUid && this.can("members:*")) ? `<button class="btn btn-secondary btn-tiny" style="color:var(--status-yellow);" onclick="FitApp.unlinkMemberAccount('${m.id}')" title="Desvincular su cuenta (perdió el acceso al correo)" aria-label="Desvincular la cuenta de ${esc(m.name)}">${ic("logout")}</button>` : ""}
+              ${this.can("members:delete") ? `<button class="btn btn-secondary btn-tiny" style="color:var(--status-red);" onclick="FitApp.deleteMember('${m.id}')" title="Eliminar" aria-label="Eliminar a ${esc(m.name)} del padrón">${ic("trash")}</button>` : ""}
             </div>
           </td>
         </tr>`;
@@ -4841,12 +4944,15 @@ Object.assign(FitApp, {
     else this.showToast(`✅ ${name} agregado al padrón de ${gym.name} (${member.id}).`);
   },
 
-  nextMemberId(gym) {
+  /* `offset` hace falta para la importación: los socios se arman todos antes
+     de guardarlos, así que `this.members` todavía no los tiene y sin el
+     desplazamiento los 200 saldrían con el mismo número. */
+  nextMemberId(gym, offset = 0) {
     const prefix = "SOC";
     const nums = this.members.filter(m => m.gymId === gym.id)
       .map(m => parseInt(String(m.id).replace(/\D/g, ""), 10)).filter(n => !Number.isNaN(n));
     const base = this.gyms.findIndex(g => g.id === gym.id) * 1000 + 1000;
-    const next = Math.max(base, ...(nums.length ? nums : [base])) + 1;
+    const next = Math.max(base, ...(nums.length ? nums : [base])) + 1 + offset;
     return `${prefix}-${next}`;
   },
 
@@ -5089,9 +5195,9 @@ Object.assign(FitApp, {
           <td data-l="Estado">${u.active ? `<span class="status-badge badge-green">Activo</span>` : `<span class="status-badge badge-red">Inactivo</span>`}</td>
           <td data-l="Acciones">
             <div style="display:flex; gap:6px; flex-wrap:wrap;">
-              ${canManage ? `<button class="btn btn-secondary btn-tiny" onclick="FitApp.toggleUserActive('${u.id}')">${u.active ? ic("pause") : ic("play")}</button>` : ""}
-              ${canManage ? `<button class="btn btn-secondary btn-tiny" onclick="FitApp.resetUserPassword('${u.id}')" title="Resetear contraseña">${ic("key")}</button>` : ""}
-              ${canManage ? `<button class="btn btn-secondary btn-tiny" style="color:var(--status-red);" onclick="FitApp.deleteUser('${u.id}')">${ic("trash")}</button>` : ""}
+              ${canManage ? `<button class="btn btn-secondary btn-tiny" onclick="FitApp.toggleUserActive('${u.id}')" title="${u.active ? "Suspender" : "Reactivar"}" aria-label="${u.active ? "Suspender" : "Reactivar"} el acceso de ${esc(u.name)}">${u.active ? ic("pause") : ic("play")}</button>` : ""}
+              ${canManage ? `<button class="btn btn-secondary btn-tiny" onclick="FitApp.resetUserPassword('${u.id}')" title="Resetear contraseña" aria-label="Restablecer la contraseña de ${esc(u.name)}">${ic("key")}</button>` : ""}
+              ${canManage ? `<button class="btn btn-secondary btn-tiny" style="color:var(--status-red);" onclick="FitApp.deleteUser('${u.id}')" title="Eliminar usuario" aria-label="Eliminar el usuario ${esc(u.name)}">${ic("trash")}</button>` : ""}
               ${!canManage ? `<span style="font-size:0.74rem;color:var(--text-dim);">${isSelf ? "—" : ic("lock") + " rango superior"}</span>` : ""}
             </div>
           </td>
@@ -5600,6 +5706,9 @@ Object.assign(FitApp, {
        trimestral o anual acreditaba un mes y el gimnasio regalaba el resto. */
     const dias = Number.isFinite(parseInt(opts.days, 10)) ? parseInt(opts.days, 10) : this.planDuration(plan);
 
+    const vencAnterior = m.dueDate;
+    const estadoAnterior = m.subscriptionStatus;
+
     const base = (m.dueDate && new Date(m.dueDate) > new Date()) ? new Date(m.dueDate) : new Date();
     base.setDate(base.getDate() + dias);
     m.dueDate = base.toISOString().split("T")[0];
@@ -5610,6 +5719,13 @@ Object.assign(FitApp, {
       amount: monto,
       planId: m.planId,
       days: dias,
+      /* Se guarda el estado previo para poder deshacer con exactitud.
+         Restar los días no alcanza: cuando la cuota ya estaba vencida el cobro
+         cuenta desde hoy, no desde el vencimiento viejo, así que al revertir
+         quedaba una fecha que nunca existió y el socio se ganaba los días que
+         ya debía. */
+      prevDueDate: vencAnterior || null,
+      prevStatus: estadoAnterior || null,
       method: opts.method || (source === "reception" ? "efectivo" : "app"),
       note: (opts.note || "").trim() || null,
       discountName: opts.discountName || null,
@@ -5704,19 +5820,145 @@ Object.assign(FitApp, {
     return map[method] || "Sin especificar";
   },
 
-  /* Todos los cobros del gimnasio activo en una fecha, ya aplanados.
+  /* ============================================================
+     DESVINCULAR LA CUENTA DE UN SOCIO
+     Cuando el socio activa su app, su ficha queda marcada con `claimedUid` y
+     el código se consume. Si después pierde el acceso a ese mail —lo cambió,
+     lo cerró, era el de un ex— quedaba trabado para siempre: no podía volver a
+     activarse porque la ficha figuraba reclamada, y nadie del gimnasio tenía
+     forma de liberarla.
+
+     Desvincular libera la ficha y genera un código nuevo, así el socio se
+     activa de nuevo con otro mail.
+
+     OJO con el alcance: esto libera la FICHA, no borra la cuenta vieja. El
+     documento /users/{uid} sólo lo puede tocar el backend, así que esa cuenta
+     sigue existiendo y sigue pudiendo ver la ficha hasta que se la borre a
+     mano en la consola. Por eso el aviso lo dice explícitamente en lugar de
+     dar por resuelto algo que quedó a medias.
+     ============================================================ */
+  unlinkMemberAccount(memberId) {
+    if (!this.can("members:*")) {
+      return this.showToast("Sólo el dueño o el administrador pueden desvincular una cuenta.");
+    }
+    const m = this.findMember(memberId);
+    if (!m) return this.showToast("Socio inexistente en este gimnasio.");
+    if (!m.claimedUid) return this.showToast(`${m.name} todavía no activó ninguna cuenta.`);
+
+    const enNube = this.cloudOn();
+    const aviso =
+      `Desvincular la cuenta de ${m.name}.\n\n` +
+      `Se libera la ficha y se genera un código nuevo para que pueda activarse ` +
+      `con otro correo.\n\n` +
+      (enNube
+        ? `IMPORTANTE: la cuenta anterior (${m.email || "sin correo"}) NO se borra desde acá y ` +
+          `va a seguir viendo esta ficha. Para cerrarla del todo hay que borrarla en\n` +
+          `Firebase Console → Authentication.\n\n`
+        : "") +
+      `¿Continuar?`;
+    if (!confirm(aviso)) return;
+
+    const uidAnterior = m.claimedUid;
+    m.claimedUid = null;
+    m.claimedAt = null;
+    m.claimCode = randomClaimCode();
+
+    this.persist("members");
+    this.pushCloud("member", m);
+    this.logAudit("member:unlink",
+      `Desvinculó la cuenta de ${m.name} (uid anterior ${uidAnterior}). Código nuevo emitido.`,
+      "member", m.id, m.gymId);
+    this.renderAll();
+    this.showToast(`${m.name} desvinculado. Mandale la credencial de nuevo con el código nuevo.`);
+  },
+
+  /* ============================================================
+     ANULAR UN COBRO
+     Hasta ahora un cobro mal hecho quedaba para siempre: si recepción le
+     cobraba al socio equivocado, o tipeaba 260.000 en lugar de 26.000, ese
+     importe seguía sumando en la caja y no había forma de sacarlo. Lo único
+     que se podía hacer era corregir el vencimiento a mano, que arregla el
+     acceso pero deja la plata mal contada.
+
+     El cobro NO se borra: se marca como anulado, con motivo y con quién lo
+     anuló. Borrarlo sería destruir la evidencia justamente del movimiento que
+     hay que poder auditar.
+
+     Sólo dueño y administrador. Recepción no anula sus propios cobros, que es
+     el control estándar en cualquier mostrador: quien cobra no es quien
+     corrige. Si se equivocó, avisa y lo corrige el dueño.
+     ============================================================ */
+  voidPayment(memberId, paymentAt) {
+    if (!this.can("members:*")) {
+      return this.showToast("Sólo el dueño o el administrador pueden anular un cobro.");
+    }
+    const m = this.findMember(memberId);
+    if (!m) return this.showToast("Socio inexistente en este gimnasio.");
+
+    const pago = (m.payments || []).find(p => p.at === paymentAt);
+    if (!pago) return this.showToast("No se encontró ese cobro.");
+    if (pago.voided) return this.showToast("Ese cobro ya estaba anulado.");
+
+    const dias = pago.days || 30;
+    const motivo = (prompt(
+      `Anular el cobro de ${this.money(pago.amount)} a ${m.name}.\n\n` +
+      `Se le van a descontar ${dias} día(s) del vencimiento.\n\n` +
+      `¿Por qué se anula?`,
+      "cobro equivocado"
+    ) || "").trim();
+    if (!motivo) return;   // canceló el diálogo
+
+    pago.voided = true;
+    pago.voidReason = motivo;
+    pago.voidedBy = this.session.userId;
+    pago.voidedByName = this.session.name || this.session.email || null;
+    pago.voidedAt = new Date().toISOString();
+
+    /* Se restaura el estado exacto que había antes del cobro. Los cobros
+       viejos, hechos antes de que se guardara `prevDueDate`, caen al método
+       anterior de restar los días: es aproximado pero es lo único posible con
+       la información que quedó registrada. */
+    if (pago.prevDueDate) {
+      m.dueDate = pago.prevDueDate;
+      m.subscriptionStatus = pago.prevStatus || m.subscriptionStatus;
+    } else {
+      const venc = new Date(m.dueDate);
+      venc.setDate(venc.getDate() - dias);
+      m.dueDate = venc.toISOString().split("T")[0];
+    }
+    if (new Date(m.dueDate) < new Date()) m.subscriptionStatus = "vencido";
+
+    this.persist("members");
+    this.pushCloud("member", m);
+    this.logAudit("payment:void",
+      `Anuló un cobro de ${this.money(pago.amount)} a ${m.name} (${motivo}). ` +
+      `Se descontaron ${dias} días: vence el ${m.dueDate}`,
+      "member", m.id, m.gymId);
+    this.renderAll();
+    this.showToast(`Cobro anulado. ${m.name} vence el ${m.dueDate}.`);
+  },
+
+  /* Todos los cobros del gimnasio activo, ya aplanados.
      Junta dos orígenes: los pagos de cuota, que viven dentro de cada socio, y
      los pases diarios, que viven en el registro de accesos porque no tienen
-     ficha de socio. */
-  paymentsOn(dateISO = todayISO()) {
+     ficha de socio.
+
+     `prefijo` es un prefijo de fecha ISO, así que la misma función sirve para
+     un día ("2026-09-10"), un mes ("2026-09") o un año ("2026") sin escribir
+     tres consultas distintas.
+
+     Los cobros anulados vienen incluidos y marcados: los totales los excluyen,
+     pero tienen que verse para que la anulación deje rastro visible y no sea
+     un movimiento que desaparece de la caja sin explicación. */
+  paymentsOn(prefijo = todayISO()) {
     const out = [];
     this.scopedMembers().forEach(m => {
       (m.payments || []).forEach(p => {
-        if ((p.at || "").startsWith(dateISO)) out.push({ ...p, memberId: m.id, memberName: m.name });
+        if ((p.at || "").startsWith(prefijo)) out.push({ ...p, memberId: m.id, memberName: m.name });
       });
     });
     this.scopedLogs().forEach(l => {
-      if (l.kind === "daypass" && (l.at || "").startsWith(dateISO)) {
+      if (l.kind === "daypass" && (l.at || "").startsWith(prefijo)) {
         out.push({
           at: l.at, amount: l.amount || 0, method: l.method || "efectivo",
           days: 1, note: l.note || null, isDayPass: true,
@@ -5727,6 +5969,9 @@ Object.assign(FitApp, {
     });
     return out.sort((a, b) => (b.at || "").localeCompare(a.at || ""));
   },
+
+  /* Lo que efectivamente entró: sin los anulados. */
+  cobrosValidos(lista) { return lista.filter(p => !p.voided); },
 
   /* ============================================================
      PASE DIARIO
@@ -5820,20 +6065,34 @@ Object.assign(FitApp, {
     if (input && !input.value) input.value = todayISO();
     const fecha = (input && input.value) || todayISO();
 
-    const pagos = this.paymentsOn(fecha);
+    /* El mismo panel sirve para el día y para el mes. Antes era sólo por día,
+       así que "cuánto facturé en marzo" —la primera pregunta del contador— no
+       se podía responder sin sumar treinta pantallas a mano. */
+    const porMes = this.cashPeriod === "mes";
+    const prefijo = porMes ? fecha.slice(0, 7) : fecha;
+
+    const todos = this.paymentsOn(prefijo);
+    const pagos = this.cobrosValidos(todos);
+    const anulados = todos.filter(p => p.voided);
     const total = pagos.reduce((s, p) => s + (parseFloat(p.amount) || 0), 0);
 
     const sub = document.getElementById("cash-subtitle");
     if (sub) {
-      sub.textContent = fecha === todayISO()
-        ? "Lo cobrado hoy, separado por medio de pago."
-        : `Lo cobrado el ${fecha}, separado por medio de pago.`;
+      const cuando = porMes
+        ? `en ${new Date(fecha + "T12:00:00").toLocaleDateString("es-AR", { month: "long", year: "numeric" })}`
+        : (fecha === todayISO() ? "hoy" : `el ${this.dateLong(fecha)}`);
+      sub.textContent = `Lo cobrado ${cuando}, separado por medio de pago.`;
     }
 
     const t = document.getElementById("cash-total");
     if (t) t.textContent = this.money(total);
     const c = document.getElementById("cash-count");
-    if (c) c.textContent = pagos.length ? `${pagos.length} cobro${pagos.length > 1 ? "s" : ""}` : "Sin cobros registrados";
+    if (c) {
+      const partes = [];
+      partes.push(pagos.length ? `${pagos.length} cobro${pagos.length > 1 ? "s" : ""}` : "Sin cobros registrados");
+      if (anulados.length) partes.push(`${anulados.length} anulado${anulados.length > 1 ? "s" : ""}`);
+      c.textContent = partes.join(" · ");
+    }
 
     /* Desglose por medio de pago: es lo que se compara contra el efectivo que
        hay en el cajón y contra el resumen del posnet. */
@@ -5856,9 +6115,35 @@ Object.assign(FitApp, {
         </div>`).join("") : "";
     }
 
+    /* Desglose por quién cobró. En el día no aporta —hay un turno— pero en el
+       mes es lo que deja ver cuánto movió cada persona del mostrador. */
+    const cw = document.getElementById("cash-by-user");
+    if (cw) {
+      if (!porMes || !pagos.length) {
+        cw.innerHTML = "";
+      } else {
+        const porUsuario = {};
+        pagos.forEach(p => {
+          const k = p.byUserName || "sin registrar";
+          porUsuario[k] = porUsuario[k] || { total: 0, n: 0 };
+          porUsuario[k].total += parseFloat(p.amount) || 0;
+          porUsuario[k].n += 1;
+        });
+        const claves = Object.keys(porUsuario).sort((a, b) => porUsuario[b].total - porUsuario[a].total);
+        cw.innerHTML = `
+          <div style="font-size:0.72rem; color:var(--text-muted); font-weight:800; text-transform:uppercase; letter-spacing:.6px; margin:14px 0 6px;">Quién cobró</div>
+          ${claves.map(k => `
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; padding:7px 12px; background:var(--surface-2); border-radius:9px; margin-bottom:6px;">
+              <span style="font-size:0.84rem;">${esc(k)}
+                <span style="color:var(--text-dim); font-size:0.76rem;">· ${porUsuario[k].n}</span></span>
+              <strong style="font-size:0.86rem;">${this.money(porUsuario[k].total)}</strong>
+            </div>`).join("")}`;
+      }
+    }
+
     /* Espejo compacto en la vista de Recepción. Siempre muestra el día de hoy,
        sin selector de fecha: es para el cierre del turno, no para auditar. */
-    const hoyPagos = this.paymentsOn(todayISO());
+    const hoyPagos = this.cobrosValidos(this.paymentsOn(todayISO()));
     const hoyTotal = hoyPagos.reduce((s, p) => s + (parseFloat(p.amount) || 0), 0);
     const rt = document.getElementById("reception-cash-total");
     if (rt) rt.textContent = this.money(hoyTotal);
@@ -5877,24 +6162,48 @@ Object.assign(FitApp, {
 
     const cd = document.getElementById("cash-detail");
     if (cd) {
-      cd.innerHTML = pagos.length ? pagos.map(p => {
-        const hora = new Date(p.at).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+      cd.innerHTML = todos.length ? todos.map(p => {
+        const fechaHora = porMes
+          ? new Date(p.at).toLocaleString("es-AR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })
+          : new Date(p.at).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
         const quien = p.byUserName ? ` · cobró ${esc(p.byUserName)}` : "";
         const nota = p.note ? `<div style="font-size:0.74rem; color:var(--text-dim); margin-top:2px;">${esc(p.note)}</div>` : "";
+
+        /* Un pase diario no se puede anular desde acá: vive en el registro de
+           accesos y no tiene ficha de socio a la que devolverle días. */
+        const puedeAnular = !p.voided && !p.isDayPass && this.can("members:*");
+        const botonAnular = puedeAnular
+          ? `<button class="btn btn-secondary btn-tiny" style="color:var(--status-red); margin-top:7px;"
+               onclick="FitApp.voidPayment('${p.memberId}','${p.at}')"
+               title="Anular este cobro" aria-label="Anular el cobro de ${esc(p.memberName)}">${ic("x")} Anular</button>`
+          : "";
+
         return `
-          <div style="padding:9px 12px; background:var(--surface-2); border-radius:9px;">
+          <div style="padding:9px 12px; background:var(--surface-2); border-radius:9px; ${p.voided ? "opacity:.6;" : ""}">
             <div style="display:flex; justify-content:space-between; gap:10px;">
-              <strong style="font-size:0.86rem;">${esc(p.memberName)}</strong>
-              <strong style="font-size:0.86rem; color:var(--status-green);">${this.money(p.amount)}</strong>
+              <strong style="font-size:0.86rem; ${p.voided ? "text-decoration:line-through;" : ""}">${esc(p.memberName)}</strong>
+              <strong style="font-size:0.86rem; color:${p.voided ? "var(--text-dim)" : "var(--status-green)"}; ${p.voided ? "text-decoration:line-through;" : ""}">${this.money(p.amount)}</strong>
             </div>
             <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">
-              ${hora} · ${esc(this.paymentMethodLabel(p.method))} · ${p.days || 30} día${(p.days || 30) === 1 ? "" : "s"}${quien}
+              ${fechaHora} · ${esc(this.paymentMethodLabel(p.method))} · ${p.days || 30} día${(p.days || 30) === 1 ? "" : "s"}${quien}
             </div>
             ${p.discountName ? `<div style="font-size:0.74rem; color:var(--status-yellow); margin-top:2px;">${esc(p.discountName)} · −${this.money(p.discountAmount || 0)}</div>` : ""}
             ${nota}
+            ${p.voided ? `<div style="font-size:0.74rem; color:var(--status-red); margin-top:3px;">
+                ANULADO · ${esc(p.voidReason || "sin motivo")}${p.voidedByName ? ` · por ${esc(p.voidedByName)}` : ""}
+              </div>` : ""}
+            ${botonAnular}
           </div>`;
       }).join("") : `<div class="empty-state" style="padding:16px;">${ic("money")}<div>Todavía no se cobró nada.</div></div>`;
     }
+  },
+
+  setCashPeriod(p) {
+    this.cashPeriod = (p === "mes") ? "mes" : "dia";
+    document.querySelectorAll("#cash-period-row .tab-link").forEach(b => {
+      b.classList.toggle("active", b.dataset.period === this.cashPeriod);
+    });
+    this.renderCashRegister();
   },
 
   /* ============================================================
@@ -6008,19 +6317,24 @@ Object.assign(FitApp, {
     if (!this.can("data:export")) return this.showToast("Sin permiso de exportación.");
     const input = document.getElementById("cash-date");
     const fecha = (input && input.value) || todayISO();
-    const pagos = this.paymentsOn(fecha);
-    if (!pagos.length) return this.showToast("No hay cobros en esa fecha.");
+    const prefijo = this.cashPeriod === "mes" ? fecha.slice(0, 7) : fecha;
+    const pagos = this.paymentsOn(prefijo);
+    if (!pagos.length) return this.showToast("No hay cobros en ese período.");
 
-    const rows = [["Fecha y hora", "Socio", "ID", "Importe", "Medio de pago", "Dias", "Descuento", "Monto descontado", "Cobro", "Observacion"]];
+    /* Los anulados van al CSV con su motivo. El contador tiene que ver que ese
+       movimiento existió y por qué se dio de baja, no que desapareció. */
+    const rows = [["Fecha y hora", "Socio", "ID", "Importe", "Medio de pago", "Dias",
+                   "Descuento", "Monto descontado", "Cobro", "Observacion", "Anulado", "Motivo anulacion", "Anulado por"]];
     pagos.forEach(p => rows.push([
       new Date(p.at).toLocaleString("es-AR"), p.memberName, p.memberId,
       p.amount, this.paymentMethodLabel(p.method), p.days || 30,
       p.discountName || "", p.discountAmount || 0,
-      p.byUserName || "", p.note || ""
+      p.byUserName || "", p.note || "",
+      p.voided ? "SI" : "", p.voidReason || "", p.voidedByName || ""
     ]));
     const gym = this.activeGym();
-    this.download(`${gym ? gym.slug : "gimnasio"}_caja_${fecha}.csv`, this.toCSV(rows), "text/csv;charset=utf-8;");
-    this.logAudit("data:export", `Exportó la caja del ${fecha} (${pagos.length} cobros)`, "gym", this.activeGymId);
+    this.download(`${gym ? gym.slug : "gimnasio"}_caja_${prefijo}.csv`, this.toCSV(rows), "text/csv;charset=utf-8;");
+    this.logAudit("data:export", `Exportó la caja de ${prefijo} (${pagos.length} cobros)`, "gym", this.activeGymId);
   },
 
   processSelectedPayment() {
@@ -6543,7 +6857,7 @@ Object.assign(FitApp, {
       lista.innerHTML = dentro.length ? dentro.map(l => {
         const esSocio = l.kind !== "daypass";
         const salida = esSocio
-          ? `<button class="btn btn-secondary btn-tiny" onclick="FitApp.checkOut('${l.memberId}')" title="Registrar salida">${ic("logout")}</button>`
+          ? `<button class="btn btn-secondary btn-tiny" onclick="FitApp.checkOut('${l.memberId}')" title="Registrar salida" aria-label="Registrar la salida de ${esc(l.memberName)}">${ic("logout")}</button>`
           : `<span class="chip-inline">pase diario</span>`;
         return `<div class="list-row">
           <span><strong>${esc(l.memberName)}</strong>
@@ -6554,16 +6868,44 @@ Object.assign(FitApp, {
     }
   },
 
-  /* Retención acotada por tenant, pero los pases diarios NO se recortan:
-     llevan plata y son el respaldo del cierre de caja. Recortarlos sería
-     borrar ingresos a los tres días en un gimnasio con movimiento. */
+  /* Retención del registro de accesos.
+     Estaba en 300 por gimnasio, que con 100 entradas por día son TRES DÍAS de
+     historia. Con eso el dueño no puede responder "¿vino Juan la semana
+     pasada?" ni ver quién dejó de venir, que es la señal más temprana de que
+     un socio se está por ir.
+
+     Ahora el corte es por tiempo y no por cantidad: se conservan 120 días. Un
+     gimnasio de 100 accesos diarios queda en unos 12.000 registros, que a
+     ~180 bytes cada uno son 2 MB. Entra en el presupuesto de localStorage
+     (~5 MB) dejando lugar para el padrón con fotos, y en Firestore no molesta
+     porque la escucha en vivo pide sólo los últimos.
+
+     Los pases diarios nunca se recortan: llevan plata y son el respaldo del
+     cierre de caja. Recortarlos sería borrar ingresos.
+
+     Si aun así se pasa de 20.000 registros se aplica un techo duro, para que
+     un gimnasio muy grande no llene el almacenamiento y rompa la app. */
   prunelogs() {
-    const mine = this.logs.filter(l => l.gymId === this.activeGymId);
-    const comunes = mine.filter(l => l.kind !== "daypass");
-    if (comunes.length > 300) {
-      const drop = new Set(comunes.slice(300).map(l => l.id));
-      this.logs = this.logs.filter(l => !drop.has(l.id));
+    const DIAS = 120;
+    const TECHO = 20000;
+    const corte = new Date();
+    corte.setDate(corte.getDate() - DIAS);
+    const corteISO = corte.toISOString();
+
+    const mios = this.logs.filter(l => l.gymId === this.activeGymId);
+    const aBorrar = new Set();
+
+    mios.forEach(l => {
+      if (l.kind === "daypass") return;                 // la plata no se toca
+      if ((l.at || "") < corteISO) aBorrar.add(l.id);
+    });
+
+    const quedan = mios.filter(l => !aBorrar.has(l.id) && l.kind !== "daypass");
+    if (quedan.length > TECHO) {
+      quedan.slice(TECHO).forEach(l => aBorrar.add(l.id));
     }
+
+    if (aBorrar.size) this.logs = this.logs.filter(l => !aBorrar.has(l.id));
   },
 
   renderLogTable() {
@@ -6741,6 +7083,224 @@ Object.assign(FitApp, {
       input.value = "";
     };
     reader.readAsText(file);
+  },
+
+  /* ============================================================
+     IMPORTAR SOCIOS DESDE UNA PLANILLA
+     La importación que existía sólo leía el backup JSON de la propia app, o
+     sea que servía para restaurar pero no para arrancar. Un gimnasio que llega
+     con 200 socios en un Excel los tenía que tipear de a uno: seis u ocho
+     horas antes de poder usar el sistema. Eso es lo que hace que un gimnasio
+     lo abandone en la primera semana.
+
+     Se acepta CSV con encabezado. Los nombres de columna se reconocen con
+     alias, porque nadie tiene su planilla con los nombres exactos que se le
+     ocurrieron a un programador: "dni", "DNI", "documento" y "nro documento"
+     son la misma cosa.
+
+     Lo único obligatorio es el nombre. Todo lo demás se completa con valores
+     por defecto sanos, y las filas que no se pueden usar se informan con su
+     número de línea en lugar de fallar en silencio.
+     ============================================================ */
+
+  /* Parser de CSV escrito a mano en lugar de partir por comas.
+     Una planilla real trae comas dentro de las celdas ("Pérez, Juan"),
+     comillas escapadas y saltos de línea dentro de un campo. Partir por
+     comas rompe con el primer socio que tenga una coma en la dirección. */
+  parseCSV(texto) {
+    const filas = [];
+    let fila = [], campo = "", enComillas = false;
+    const s = String(texto || "").replace(/^\uFEFF/, "");   // BOM de Excel
+
+    for (let i = 0; i < s.length; i++) {
+      const c = s[i], sig = s[i + 1];
+      if (enComillas) {
+        if (c === '"' && sig === '"') { campo += '"'; i++; }
+        else if (c === '"') enComillas = false;
+        else campo += c;
+      } else if (c === '"') {
+        enComillas = true;
+      } else if (c === "," || c === ";") {
+        fila.push(campo); campo = "";
+      } else if (c === "\n") {
+        fila.push(campo); campo = "";
+        if (fila.some(x => x.trim() !== "")) filas.push(fila);
+        fila = [];
+      } else if (c !== "\r") {
+        campo += c;
+      }
+    }
+    fila.push(campo);
+    if (fila.some(x => x.trim() !== "")) filas.push(fila);
+    return filas;
+  },
+
+  /* Traduce el encabezado de la planilla a los campos del sistema. */
+  mapearColumnas(encabezado) {
+    const norm = t => String(t || "").trim().toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "");   // saca acentos
+    const alias = {
+      name:   ["nombre", "nombre y apellido", "apellido y nombre", "socio", "nombre completo"],
+      dni:    ["dni", "documento", "nro documento", "n documento", "numero de documento", "cedula"],
+      phone:  ["telefono", "tel", "celular", "whatsapp", "movil"],
+      email:  ["email", "correo", "mail", "correo electronico", "e-mail"],
+      plan:   ["plan", "membresia", "abono", "categoria"],
+      branch: ["sede", "sucursal", "local"],
+      dueDate:["vencimiento", "vence", "fecha de vencimiento", "vto", "proximo pago"],
+      apto:   ["apto", "apto medico", "certificado", "certificado medico"]
+    };
+    const mapa = {};
+    encabezado.forEach((col, i) => {
+      const n = norm(col);
+      for (const campo in alias) {
+        if (alias[campo].includes(n)) { mapa[campo] = i; return; }
+      }
+    });
+    return mapa;
+  },
+
+  importMembersCSV(input) {
+    if (!this.can("members:create")) return this.showToast("Sin permiso para cargar socios.");
+    const gym = this.activeGym();
+    if (!gym) return;
+    const file = input.files && input.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const filas = this.parseCSV(e.target.result);
+        if (filas.length < 2) {
+          input.value = "";
+          return this.showToast("La planilla no tiene filas de datos.");
+        }
+
+        const mapa = this.mapearColumnas(filas[0]);
+        if (mapa.name === undefined) {
+          input.value = "";
+          return this.showToast("No encontré una columna de nombre. Poné 'Nombre' en el encabezado.");
+        }
+
+        /* Se respeta el límite del plan: importar no puede ser la puerta de
+           atrás para pasarse de los socios contratados. */
+        const limite = this.saasLimits(gym).maxMembers;
+        const yaHay = this.scopedMembers().length;
+
+        const val = (fila, campo) => (mapa[campo] !== undefined ? String(fila[mapa[campo]] || "").trim() : "");
+        const nuevos = [], problemas = [];
+        const dnisExistentes = new Set(this.scopedMembers().map(m => String(m.dni || "")).filter(Boolean));
+
+        for (let i = 1; i < filas.length; i++) {
+          const linea = i + 1;
+          const nombre = val(filas[i], "name");
+          if (!nombre) { problemas.push(`Línea ${linea}: sin nombre`); continue; }
+
+          if (limite !== Infinity && yaHay + nuevos.length >= limite) {
+            problemas.push(`Línea ${linea} y siguientes: se alcanzó el límite de ${limite} socios del plan`);
+            break;
+          }
+
+          const dni = val(filas[i], "dni");
+          if (dni && dnisExistentes.has(dni)) { problemas.push(`Línea ${linea}: ${nombre} ya está cargado (DNI ${dni})`); continue; }
+          if (dni) dnisExistentes.add(dni);
+
+          // Plan y sede se buscan por nombre; si no coinciden, va el primero.
+          const planTxt = val(filas[i], "plan").toLowerCase();
+          const plan = (gym.plans || []).find(p => p.name.toLowerCase() === planTxt) || (gym.plans || [])[0];
+          const sedeTxt = val(filas[i], "branch").toLowerCase();
+          const sede = (gym.branches || []).find(b => b.name.toLowerCase() === sedeTxt) || (gym.branches || [])[0];
+
+          // Fecha: se acepta ISO o dd/mm/aaaa, que es como la escribe todo el mundo acá.
+          let venc = val(filas[i], "dueDate");
+          if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(venc)) {
+            const [d, m, a] = venc.split("/");
+            venc = `${a}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+          }
+          if (!/^\d{4}-\d{2}-\d{2}$/.test(venc)) venc = dPlus(30);
+
+          const aptoTxt = val(filas[i], "apto").toLowerCase();
+          const apto = ["vigente", "si", "sí", "ok", "1"].includes(aptoTxt) ? "vigente"
+            : (["vencido", "no", "0"].includes(aptoTxt) ? "vencido" : "pendiente");
+
+          nuevos.push({
+            id: this.nextMemberId(gym, nuevos.length),
+            gymId: gym.id,
+            branchId: sede ? sede.id : null,
+            name: nombre,
+            dni: dni || "",
+            phone: val(filas[i], "phone"),
+            email: val(filas[i], "email").toLowerCase(),
+            planId: plan ? plan.id : null,
+            photo: null,
+            subscriptionStatus: new Date(venc) >= new Date() ? "al_dia" : "vencido",
+            dueDate: venc,
+            aptoMedico: apto,
+            aptoDueDate: apto === "vigente" ? dPlus(365) : null,
+            aptoFile: null,
+            claimCode: randomClaimCode(), claimedUid: null, claimedAt: null,
+            pendingPayment: null,
+            payments: [],
+            createdAt: new Date().toISOString(),
+            createdBy: this.session.userId
+          });
+        }
+
+        if (!nuevos.length) {
+          input.value = "";
+          return this.showImportResult(0, problemas);
+        }
+
+        if (!confirm(`Se van a cargar ${nuevos.length} socio(s) a ${gym.name}.` +
+                     (problemas.length ? `\n\n${problemas.length} fila(s) quedaron afuera.` : "") +
+                     `\n\n¿Continuar?`)) {
+          input.value = "";
+          return;
+        }
+
+        this.members = this.members.concat(nuevos);
+        this.persist("members");
+        nuevos.forEach(m => this.pushCloud("member", m));
+        this.logAudit("members:import", `Importó ${nuevos.length} socios desde una planilla`, "gym", gym.id);
+        this.renderAll();
+        this.showImportResult(nuevos.length, problemas);
+      } catch (err) {
+        console.error(err);
+        this.showToast("No pude leer la planilla. Revisá que sea un CSV.");
+      }
+      input.value = "";
+    };
+    reader.readAsText(file, "UTF-8");
+  },
+
+  showImportResult(cargados, problemas) {
+    const box = document.getElementById("import-result");
+    if (box) {
+      box.style.display = "block";
+      box.innerHTML = `
+        <strong style="color:${cargados ? "var(--status-green)" : "var(--status-yellow)"};">
+          ${cargados} socio(s) cargado(s)
+        </strong>
+        ${problemas.length ? `
+          <div style="margin-top:8px; font-size:.8rem; color:var(--text-muted);">
+            ${problemas.length} fila(s) quedaron afuera:
+            <ul style="margin:6px 0 0 18px;">${problemas.slice(0, 12).map(p => `<li>${esc(p)}</li>`).join("")}</ul>
+            ${problemas.length > 12 ? `<div style="margin-top:5px;">…y ${problemas.length - 12} más.</div>` : ""}
+          </div>` : ""}`;
+    }
+    this.showToast(cargados ? `${cargados} socio(s) importado(s).` : "No se cargó ningún socio.");
+  },
+
+  /* Plantilla para que nadie tenga que adivinar el formato. */
+  downloadImportTemplate() {
+    const gym = this.activeGym();
+    const plan = (gym && gym.plans && gym.plans[0]) ? gym.plans[0].name : "Plan Mensual";
+    const sede = (gym && gym.branches && gym.branches[0]) ? gym.branches[0].name : "Sede Principal";
+    const rows = [
+      ["Nombre", "DNI", "Telefono", "Email", "Plan", "Sede", "Vencimiento", "Apto"],
+      ["Juan Pérez", "35999888", "+54 9 11 5555-1234", "juan@correo.com", plan, sede, "31/12/2026", "vigente"],
+      ["Ana Gómez", "40123987", "+54 9 11 4444-5678", "ana@correo.com", plan, sede, "15/01/2027", "pendiente"]
+    ];
+    this.download("plantilla_socios.csv", this.toCSV(rows), "text/csv;charset=utf-8;");
   },
 
   /* Una foto de celular pesa 2-5 MB en base64. Con 100 socios se llena la cuota
@@ -7891,6 +8451,33 @@ document.addEventListener("DOMContentLoaded", () => FitApp.init());
       appId: "1:785293497210:web:679df9f9352534d9373cc3"
     };
 
+    /* --------------------------------------------------------------------
+       APP CHECK
+       El registro de socios es público —tiene que serlo, es como se activan
+       solos— así que cualquiera con la apiKey puede crear cuentas contra el
+       proyecto. App Check corta eso: Firebase sólo acepta pedidos que vengan
+       de este sitio, verificados con reCAPTCHA. Es gratis.
+
+       Queda APAGADO a propósito, y esto es importante: si se activa acá sin
+       antes registrar el sitio en la consola, Firebase empieza a rechazar
+       TODO y el gimnasio se queda afuera de su propio sistema en medio de un
+       día de trabajo. Prenderlo es el último paso, no el primero.
+
+       Cómo activarlo, en este orden:
+         1. Firebase Console → Compilación → App Check → Apps → registrar
+            esta app web con el proveedor reCAPTCHA v3.
+         2. Copiar la clave del sitio que da reCAPTCHA y pegarla abajo.
+         3. Poner APP_CHECK.enabled en true y publicar.
+         4. Recién entonces, en App Check → APIs, pasar Firestore y
+            Authentication a "Aplicado". Antes de eso conviene dejarlas unos
+            días en "Sin aplicar" y mirar las métricas: si hay pedidos
+            legítimos que no verifican, se ven ahí sin bloquear a nadie.
+       -------------------------------------------------------------------- */
+    const APP_CHECK = {
+      enabled: false,
+      siteKey: ""   // clave del sitio de reCAPTCHA v3
+    };
+
     const configured = Object.values(FIREBASE_CONFIG).every(v => v && !String(v).includes("REEMPLAZAR"));
 
     const FirebaseSaaS = {
@@ -7904,6 +8491,27 @@ document.addEventListener("DOMContentLoaded", () => FitApp.init());
         if (!this.configured) return;
         try {
           this.app = initializeApp(FIREBASE_CONFIG);
+
+          /* App Check va antes que cualquier otro servicio, porque tiene que
+             poder firmar los pedidos desde el primero. El import es dinámico
+             para no descargar el módulo cuando está apagado, que es el caso
+             normal. Si algo falla, se sigue sin App Check en lugar de dejar
+             la app muerta: un error de configuración no puede cerrarle el
+             gimnasio a nadie. */
+          if (APP_CHECK.enabled && APP_CHECK.siteKey) {
+            try {
+              const { initializeAppCheck, ReCaptchaV3Provider } =
+                await import("https://www.gstatic.com/firebasejs/12.18.0/firebase-app-check.js");
+              initializeAppCheck(this.app, {
+                provider: new ReCaptchaV3Provider(APP_CHECK.siteKey),
+                isTokenAutoRefreshEnabled: true
+              });
+              console.info("[FitAccess] App Check activo.");
+            } catch (e) {
+              console.warn("[FitAccess] App Check no pudo iniciar, se sigue sin él:", e && e.message);
+            }
+          }
+
           this.auth = getAuth(this.app);
 
           /* Caché persistente en IndexedDB: si se corta internet, recepción
@@ -8056,6 +8664,9 @@ document.addEventListener("DOMContentLoaded", () => FitApp.init());
           this._unsubMembers = onSnapshot(
             collection(this.db, "gyms", gymId, "members"),
             (snap) => {
+              /* En la primera carga llegan todos los documentos; después sólo
+                 los que cambiaron. Se cuenta lo que efectivamente vino. */
+              if (window.FitApp) FitApp.countReads(snap.docChanges().length || snap.size);
               const members = [];
               snap.forEach(d => members.push({ id: d.id, gymId, ...d.data() }));
               onMembers(members);
@@ -8065,6 +8676,7 @@ document.addEventListener("DOMContentLoaded", () => FitApp.init());
           this._unsubLogs = onSnapshot(
             query(collection(this.db, "gyms", gymId, "accessLogs"), orderBy("at", "desc"), limit(80)),
             (snap) => {
+              if (window.FitApp) FitApp.countReads(snap.docChanges().length || snap.size);
               const logs = [];
               snap.forEach(d => logs.push({ id: d.id, gymId, ...d.data() }));
               onLogs(logs);
