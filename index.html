@@ -581,79 +581,52 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
 .role-login-card-btn:nth-child(2) .portal-icon .ico { color: var(--accent-warm); }
 
 /* --------------------------------------------------------------------------
-   MARCA NEXOS EN EL INICIO
-   El logo de Nexos va más chico que el del gimnasio y a su lado: firma de
-   quien hizo el sistema, sin competirle a la marca del cliente.
+   FIRMA DE NEXOS
+   Va al pie de la tarjeta de ingreso, no arriba. Puesto al lado del logo de
+   FitAccess y del mismo tamaño se leía como dos marcas socias; acá el
+   protagonista es FitAccess y esto es el crédito de quien lo hizo, que es la
+   convención de cualquier producto ("Powered by Stripe", "Made with Framer").
+   Chico, gris, separado por un filo: se ve si lo buscás y no molesta si no.
    -------------------------------------------------------------------------- */
-.brand-lockup {
-  display: flex; align-items: center; justify-content: center;
-  gap: 14px; margin-bottom: 12px;
+/* La pantalla de ingreso apila tarjeta + crédito. Se le descuenta al alto
+   máximo de la tarjeta lo que ocupa el crédito, para que en una pantalla
+   baja no se coma el pie. */
+#login-modal-overlay { flex-direction: column; gap: 13px; }
+#login-modal-overlay .modal-card { max-height: calc(92vh - 44px); }
+
+.nexos-credit {
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  flex: none;
+  text-decoration: none;
+  font-size: .7rem; letter-spacing: .015em;
+  color: var(--text-dim);
+  transition: color .25s;
 }
-.brand-lockup .login-logo-img { width: 66px; height: 66px; margin: 0; }
-.lockup-sep {
-  width: 1px; height: 34px; flex: none;
-  background: linear-gradient(180deg, transparent, var(--hairline-3), transparent);
-}
-.nexos-chip {
-  display: grid; place-items: center; flex: none;
-  border-radius: 13px; text-decoration: none; line-height: 0;
-  transition: transform .35s var(--ease-spring), filter .3s;
-}
-/* El borde neón son dos sombras de color: cian arriba y magenta abajo, los
-   dos extremos del degradado del logo. Se hace con box-shadow y no con un
-   border para que el brillo salga hacia afuera y no recorte el ícono. */
-.nexos-mark {
-  width: 40px; height: 40px; border-radius: 12px; display: block;
+.nexos-credit-label { color: inherit; }
+.nexos-credit-name { font-weight: 800; color: var(--text-muted); transition: color .25s; }
+
+/* El borde neón son dos brillos de color —cian y magenta, los dos extremos
+   del degradado del logo— hechos con box-shadow y no con border, para que la
+   luz salga hacia afuera sin recortar el ícono. Sin animación: a este tamaño
+   una pulsación llama más la atención que la marca del gimnasio. */
+.nexos-credit-mark {
+  width: 18px; height: 18px; border-radius: 5px; display: block; flex: none;
   box-shadow:
-    0 0 0 1px rgba(255, 255, 255, .20),
-    0 0 10px rgba(37, 217, 239, .50),
-    0 0 20px rgba(240, 76, 143, .38),
-    0 2px 6px rgba(0, 0, 0, .45);
-  animation: nexosPulse 3.6s ease-in-out infinite;
+    0 0 0 1px rgba(255, 255, 255, .14),
+    0 0 7px rgba(37, 217, 239, .40),
+    0 0 13px rgba(240, 76, 143, .28);
+  transition: box-shadow .3s, transform .3s var(--ease-out);
 }
-.nexos-chip:hover { transform: translateY(-2px) scale(1.06); }
-.nexos-chip:hover .nexos-mark {
-  animation-play-state: paused;
+.nexos-credit:hover { color: var(--text-muted); }
+.nexos-credit:hover .nexos-credit-name { color: var(--text-main); }
+.nexos-credit:hover .nexos-credit-mark {
+  transform: scale(1.12);
   box-shadow:
-    0 0 0 1px rgba(255, 255, 255, .34),
-    0 0 16px rgba(37, 217, 239, .72),
-    0 0 34px rgba(240, 76, 143, .58),
-    0 3px 10px rgba(0, 0, 0, .5);
+    0 0 0 1px rgba(255, 255, 255, .26),
+    0 0 11px rgba(37, 217, 239, .62),
+    0 0 22px rgba(240, 76, 143, .46);
 }
-.nexos-chip:focus-visible { outline: 2px solid var(--primary-color); outline-offset: 4px; }
-
-/* Respiración muy leve del neón. Con prefers-reduced-motion se apaga. */
-@keyframes nexosPulse {
-  0%, 100% {
-    box-shadow: 0 0 0 1px rgba(255,255,255,.20), 0 0 10px rgba(37,217,239,.50),
-                0 0 20px rgba(240,76,143,.38), 0 2px 6px rgba(0,0,0,.45);
-  }
-  50% {
-    box-shadow: 0 0 0 1px rgba(255,255,255,.28), 0 0 15px rgba(37,217,239,.66),
-                0 0 30px rgba(240,76,143,.52), 0 2px 6px rgba(0,0,0,.45);
-  }
-}
-
-.powered-by {
-  display: inline-flex; align-items: center; gap: 7px;
-  margin-top: 12px; padding: 5px 12px;
-  border-radius: 999px;
-  background: var(--surface-1); border: 1px solid var(--hairline);
-  font-size: .74rem; color: var(--text-muted); text-decoration: none;
-  letter-spacing: .01em;
-  transition: color .25s, border-color .25s, background .25s;
-}
-.powered-by strong { color: var(--text-main); font-weight: 800; }
-.powered-by .powered-handle { color: var(--text-dim); }
-.powered-by:hover {
-  color: var(--text-main); background: var(--surface-2);
-  border-color: rgba(240, 76, 143, .45);
-}
-.powered-by:hover .powered-handle { color: #f04c8f; }
-
-@media (prefers-reduced-motion: reduce) {
-  .nexos-mark { animation: none; }
-}
+.nexos-credit:focus-visible { outline: 2px solid var(--primary-color); outline-offset: 3px; }
 
 /* Chevron reutilizado como flecha hacia la derecha */
 .flip-x { transform: scaleX(-1); }
@@ -1137,20 +1110,9 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
     <div class="modal-card" style="max-width: 500px; width: 100%; padding: 32px 28px;">
 
       <div style="text-align: center; margin-bottom: 22px;">
-        <div class="brand-lockup">
-          <img alt="FitAccess" data-brand-mark="1" class="login-logo-img gym-logo-img">
-          <span class="lockup-sep" aria-hidden="true"></span>
-          <a class="nexos-chip" href="https://instagram.com/nexosmaps" target="_blank" rel="noopener"
-             title="Nexos · @nexosmaps en Instagram" aria-label="Nexos, abrir @nexosmaps en Instagram">
-            <img alt="Nexos" data-nexos-mark="1" class="nexos-mark">
-          </a>
-        </div>
+        <img alt="FitAccess" data-brand-mark="1" class="login-logo-img gym-logo-img" style="width:68px; height:68px; margin:0 auto 10px auto;">
         <h2 style="font-size: 1.6rem; font-weight: 900; letter-spacing: -.02em;">FitAccess</h2>
         <p style="font-size: 0.84rem; color: var(--text-muted);">Plataforma de control de acceso y gestión para gimnasios</p>
-        <a class="powered-by" href="https://instagram.com/nexosmaps" target="_blank" rel="noopener">
-          Powered by <strong>Nexos</strong>
-          <span class="powered-handle">@nexosmaps</span>
-        </a>
       </div>
 
       <!-- PASO 1: Selector de Portal -->
@@ -1269,6 +1231,18 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
       </div>
 
     </div>
+
+    <!-- Firma de quien hizo el sistema.
+         Va FUERA de la tarjeta y no adentro: adentro quedaba al final de un
+         panel que scrollea, así que en una pantalla baja no se veía nunca.
+         Acá funciona como pie de página, siempre visible, y se lee como
+         crédito del producto en lugar de parte del formulario. -->
+    <a class="nexos-credit" href="https://instagram.com/nexosmaps" target="_blank" rel="noopener"
+       title="Nexos · @nexosmaps en Instagram" aria-label="Powered by Nexos, abrir @nexosmaps en Instagram">
+      <span class="nexos-credit-label">Powered by</span>
+      <img alt="" data-nexos-mark="1" class="nexos-credit-mark">
+      <span class="nexos-credit-name">Nexos</span>
+    </a>
   </div>
 
   <!-- Barra de contexto de tenant (impersonación del superadmin) -->
