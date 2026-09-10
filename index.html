@@ -571,6 +571,17 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
 }
 .tab-link:hover { color: var(--text-main); background: var(--surface-2); }
 .tab-link.active { color: var(--text-main); background: var(--surface-3); box-shadow: var(--sheen-strong), 0 2px 8px -2px rgba(0,0,0,.5); }
+.tab-link { display: inline-flex; align-items: center; justify-content: center; gap: 7px; }
+
+/* Contador dentro de la pestaña: dice cuánto hay ahí adentro sin tener que
+   abrirla. En cero se apaga para no pedir atención al vacío. */
+.tab-count {
+  min-width: 20px; padding: 1px 6px; border-radius: 999px;
+  background: var(--surface-3); color: var(--text-muted);
+  font-size: .7rem; font-weight: 800; font-variant-numeric: tabular-nums;
+}
+.tab-count.tab-count-alert { background: color-mix(in srgb, var(--status-yellow) 26%, transparent); color: #fcd34d; }
+.tab-count.tab-count-zero { opacity: .45; }
 
 /* ==========================================================================
    MODALES
@@ -883,10 +894,30 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
    ========================================================================== */
 .traffic-light-banner {
   position: relative; overflow: hidden;
-  display: none; padding: 34px 26px; margin-bottom: 24px;
+  display: block; padding: 34px 26px; margin-bottom: 22px;
   border-radius: var(--radius-xl);
   text-align: center;
+  transition: background .3s, border-color .3s, box-shadow .35s;
 }
+
+/* Estado en reposo: presente pero apagado, para que el resultado de colores
+   sea un cambio evidente y no una aparición desde la nada.
+   Va más compacto que el resultado: en reposo no tiene nada que contar, y a
+   tamaño completo empujaba el escáner abajo del borde de la pantalla. Al
+   llegar el resultado el cartel crece, y ese crecimiento es parte del aviso. */
+.traffic-banner-idle {
+  padding: 20px 26px;
+  background: var(--surface-1);
+  border: 1px dashed var(--hairline-2);
+  color: var(--text-muted);
+  box-shadow: none;
+}
+.traffic-banner-idle h2 { font-size: 1.4rem; color: var(--text-muted); margin-bottom: 4px; }
+.traffic-banner-idle .traffic-icon-wrap {
+  background: var(--surface-2); width: 52px; height: 52px; margin-bottom: 10px;
+}
+.traffic-banner-idle .traffic-icon-wrap .ico { width: 24px; height: 24px; stroke-width: 1.9; opacity: .75; }
+.traffic-banner-idle #traffic-desc { font-size: .86rem; }
 .traffic-light-banner.active { display: block; animation: trafficIn .45s var(--ease-spring); }
 @keyframes trafficIn { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: none; } }
 
@@ -1628,17 +1659,24 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
          ===================================================================== -->
     <section id="view-reception" class="view-panel">
 
-      <div id="traffic-light-banner" class="traffic-light-banner">
-        <div class="traffic-icon-wrap" id="traffic-icon"><svg class="ico" aria-hidden="true"><use href="#i-check-circle"/></svg></div>
-        <h2 id="traffic-title">ACCESO PERMITIDO</h2>
-        <p id="traffic-desc" style="font-size: 0.95rem; opacity: 0.9; max-width: 600px; margin: 0 auto;"></p>
+      <!-- ------------------------------------------------------------------
+           EL SEMÁFORO ES EL PROTAGONISTA
+           Antes estaba oculto hasta que alguien escaneaba, así que al abrir la
+           pantalla lo primero que se veía era un formulario y no quedaba claro
+           qué había que hacer. Ahora está siempre, con un estado en reposo que
+           dice justamente eso: pasá la credencial.
+           ------------------------------------------------------------------ -->
+      <div id="traffic-light-banner" class="traffic-light-banner traffic-banner-idle">
+        <div class="traffic-icon-wrap" id="traffic-icon"><svg class="ico" aria-hidden="true"><use href="#i-scan"/></svg></div>
+        <h2 id="traffic-title">LISTO PARA ESCANEAR</h2>
+        <p id="traffic-desc" style="font-size: 0.95rem; opacity: 0.9; max-width: 600px; margin: 0 auto;">Pasá la credencial por la cámara, o buscá al socio a mano.</p>
         <div id="traffic-member-detail"></div>
       </div>
 
       <div class="grid-2">
         <div class="glass-card">
           <div class="glass-card-header">
-            <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-scan"/></svg> Escáner de Molinete</h3>
+            <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-scan"/></svg> Escáner de credenciales</h3>
             <span id="scanner-badge-status" class="status-badge badge-neutral">Cámara Detenida</span>
           </div>
 
@@ -1652,79 +1690,133 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
             <button class="btn btn-secondary" style="flex: 1;" onclick="FitScanner.stopCamera()"><svg class="ico" aria-hidden="true"><use href="#i-stop"/></svg> Detener</button>
           </div>
 
-          <button class="btn" style="width:100%; margin-bottom: 14px;" data-cap="payments:charge" onclick="FitApp.openDayPassModal()">
-            <svg class="ico" aria-hidden="true"><use href="#i-hand"/></svg> Cobrar pase diario
-          </button>
-
-          <div class="form-group" style="margin-bottom: 0;">
-            <label class="form-label">Búsqueda manual por DNI / ID / Nombre:</label>
-            <div style="display: flex; gap: 8px;">
-              <input type="text" id="input-manual-search" class="form-input" placeholder="Ej: 38450123 o SOC-1001" onkeydown="if(event.key==='Enter') FitApp.validateManualSearch()">
-              <button class="btn" onclick="FitApp.validateManualSearch()" style="white-space: nowrap;"><svg class="ico" aria-hidden="true"><use href="#i-search"/></svg> Validar</button>
-            </div>
-            <span class="form-hint">Busca únicamente dentro del padrón de <strong class="gym-name-text">—</strong>.</span>
-          </div>
         </div>
 
+        <!-- La segunda columna es "no tiene la credencial encima", que es el
+             caso que más se repite después del escaneo normal. Antes la
+             búsqueda manual estaba escondida al final de la columna del
+             escáner, debajo de dos botones. -->
         <div class="glass-card">
           <div class="glass-card-header">
-            <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-bolt"/></svg> <span id="reception-side-title">Sede activa</span></h3>
+            <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-search"/></svg> Buscar a mano</h3>
+            <span class="section-note" style="margin:0;">Si se olvidó la credencial</span>
           </div>
 
           <div class="form-group">
-            <label class="form-label">Sede / puerta donde estás operando:</label>
-            <select id="reception-branch-select" class="form-select" onchange="FitApp.setActiveBranch(this.value)"></select>
-            <span class="form-hint">Los ingresos se registran contra esta sede.</span>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="input-manual-search" class="form-input" style="font-size: 1rem; padding: 13px 15px;"
+                     placeholder="DNI, nombre o N° de socio"
+                     onkeydown="if(event.key==='Enter') FitApp.validateManualSearch()">
+              <button class="btn" onclick="FitApp.validateManualSearch()" style="white-space: nowrap; padding: 13px 18px;">
+                <svg class="ico" aria-hidden="true"><use href="#i-search"/></svg> Buscar
+              </button>
+            </div>
+            <span class="form-hint">Sólo el padrón de <strong class="gym-name-text">—</strong>.</span>
           </div>
 
-          <p class="section-note" style="margin-bottom: 12px;" id="reception-side-note">Socios que necesitan atención hoy:</p>
+          <button class="btn btn-secondary" style="width:100%;" data-cap="payments:charge" onclick="FitApp.openDayPassModal()">
+            <svg class="ico" aria-hidden="true"><use href="#i-hand"/></svg> Cobrar pase diario
+          </button>
+
+          <!-- La sede se elige una vez por turno: va abajo y en chico. -->
+          <div class="form-group" style="margin: 16px 0 0; padding-top: 14px; border-top: 1px solid var(--hairline);">
+            <label class="form-label" style="font-size: .74rem;">Puerta donde estás operando</label>
+            <select id="reception-branch-select" class="form-select" style="padding: 9px 12px; font-size: .85rem;" onchange="FitApp.setActiveBranch(this.value)"></select>
+          </div>
+        </div>
+      </div>
+
+      <!-- ------------------------------------------------------------------
+           SEGUNDO PLANO
+           Aforo, caja y registro estaban como tres tarjetas más, apiladas al
+           mismo nivel que el escáner. En una pantalla que se mira doscientas
+           veces por día eso obliga a barrer todo para encontrar lo único que
+           importa en el momento. Van a pestañas: se consultan cuando hacen
+           falta y el resto del tiempo no ocupan lugar ni atención.
+           ------------------------------------------------------------------ -->
+      <div class="glass-card" style="margin-top: 20px;">
+        <div class="tab-row" id="reception-tab-row" style="margin-bottom: 18px;">
+          <button class="tab-link active" onclick="FitApp.switchReceptionTab('pendientes', this)">
+            <svg class="ico" aria-hidden="true"><use href="#i-alert"/></svg>
+            Pendientes <span id="tab-count-pendientes" class="tab-count">0</span>
+          </button>
+          <button class="tab-link" onclick="FitApp.switchReceptionTab('aforo', this)">
+            <svg class="ico" aria-hidden="true"><use href="#i-users"/></svg>
+            Adentro <span id="tab-count-aforo" class="tab-count">0</span>
+          </button>
+          <button class="tab-link" data-cap="payments:charge" onclick="FitApp.switchReceptionTab('caja', this)">
+            <svg class="ico" aria-hidden="true"><use href="#i-money"/></svg>
+            Caja del turno
+          </button>
+          <button class="tab-link" onclick="FitApp.switchReceptionTab('registro', this)">
+            <svg class="ico" aria-hidden="true"><use href="#i-clipboard"/></svg>
+            Registro
+          </button>
+        </div>
+
+        <!-- Pendientes: a quién hay que reclamarle algo. Es la pestaña que
+             conviene tener abierta cuando no hay cola. -->
+        <div id="rtab-pendientes" class="reception-tab">
+          <div class="glass-card-header" style="margin-bottom: 14px;">
+            <div>
+              <h3 class="card-title" style="font-size: 1rem;"><span id="reception-side-title">Pendientes</span></h3>
+              <p class="section-note" id="reception-side-note">Socios que necesitan atención. Tocá uno para verlo en el semáforo.</p>
+            </div>
+          </div>
           <div id="reception-test-cases" style="display: flex; flex-direction: column; gap: 10px;"></div>
         </div>
-      </div>
 
-      <!-- Aforo: quiénes están adentro ahora mismo -->
-      <div class="glass-card" id="occupancy-card" style="margin-top: 20px;">
-        <div class="glass-card-header">
-          <div>
-            <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-users"/></svg> Adentro ahora</h3>
-            <p class="section-note">Quiénes entraron hoy y todavía no marcaron salida.</p>
+        <!-- Aforo -->
+        <div id="rtab-aforo" class="reception-tab" style="display:none;">
+          <div class="glass-card-header" style="margin-bottom: 14px;">
+            <div>
+              <h3 class="card-title" style="font-size: 1rem;">Adentro ahora</h3>
+              <p class="section-note">Entraron hoy y todavía no marcaron salida.</p>
+            </div>
+            <div style="text-align:right;">
+              <div id="occupancy-count" class="tabular" style="font-size:1.9rem; font-weight:900; line-height:1;">0</div>
+              <div id="occupancy-limit" style="font-size:0.76rem; color:var(--text-muted); margin-top:3px;">—</div>
+            </div>
           </div>
-          <div style="text-align:right;">
-            <div id="occupancy-count" style="font-size:1.9rem; font-weight:900; line-height:1; color:var(--primary-color);">0</div>
-            <div id="occupancy-limit" style="font-size:0.76rem; color:var(--text-muted); margin-top:3px;">—</div>
-          </div>
+          <div id="occupancy-list" style="display:flex; flex-direction:column; gap:8px;"></div>
         </div>
-        <div id="occupancy-list" style="display:flex; flex-direction:column; gap:8px;"></div>
-      </div>
 
-      <!-- Resumen de caja para el turno: recepción tiene que poder contar lo
-           que cobró sin entrar al Panel del Gimnasio, al que no tiene acceso. -->
-      <div class="glass-card" id="reception-cash-card" style="margin-top: 20px;" data-cap="payments:charge">
-        <div class="glass-card-header">
-          <div>
-            <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-money"/></svg> Cobrado hoy en esta terminal</h3>
-            <p class="section-note">Para comparar contra el efectivo del cajón al cerrar el turno.</p>
+        <!-- Caja del turno -->
+        <!-- Sin data-cap: el sistema de permisos escribe style.display y le
+             ganaba al display de la pestaña, dejando dos paneles abiertos a la
+             vez. El permiso ya está en el botón de la pestaña, así que si no
+             se puede cobrar, este panel no se abre nunca. -->
+        <div id="rtab-caja" class="reception-tab" style="display:none;">
+          <div class="glass-card-header" style="margin-bottom: 14px;">
+            <div>
+              <h3 class="card-title" style="font-size: 1rem;">Cobrado hoy en esta terminal</h3>
+              <p class="section-note">Para comparar contra el efectivo del cajón al cerrar el turno.</p>
+            </div>
+            <strong id="reception-cash-total" class="tabular" style="font-size:1.6rem; font-weight:900; color:var(--status-green);">—</strong>
           </div>
-          <strong id="reception-cash-total" style="font-size:1.5rem; font-weight:900; color:var(--status-green);">—</strong>
+          <div id="reception-cash-methods" style="display:flex; gap:8px; flex-wrap:wrap;"></div>
         </div>
-        <div id="reception-cash-methods" style="display:flex; gap:8px; flex-wrap:wrap;"></div>
-      </div>
 
-      <div class="glass-card" style="margin-top: 20px;">
-        <div class="glass-card-header">
-          <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-clipboard"/></svg> Registro de Ingresos</h3>
-          <div style="display: flex; gap: 8px;">
-            <button class="btn btn-secondary btn-tiny" data-cap="data:export" onclick="FitApp.exportLogsCSV()"><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg> Exportar CSV</button>
-            <button class="btn btn-secondary btn-tiny" data-cap="audit:view" onclick="FitApp.clearGymLogs()">Limpiar</button>
+        <!-- Registro de ingresos -->
+        <div id="rtab-registro" class="reception-tab" style="display:none;">
+          <div class="glass-card-header" style="margin-bottom: 14px;">
+            <div>
+              <h3 class="card-title" style="font-size: 1rem;">Registro de ingresos</h3>
+              <p class="section-note">Todo lo que pasó por esta puerta.</p>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-secondary btn-tiny" data-cap="data:export" onclick="FitApp.exportLogsCSV()"><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg> Exportar CSV</button>
+              <button class="btn btn-secondary btn-tiny" data-cap="audit:view" onclick="FitApp.clearGymLogs()">Limpiar</button>
+            </div>
           </div>
-        </div>
-        <div style="overflow-x: auto;">
-          <table class="log-table">
-            <thead>
-              <tr><th>Hora</th><th>Socio</th><th>Sede</th><th>Resultado</th><th>Detalle</th></tr>
-            </thead>
-            <tbody id="log-tbody"></tbody>
-          </table>
+          <div style="overflow-x: auto;">
+            <table class="log-table">
+              <thead>
+                <tr><th>Hora</th><th>Socio</th><th>Sede</th><th>Resultado</th><th>Detalle</th></tr>
+              </thead>
+              <tbody id="log-tbody"></tbody>
+            </table>
+          </div>
         </div>
       </div>
     </section>
@@ -4045,6 +4137,9 @@ const FitApp = {
 
     if (view === "reception") {
       this.renderReceptionPanel();
+      // Se entra siempre en reposo: si quedó el resultado de un escaneo
+      // anterior, no tiene nada que ver con quien está esperando ahora.
+      this.resetTrafficLight();
       if (window.FitScanner) FitScanner.startCamera();
     } else if (window.FitScanner) {
       FitScanner.stopCamera();
@@ -6094,6 +6189,15 @@ Object.assign(FitApp, {
             .slice(0, 6)
             .map(x => x.m);
 
+      /* El contador de la pestaña avisa cuánta gente hay para reclamarle sin
+         obligar a abrirla. En amarillo si hay algo, apagado si no. */
+      const pend = demo ? 0 : todos.filter(m => this.memberAccessState(m).color !== "green").length;
+      const tcp = document.getElementById("tab-count-pendientes");
+      if (tcp) {
+        tcp.textContent = pend;
+        tcp.className = "tab-count" + (pend ? " tab-count-alert" : " tab-count-zero");
+      }
+
       if (!todos.length) {
         box.innerHTML = `<span class="form-hint">Cargá socios en el padrón para usar el semáforo.</span>`;
       } else if (!list.length) {
@@ -6266,6 +6370,38 @@ Object.assign(FitApp, {
     }
   },
 
+  /* Vuelve el semáforo a reposo.
+     Esto no es cosmético: un resultado que se queda para siempre es peligroso.
+     Con el verde de hace diez minutos todavía en pantalla, alguien puede hacer
+     pasar a la próxima persona sin escanear, creyendo que ese verde es suyo.
+     Volver a "listo para escanear" hace que el semáforo siempre esté hablando
+     de la persona que está parada ahí. */
+  resetTrafficLight() {
+    clearTimeout(this._trafficT);
+    const banner = document.getElementById("traffic-light-banner");
+    if (!banner) return;
+    banner.className = "traffic-light-banner traffic-banner-idle";
+    const ico_ = document.getElementById("traffic-icon");
+    if (ico_) ico_.innerHTML = ic("scan");
+    const t = document.getElementById("traffic-title");
+    if (t) t.textContent = "LISTO PARA ESCANEAR";
+    const d = document.getElementById("traffic-desc");
+    if (d) d.textContent = "Pasá la credencial por la cámara, o buscá al socio a mano.";
+    const det = document.getElementById("traffic-member-detail");
+    if (det) det.innerHTML = "";
+  },
+
+  switchReceptionTab(tab, el) {
+    document.querySelectorAll(".reception-tab").forEach(p => { p.style.display = "none"; });
+    const panel = document.getElementById(`rtab-${tab}`);
+    if (panel) panel.style.display = "";
+    /* Se limita a la fila de pestañas de recepción. Con ".tab-row .tab-link"
+       también alcanzaba las del carnet del socio y les apagaba el estado
+       activo, porque las dos vistas usan el mismo componente. */
+    document.querySelectorAll("#reception-tab-row .tab-link").forEach(b => b.classList.remove("active"));
+    if (el) el.classList.add("active");
+  },
+
   trafficLight(color, title, desc, member, canCharge = false) {
     const banner = document.getElementById("traffic-light-banner");
     if (!banner) return;
@@ -6274,6 +6410,12 @@ Object.assign(FitApp, {
     document.getElementById("traffic-icon").innerHTML = ic(icons[color] || "alert");
     document.getElementById("traffic-title").textContent = title;
     document.getElementById("traffic-desc").textContent = desc;
+
+    /* Se vuelve solo a reposo. Si hay algo para cobrar se da más tiempo, para
+       no borrarle el botón de las manos a quien está por usarlo. */
+    clearTimeout(this._trafficT);
+    const espera = (canCharge && this.can("payments:charge")) ? 30000 : 14000;
+    this._trafficT = setTimeout(() => this.resetTrafficLight(), espera);
 
     const detail = document.getElementById("traffic-member-detail");
     if (!detail) return;
@@ -6368,11 +6510,7 @@ Object.assign(FitApp, {
   },
 
   renderOccupancy() {
-    const card = document.getElementById("occupancy-card");
-    if (!card) return;
-    const puede = this.can("access:scan") && !!this.activeGymId;
-    card.style.display = puede ? "" : "none";
-    if (!puede) return;
+    if (!this.can("access:scan") || !this.activeGymId) return;
 
     const gym = this.activeGym();
     const cap = parseInt((gym && gym.settings && gym.settings.capacity) || 0, 10) || 0;
@@ -6380,6 +6518,12 @@ Object.assign(FitApp, {
 
     const n = document.getElementById("occupancy-count");
     if (n) n.textContent = dentro.length;
+
+    const tc = document.getElementById("tab-count-aforo");
+    if (tc) {
+      tc.textContent = dentro.length;
+      tc.className = "tab-count" + (dentro.length ? "" : " tab-count-zero");
+    }
 
     const lim = document.getElementById("occupancy-limit");
     if (lim) {
