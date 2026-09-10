@@ -1387,10 +1387,14 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
             <div class="scanner-overlay-laser"></div>
           </div>
 
-          <div style="display: flex; gap: 8px; margin-bottom: 14px;">
+          <div style="display: flex; gap: 8px; margin-bottom: 10px;">
             <button class="btn btn-secondary" style="flex: 1;" onclick="FitScanner.startCamera()"><svg class="ico" aria-hidden="true"><use href="#i-play"/></svg> Iniciar Cámara</button>
             <button class="btn btn-secondary" style="flex: 1;" onclick="FitScanner.stopCamera()"><svg class="ico" aria-hidden="true"><use href="#i-stop"/></svg> Detener</button>
           </div>
+
+          <button class="btn" style="width:100%; margin-bottom: 14px;" data-cap="payments:charge" onclick="FitApp.openDayPassModal()">
+            <svg class="ico" aria-hidden="true"><use href="#i-hand"/></svg> Cobrar pase diario
+          </button>
 
           <div class="form-group" style="margin-bottom: 0;">
             <label class="form-label">Búsqueda manual por DNI / ID / Nombre:</label>
@@ -1404,7 +1408,7 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
 
         <div class="glass-card">
           <div class="glass-card-header">
-            <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-bolt"/></svg> Sede activa & Casos de prueba</h3>
+            <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-bolt"/></svg> <span id="reception-side-title">Sede activa</span></h3>
           </div>
 
           <div class="form-group">
@@ -1413,9 +1417,37 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
             <span class="form-hint">Los ingresos se registran contra esta sede.</span>
           </div>
 
-          <p class="section-note" style="margin-bottom: 12px;">Probá el semáforo con socios reales del padrón de este gimnasio:</p>
+          <p class="section-note" style="margin-bottom: 12px;" id="reception-side-note">Socios que necesitan atención hoy:</p>
           <div id="reception-test-cases" style="display: flex; flex-direction: column; gap: 10px;"></div>
         </div>
+      </div>
+
+      <!-- Aforo: quiénes están adentro ahora mismo -->
+      <div class="glass-card" id="occupancy-card" style="margin-top: 20px;">
+        <div class="glass-card-header">
+          <div>
+            <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-users"/></svg> Adentro ahora</h3>
+            <p class="section-note">Quiénes entraron hoy y todavía no marcaron salida.</p>
+          </div>
+          <div style="text-align:right;">
+            <div id="occupancy-count" style="font-size:1.9rem; font-weight:900; line-height:1; color:var(--primary-color);">0</div>
+            <div id="occupancy-limit" style="font-size:0.76rem; color:var(--text-muted); margin-top:3px;">—</div>
+          </div>
+        </div>
+        <div id="occupancy-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+      </div>
+
+      <!-- Resumen de caja para el turno: recepción tiene que poder contar lo
+           que cobró sin entrar al Panel del Gimnasio, al que no tiene acceso. -->
+      <div class="glass-card" id="reception-cash-card" style="margin-top: 20px;" data-cap="payments:charge">
+        <div class="glass-card-header">
+          <div>
+            <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-money"/></svg> Cobrado hoy en esta terminal</h3>
+            <p class="section-note">Para comparar contra el efectivo del cajón al cerrar el turno.</p>
+          </div>
+          <strong id="reception-cash-total" style="font-size:1.5rem; font-weight:900; color:var(--status-green);">—</strong>
+        </div>
+        <div id="reception-cash-methods" style="display:flex; gap:8px; flex-wrap:wrap;"></div>
       </div>
 
       <div class="glass-card" style="margin-top: 20px;">
@@ -1423,7 +1455,7 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
           <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-clipboard"/></svg> Registro de Ingresos</h3>
           <div style="display: flex; gap: 8px;">
             <button class="btn btn-secondary btn-tiny" data-cap="data:export" onclick="FitApp.exportLogsCSV()"><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg> Exportar CSV</button>
-            <button class="btn btn-secondary btn-tiny" onclick="FitApp.clearGymLogs()">Limpiar</button>
+            <button class="btn btn-secondary btn-tiny" data-cap="audit:view" onclick="FitApp.clearGymLogs()">Limpiar</button>
           </div>
         </div>
         <div style="overflow-x: auto;">
@@ -1459,9 +1491,51 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
           <div class="metric-trend">Requieren seguimiento</div>
         </div>
         <div class="metric-card">
-          <div class="metric-label">Ingresos de Hoy</div>
+          <div class="metric-label">Accesos de Hoy</div>
           <div id="stat-today-logs" class="metric-value" style="color: var(--primary-color);">0</div>
-          <div class="metric-trend">Registros en molinete</div>
+          <div class="metric-trend">Socios que entraron</div>
+        </div>
+      </div>
+
+      <!-- Recordatorios de vencimiento -->
+      <div class="glass-card" id="reminders-card" style="margin-bottom: 24px; display:none;" data-cap="members:*">
+        <div class="glass-card-header">
+          <div>
+            <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-chat"/></svg> A quién avisarle hoy</h3>
+            <p class="section-note">Cuotas vencidas y por vencer. El mensaje se arma solo.</p>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <span id="reminders-count" class="status-badge badge-green">todo avisado</span>
+            <button class="btn btn-secondary btn-tiny" onclick="FitApp.markAllReminded()"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg> Marcar todos como avisados</button>
+          </div>
+        </div>
+        <div id="reminders-list" style="display:flex; flex-direction:column; gap:10px;"></div>
+      </div>
+
+      <!-- Cierre de caja: qué entró hoy y por qué medio -->
+      <div class="glass-card" id="cash-card" style="margin-bottom: 24px; display:none;" data-cap="payments:charge">
+        <div class="glass-card-header">
+          <div>
+            <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-money"/></svg> Caja del día</h3>
+            <p class="section-note" id="cash-subtitle">Lo cobrado hoy, separado por medio de pago.</p>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <input type="date" id="cash-date" class="form-input" style="max-width:165px; padding:8px 12px; font-size:0.85rem;" onchange="FitApp.renderCashRegister()">
+            <button class="btn btn-secondary btn-tiny" data-cap="data:export" onclick="FitApp.exportCashCSV()"><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg> CSV</button>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div>
+            <div style="font-size:0.78rem; color:var(--text-muted); font-weight:700; text-transform:uppercase; letter-spacing:.6px; margin-bottom:6px;">Total cobrado</div>
+            <div id="cash-total" style="font-size:2rem; font-weight:900; color:var(--status-green); line-height:1.1;">—</div>
+            <div id="cash-count" style="font-size:0.82rem; color:var(--text-muted); margin-top:4px;">—</div>
+            <div id="cash-methods" style="display:flex; flex-direction:column; gap:7px; margin-top:14px;"></div>
+          </div>
+          <div>
+            <div style="font-size:0.78rem; color:var(--text-muted); font-weight:700; text-transform:uppercase; letter-spacing:.6px; margin-bottom:8px;">Detalle</div>
+            <div id="cash-detail" style="display:flex; flex-direction:column; gap:8px; max-height:280px; overflow-y:auto;"></div>
+          </div>
         </div>
       </div>
 
@@ -1522,11 +1596,40 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
           <div>
             <h4 style="font-size: 0.95rem; font-weight: 800; margin-bottom: 10px;"><svg class="ico" aria-hidden="true"><use href="#i-money"/></svg> Planes y Precios</h4>
             <div id="gym-plans-list" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px;"></div>
-            <div style="display: flex; gap: 8px;">
-              <input type="text" id="new-plan-name" class="form-input" placeholder="Nombre del plan">
-              <input type="number" id="new-plan-price" class="form-input" placeholder="Precio" style="max-width: 120px;">
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <input type="text" id="new-plan-name" class="form-input" placeholder="Nombre del plan" style="min-width: 130px; flex: 1;">
+              <input type="number" id="new-plan-price" class="form-input" placeholder="Precio" style="max-width: 110px;">
+              <select id="new-plan-duration" class="form-select" style="max-width: 135px;" title="Cuánto dura el plan">
+                <option value="30" selected>Mensual</option>
+                <option value="1">Por día</option>
+                <option value="7">Semanal</option>
+                <option value="15">Quincenal</option>
+                <option value="60">Bimestral</option>
+                <option value="90">Trimestral</option>
+                <option value="180">Semestral</option>
+                <option value="365">Anual</option>
+              </select>
               <button class="btn btn-secondary" style="white-space: nowrap;" onclick="FitApp.addPlan()"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg></button>
             </div>
+            <span class="form-hint" style="margin-top:6px; display:block;">
+              La duración define cuántos días se acreditan al cobrar. Un plan trimestral
+              suma 90 días, no 30.
+            </span>
+
+            <h4 style="font-size: 0.95rem; font-weight: 800; margin: 18px 0 10px;"><svg class="ico" aria-hidden="true"><use href="#i-bolt"/></svg> Descuentos y promociones</h4>
+            <div id="gym-discounts-list" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px;"></div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <input type="text" id="new-discount-name" class="form-input" placeholder="Ej: Estudiantes" style="min-width: 130px; flex: 1;">
+              <input type="number" id="new-discount-value" class="form-input" placeholder="Valor" style="max-width: 100px;" min="1">
+              <select id="new-discount-type" class="form-select" style="max-width: 130px;">
+                <option value="percent" selected>% por ciento</option>
+                <option value="amount">Monto fijo</option>
+              </select>
+              <button class="btn btn-secondary" style="white-space: nowrap;" onclick="FitApp.addDiscount()"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg></button>
+            </div>
+            <span class="form-hint" style="margin-top:6px; display:block;">
+              Después se eligen al cobrar, y queda registrado cuánto y por qué se descontó.
+            </span>
           </div>
         </div>
 
@@ -1545,6 +1648,11 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
           <div class="form-group">
             <label class="form-label">Vigencia del QR (segundos):</label>
             <input type="number" id="gym-qr-ttl" class="form-input" min="10" max="300" onchange="FitApp.updateGymSetting('qrTtlSeconds', parseInt(this.value,10))">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Capacidad máxima (aforo):</label>
+            <input type="number" id="gym-capacity" class="form-input" min="0" max="5000" onchange="FitApp.updateGymSetting('capacity', parseInt(this.value,10) || 0)">
+            <span class="form-hint">Cuántas personas entran cómodas. Poné 0 si no querés controlarlo.</span>
           </div>
           <div class="form-group" style="grid-column: 1 / -1;">
             <label class="form-label">Link de pago de Mercado Pago:</label>
@@ -1737,6 +1845,160 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
       <button class="btn" style="width:100%; margin-top:12px; padding:12px;" onclick="FitApp.sendPreviewedCredential()">
         <svg class="ico" aria-hidden="true"><use href="#i-chat"/></svg> Enviar por WhatsApp
       </button>
+    </div>
+  </div>
+
+  <!-- Pase diario: cobrar una entrada suelta sin crear un socio -->
+  <div id="modal-daypass" class="modal-overlay" style="display:none;">
+    <div class="modal-card" style="max-width: 440px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-hand"/></svg> Pase diario</h3>
+        <button class="btn btn-secondary btn-tiny" onclick="FitApp.hideModal('modal-daypass')"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
+      </div>
+
+      <p class="section-note" style="margin-bottom:16px;">
+        Para alguien que viene una sola vez. No se crea ficha de socio ni se ocupa
+        lugar en tu plan: queda como una entrada cobrada del día.
+      </p>
+
+      <form onsubmit="event.preventDefault(); FitApp.submitDayPass();">
+        <div class="form-group">
+          <label class="form-label">Nombre de la persona:</label>
+          <input type="text" id="pass-name" class="form-input" placeholder="Ej: Juan Pérez" required>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">DNI (opcional):</label>
+            <input type="text" id="pass-dni" class="form-input" placeholder="35999888">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Importe:</label>
+            <input type="number" id="pass-amount" class="form-input" min="0" step="any" required>
+            <span class="form-hint" id="pass-price-hint">—</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">¿Cómo pagó?</label>
+          <select id="pass-method" class="form-select">
+            <option value="efectivo">Efectivo</option>
+            <option value="debito">Débito / Crédito</option>
+            <option value="transferencia">Transferencia</option>
+            <option value="mercadopago">Mercado Pago</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
+
+        <div style="display:flex; gap:10px;">
+          <button type="button" class="btn btn-secondary" style="flex:1;" onclick="FitApp.hideModal('modal-daypass')">Cancelar</button>
+          <button type="submit" class="btn" style="flex:2; padding:12px; font-weight:800;"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg> Cobrar y habilitar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Congelar cuota: vacaciones, lesión, viaje -->
+  <div id="modal-freeze" class="modal-overlay" style="display:none;">
+    <div class="modal-card" style="max-width: 440px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-pause"/></svg> Congelar cuota</h3>
+        <button class="btn btn-secondary btn-tiny" onclick="FitApp.hideModal('modal-freeze')"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
+      </div>
+
+      <div style="background: var(--surface-2); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 16px;">
+        <strong id="freeze-member-name" style="font-size:1.02rem;">—</strong>
+        <div id="freeze-member-meta" style="font-size:0.78rem; color:var(--text-muted); margin-top:3px;">—</div>
+      </div>
+
+      <form onsubmit="event.preventDefault(); FitApp.submitFreeze();">
+        <div class="form-group">
+          <label class="form-label">¿Cuántos días?</label>
+          <input type="number" id="freeze-days" class="form-input" min="1" max="365" required oninput="FitApp.updateFreezePreview()">
+          <span class="form-hint">Lo habitual es 30. Máximo 365.</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Motivo (opcional):</label>
+          <input type="text" id="freeze-reason" class="form-input" placeholder="Ej: vacaciones, lesión de rodilla">
+        </div>
+
+        <div style="background: rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.35); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom:14px; font-size:0.86rem;">
+          <div style="margin-bottom:5px;">No puede entrar hasta el <strong id="freeze-until">—</strong></div>
+          <div>Su cuota pasa a vencer el <strong id="freeze-newdue">—</strong></div>
+        </div>
+
+        <p class="section-note" style="margin-bottom:14px;">
+          No pierde los días que pagó: el vencimiento se corre por la misma cantidad
+          de días que dura el congelamiento.
+        </p>
+
+        <div style="display:flex; gap:10px;">
+          <button type="button" class="btn btn-secondary" style="flex:1;" onclick="FitApp.hideModal('modal-freeze')">Cancelar</button>
+          <button type="submit" class="btn" style="flex:2; padding:12px; font-weight:800;"><svg class="ico" aria-hidden="true"><use href="#i-pause"/></svg> Congelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Cobro en mostrador: pide el medio de pago y confirma de paso -->
+  <div id="modal-charge" class="modal-overlay" style="display:none;">
+    <div class="modal-card" style="max-width: 460px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-money"/></svg> Registrar cobro</h3>
+        <button class="btn btn-secondary btn-tiny" onclick="FitApp.hideModal('modal-charge')"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
+      </div>
+
+      <div style="background: var(--surface-2); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 16px;">
+        <strong id="charge-member-name" style="font-size:1.02rem;">—</strong>
+        <div id="charge-member-meta" style="font-size:0.78rem; color:var(--text-muted); margin-top:3px;">—</div>
+      </div>
+
+      <form onsubmit="event.preventDefault(); FitApp.submitCharge();">
+        <div class="form-group">
+          <label class="form-label">¿Cómo pagó?</label>
+          <select id="charge-method" class="form-select">
+            <option value="efectivo">Efectivo</option>
+            <option value="debito">Débito / Crédito</option>
+            <option value="transferencia">Transferencia</option>
+            <option value="mercadopago">Mercado Pago</option>
+            <option value="otro">Otro</option>
+          </select>
+          <span class="form-hint">Sirve para el cierre de caja del día.</span>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">Importe:</label>
+            <input type="number" id="charge-amount" class="form-input" min="0" step="any" required>
+            <span class="form-hint" id="charge-discount-hint">Sobre el precio del plan.</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Días a acreditar:</label>
+            <input type="number" id="charge-days" class="form-input" min="1" max="730" required oninput="FitApp.updateChargePreview()">
+            <span class="form-hint">Viene del plan del socio.</span>
+          </div>
+        </div>
+
+        <div class="form-group" id="charge-discount-group" style="display:none;">
+          <label class="form-label">Descuento o promoción:</label>
+          <select id="charge-discount" class="form-select" onchange="FitApp.applyChargeDiscount()"></select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Observación (opcional):</label>
+          <input type="text" id="charge-note" class="form-input" placeholder="Ej: pagó 2 meses juntos">
+        </div>
+
+        <div style="background: rgba(20,184,166,0.1); border:1px solid var(--primary-glow); border-radius: var(--radius-sm); padding: 11px 14px; margin-bottom:14px; font-size:0.86rem;">
+          Queda habilitado hasta el <strong id="charge-newdue">—</strong>
+        </div>
+
+        <div style="display:flex; gap:10px;">
+          <button type="button" class="btn btn-secondary" style="flex:1;" onclick="FitApp.hideModal('modal-charge')">Cancelar</button>
+          <button type="submit" class="btn" style="flex:2; padding:12px; font-weight:800;"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg> Confirmar cobro</button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -2425,9 +2687,11 @@ function buildSeed() {
         { id: "br-ph-2", name: "Sede Belgrano", address: "Cabildo 2100" }
       ],
       plans: [
-        { id: "pl-ph-1", name: "Musculación Libre", price: 18500 },
-        { id: "pl-ph-2", name: "Full Crossfit", price: 26000 },
-        { id: "pl-ph-3", name: "VIP Todo Incluido", price: 34000 }
+        { id: "pl-ph-1", name: "Musculación Libre", price: 18500, durationDays: 30 },
+        { id: "pl-ph-2", name: "Full Crossfit", price: 26000, durationDays: 30 },
+        { id: "pl-ph-3", name: "VIP Todo Incluido", price: 34000, durationDays: 30 },
+        { id: "pl-ph-4", name: "Trimestral Libre", price: 49500, durationDays: 90 },
+        { id: "pl-ph-5", name: "Pase del día", price: 4500, durationDays: 1 }
       ],
       settings: { currency: "ARS", warnDays: 3, requireApto: true, qrTtlSeconds: 30, crossBranchAccess: true },
       saas: { plan: "pro", status: "active", nextInvoice: dPlus(24) }
@@ -2445,8 +2709,9 @@ function buildSeed() {
       branding: { primaryColor: "#a855f7", secondaryColor: "#3b82f6", logoUrl: BRAND_MARK },
       branches: [{ id: "br-vx-1", name: "Sede Villa Crespo", address: "Corrientes 5200" }],
       plans: [
-        { id: "pl-vx-1", name: "Funcional 3 veces", price: 21000 },
-        { id: "pl-vx-2", name: "Libre + Clases", price: 29500 }
+        { id: "pl-vx-1", name: "Funcional 3 veces", price: 21000, durationDays: 30 },
+        { id: "pl-vx-2", name: "Libre + Clases", price: 29500, durationDays: 30 },
+        { id: "pl-vx-3", name: "Anual Full", price: 295000, durationDays: 365 }
       ],
       settings: { currency: "ARS", warnDays: 5, requireApto: true, qrTtlSeconds: 30, crossBranchAccess: true },
       saas: { plan: "starter", status: "trial", nextInvoice: dPlus(9) }
@@ -2893,8 +3158,165 @@ const FitApp = {
 
   planOf(member) {
     const g = this.gymById(member.gymId);
-    if (!g) return { name: "Sin plan", price: 0 };
-    return (g.plans || []).find(p => p.id === member.planId) || { name: "Sin plan", price: 0 };
+    if (!g) return { name: "Sin plan", price: 0, durationDays: 30 };
+    const p = (g.plans || []).find(p => p.id === member.planId);
+    if (!p) return { name: "Sin plan", price: 0, durationDays: 30 };
+    /* durationDays llegó después: los planes viejos no lo tienen y valen 30
+       días, que es lo que el sistema hacía antes para todos. */
+    return { ...p, durationDays: this.planDuration(p) };
+  },
+
+  /* Duración de un plan en días. Un plan sin el campo es mensual, que es como
+     se comportaba el sistema cuando la duración estaba fija en 30. */
+  planDuration(plan) {
+    const d = plan && parseInt(plan.durationDays, 10);
+    return (Number.isFinite(d) && d > 0) ? d : 30;
+  },
+
+  /* Etiqueta legible de la duración, para no obligar a nadie a traducir
+     "90 días" a "trimestral" mentalmente. */
+  planDurationLabel(plan) {
+    const d = this.planDuration(plan);
+    const conocidas = { 1: "por día", 7: "semanal", 15: "quincenal", 30: "mensual", 60: "bimestral", 90: "trimestral", 180: "semestral", 365: "anual" };
+    return conocidas[d] || `${d} días`;
+  },
+
+  /* ============================================================
+     CONGELAMIENTO DE CUOTA
+     Vacaciones, lesión, embarazo, viaje de trabajo. Todo gimnasio lo hace y
+     hasta ahora no había forma: el socio pagaba por un mes que no usaba, o
+     quedaba marcado como deudor.
+     Al congelar se empuja el vencimiento por la misma cantidad de días, así
+     que no pierde lo que pagó. Mientras está congelado no entra.
+     Sólo el dueño o el administrador pueden congelar: las reglas de Firestore
+     no dejan a recepción escribir este campo, y además es una decisión
+     comercial, no de mostrador.
+     ============================================================ */
+
+  /* Devuelve el congelamiento vigente, o null. Se vence solo: si la fecha de
+     fin ya pasó, se considera descongelado sin necesidad de que nadie toque
+     nada (importa porque nadie va a entrar un domingo a reactivar cuentas). */
+  activeFreeze(m) {
+    const f = m && m.freeze;
+    if (!f || !f.until) return null;
+    const fin = new Date(f.until + "T23:59:59");
+    if (isNaN(fin) || fin < new Date()) return null;
+    return f;
+  },
+
+  isFrozen(m) { return !!this.activeFreeze(m); },
+
+  openFreezeModal(memberId) {
+    if (!this.can("members:*")) return this.showToast("Sólo el dueño o el administrador pueden congelar una cuota.");
+    const m = this.findMember(memberId);
+    if (!m) return this.showToast("Socio inexistente en este gimnasio.");
+
+    if (this.isFrozen(m)) return this.unfreezeMember(memberId);
+
+    this.freezeTarget = m.id;
+    const txt = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+    const set = (id, v) => { const e = document.getElementById(id); if (e) e.value = v; };
+
+    txt("freeze-member-name", m.name);
+    txt("freeze-member-meta", `${m.id} · vence el ${this.dateLong(m.dueDate)}`);
+    set("freeze-days", 30);
+    set("freeze-reason", "");
+    this.updateFreezePreview();
+    this.showModal("modal-freeze");
+  },
+
+  updateFreezePreview() {
+    if (!this.freezeTarget) return;
+    const m = this.findMember(this.freezeTarget);
+    if (!m) return;
+    const d = parseInt(document.getElementById("freeze-days").value, 10);
+    const dias = (Number.isFinite(d) && d > 0) ? d : 30;
+
+    const hasta = new Date();
+    hasta.setDate(hasta.getDate() + dias);
+    const nuevoVenc = new Date(m.dueDate || new Date());
+    nuevoVenc.setDate(nuevoVenc.getDate() + dias);
+
+    const e1 = document.getElementById("freeze-until");
+    if (e1) e1.textContent = this.dateLong(hasta);
+    const e2 = document.getElementById("freeze-newdue");
+    if (e2) e2.textContent = this.dateLong(nuevoVenc);
+  },
+
+  submitFreeze() {
+    if (!this.freezeTarget) return;
+    if (!this.can("members:*")) return this.showToast("Sin permiso para congelar.");
+    const m = this.findMember(this.freezeTarget);
+    if (!m) return;
+
+    const d = parseInt(document.getElementById("freeze-days").value, 10);
+    if (!Number.isFinite(d) || d <= 0) return this.showToast("Los días tienen que ser mayores a cero.");
+    if (d > 365) return this.showToast("El máximo es 365 días.");
+    const motivo = (document.getElementById("freeze-reason").value || "").trim();
+
+    const desde = new Date();
+    const hasta = new Date();
+    hasta.setDate(hasta.getDate() + d);
+
+    /* Se corre el vencimiento por los mismos días: el socio no pierde lo que
+       ya pagó, que es la razón de ser del congelamiento. */
+    const nuevoVenc = new Date(m.dueDate || new Date());
+    nuevoVenc.setDate(nuevoVenc.getDate() + d);
+
+    m.freeze = {
+      from: desde.toISOString().split("T")[0],
+      until: hasta.toISOString().split("T")[0],
+      days: d,
+      reason: motivo || null,
+      previousDueDate: m.dueDate,
+      by: this.session.userId,
+      byName: this.session.name || this.session.email || null,
+      at: desde.toISOString()
+    };
+    m.dueDate = nuevoVenc.toISOString().split("T")[0];
+    m.freezeHistory = m.freezeHistory || [];
+    m.freezeHistory.unshift({ ...m.freeze });
+
+    this.persist("members");
+    this.pushCloud("member", m);
+    this.logAudit("member:freeze", `Congeló la cuota de ${m.name} por ${d} días${motivo ? ` (${motivo})` : ""}. Vencimiento movido a ${m.dueDate}`, "member", m.id, m.gymId);
+    this.hideModal("modal-freeze");
+    this.freezeTarget = null;
+    this.renderAll();
+    this.showToast(`Cuota de ${m.name} congelada hasta el ${m.freeze.until}.`);
+  },
+
+  /* Descongelar antes de tiempo: se devuelven los días que no llegó a usar,
+     porque si no el socio se queda con vencimiento regalado. */
+  unfreezeMember(memberId) {
+    if (!this.can("members:*")) return this.showToast("Sólo el dueño o el administrador pueden descongelar.");
+    const m = this.findMember(memberId);
+    if (!m || !m.freeze) return;
+
+    const f = m.freeze;
+    const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+    const fin = new Date(f.until + "T00:00:00");
+    const restantes = Math.max(0, Math.ceil((fin - hoy) / 86400000));
+
+    if (!confirm(`¿Reactivar la cuota de ${m.name}?${restantes > 0 ? `\n\nLe quedaban ${restantes} día(s) de congelamiento. Se le van a descontar del vencimiento.` : ""}`)) return;
+
+    if (restantes > 0) {
+      const venc = new Date(m.dueDate);
+      venc.setDate(venc.getDate() - restantes);
+      m.dueDate = venc.toISOString().split("T")[0];
+    }
+
+    if (m.freezeHistory && m.freezeHistory[0]) {
+      m.freezeHistory[0].endedEarlyAt = new Date().toISOString();
+      m.freezeHistory[0].unusedDays = restantes;
+    }
+    m.freeze = null;
+
+    this.persist("members");
+    this.pushCloud("member", m);
+    this.logAudit("member:unfreeze", `Reactivó la cuota de ${m.name}${restantes > 0 ? ` (devolvió ${restantes} días sin usar)` : ""}. Vence el ${m.dueDate}`, "member", m.id, m.gymId);
+    this.renderAll();
+    this.showToast(`${m.name} reactivado. Vence el ${m.dueDate}.`);
   },
 
   money(amount, gymId = this.activeGymId) {
@@ -3373,6 +3795,9 @@ const FitApp = {
     this.renderConsole();
     this.renderReceptionPanel();
     this.renderPendingQueues();
+    this.renderCashRegister();
+    this.renderOccupancy();
+    this.renderReminders();
   },
 
   /* Los indicadores cuentan hasta el valor en vez de aparecer de golpe.
@@ -3553,7 +3978,7 @@ const FitApp = {
       createdAt: new Date().toISOString(),
       branding: { primaryColor: "#14b8a6", secondaryColor: "#6366f1", logoUrl: DEFAULT_PHOTO },
       branches: [{ id: uid("br"), name: branchName, address: "" }],
-      plans: [{ id: uid("pl"), name: "Plan Mensual", price: 20000 }],
+      plans: [{ id: uid("pl"), name: "Plan Mensual", price: 20000, durationDays: 30 }],
       settings: { currency: "ARS", warnDays: 3, requireApto: true, qrTtlSeconds: 30, crossBranchAccess: true },
       saas: { plan: saasPlan, status: saasPlan === "trial" ? "trial" : "active", nextInvoice: dPlus(30) }
     };
@@ -3629,6 +4054,7 @@ const FitApp = {
     set("gym-warn-days", gym.settings.warnDays);
     set("gym-require-apto", String(gym.settings.requireApto));
     set("gym-qr-ttl", gym.settings.qrTtlSeconds);
+    set("gym-capacity", gym.settings.capacity || 0);
     set("gym-cross-branch", String(gym.settings.crossBranchAccess !== false));
     set("gym-payment-link", (gym.settings && gym.settings.paymentLink) || "");
     set("wl-logo-url", gym.branding.logoUrl || "");
@@ -3654,12 +4080,25 @@ const FitApp = {
       }).join("") || `<span class="form-hint">Sin sedes cargadas.</span>`;
     }
 
+    const discounts = document.getElementById("gym-discounts-list");
+    if (discounts) {
+      discounts.innerHTML = (gym.discounts || []).length
+        ? (gym.discounts || []).map(d => `<div class="list-row">
+            <span>${ic("bolt")} <strong>${esc(d.name)}</strong></span>
+            <span style="display:flex; align-items:center; gap:8px;">
+              <strong style="color:var(--primary-color);">${esc(this.discountLabel(d))}</strong>
+              <button class="btn btn-secondary btn-tiny" style="color:var(--status-red);" onclick="FitApp.removeDiscount('${d.id}')" title="Borrar">${ic("trash")}</button>
+            </span>
+          </div>`).join("")
+        : `<span class="form-hint">Todavía no cargaste descuentos.</span>`;
+    }
+
     const plans = document.getElementById("gym-plans-list");
     if (plans) {
       plans.innerHTML = (gym.plans || []).map(p => {
         const count = this.scopedMembers().filter(m => m.planId === p.id).length;
         return `<div class="list-row">
-          <span>${ic("credit")} <strong>${esc(p.name)}</strong> <span style="color:var(--text-dim); font-size:0.78rem;">· ${count} socio(s)</span></span>
+          <span>${ic("credit")} <strong>${esc(p.name)}</strong> <span style="color:var(--text-dim); font-size:0.78rem;">· ${this.planDurationLabel(p)} · ${count} socio(s)</span></span>
           <span style="display:flex; align-items:center; gap:8px;">
             <strong style="color:var(--primary-color);">${this.money(p.price)}</strong>
             <button class="btn btn-secondary btn-tiny" style="color:var(--status-red);" onclick="FitApp.removePlan('${p.id}')"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
@@ -3728,15 +4167,18 @@ const FitApp = {
     const gym = this.activeGym();
     const nameEl = document.getElementById("new-plan-name");
     const priceEl = document.getElementById("new-plan-price");
+    const durEl = document.getElementById("new-plan-duration");
     const name = (nameEl.value || "").trim();
     const price = parseInt(priceEl.value, 10);
+    const durationDays = parseInt((durEl && durEl.value) || "30", 10) || 30;
     if (!gym || !name || Number.isNaN(price)) return this.showToast("⚠️ Completá nombre y precio del plan.");
-    gym.plans.push({ id: uid("pl"), name, price });
+    gym.plans.push({ id: uid("pl"), name, price, durationDays });
     nameEl.value = ""; priceEl.value = "";
+    if (durEl) durEl.value = "30";
     this.persistGym();
     this.renderGymSettings();
-    this.logAudit("gym:plan_add", `Agregó el plan ${name} a ${this.money(price)}`, "gym", gym.id);
-    this.showToast(`💳 Plan "${name}" creado.`);
+    this.logAudit("gym:plan_add", `Agregó el plan ${name} a ${this.money(price)} (${durationDays} días)`, "gym", gym.id);
+    this.showToast(`Plan "${name}" creado.`);
   },
 
   removePlan(planId) {
@@ -3805,8 +4247,16 @@ Object.assign(FitApp, {
       const branch = this.branchOf(m);
       const plan = this.planOf(m);
       const okCuota = m.subscriptionStatus === "al_dia";
+      /* Un apto que vence la semana que viene es un problema del gimnasio, no
+         del socio: cuando vence, deja de poder entrar. Avisar antes evita la
+         discusión en el mostrador y el riesgo de tener gente entrenando sin
+         certificado vigente. */
+      const diasApto = m.aptoDueDate ? Math.ceil((new Date(m.aptoDueDate) - new Date()) / 86400000) : null;
+      const aptoPorVencer = m.aptoMedico === "vigente" && diasApto !== null && diasApto >= 0 && diasApto <= 15;
       const aptoMap = {
-        vigente: `<span class="status-badge badge-green">Vigente</span>`,
+        vigente: aptoPorVencer
+          ? `<span class="status-badge badge-yellow" title="Vence el ${esc(m.aptoDueDate)}">Vence en ${diasApto} día${diasApto === 1 ? "" : "s"}</span>`
+          : `<span class="status-badge badge-green">Vigente</span>`,
         vencido: `<span class="status-badge badge-red">Vencido</span>`,
         pendiente: `<span class="status-badge badge-yellow">Pendiente</span>`
       };
@@ -3817,10 +4267,12 @@ Object.assign(FitApp, {
             <span style="font-size:0.75rem;color:var(--text-muted);">DNI ${esc(m.dni)} · ${esc(m.id)}</span></td>
           <td data-l="Sede" style="font-size:0.82rem;">${esc(branch ? branch.name : "—")}</td>
           <td data-l="Plan" style="font-size:0.82rem;">${esc(plan.name)}<br>
-            <span style="font-size:0.74rem;color:var(--text-dim);">${this.money(plan.price)}</span></td>
-          <td data-l="Cuota">${okCuota
-            ? `<span class="status-badge badge-green">Al día (${esc(m.dueDate)})</span>`
-            : `<span class="status-badge badge-red">Vencida (${esc(m.dueDate)})</span>`}</td>
+            <span style="font-size:0.74rem;color:var(--text-dim);">${this.money(plan.price)} · ${this.planDurationLabel(plan)}</span></td>
+          <td data-l="Cuota">${this.isFrozen(m)
+            ? `<span class="status-badge badge-yellow" title="Congelada hasta el ${esc(m.freeze.until)}">Congelada</span>`
+            : (okCuota
+              ? `<span class="status-badge badge-green">Al día (${esc(m.dueDate)})</span>`
+              : `<span class="status-badge badge-red">Vencida (${esc(m.dueDate)})</span>`)}</td>
           <td data-l="Apto">${aptoMap[m.aptoMedico] || aptoMap.pendiente}</td>
           <td data-l="Acciones">
             <div style="display:flex; gap:6px;">
@@ -3828,6 +4280,9 @@ Object.assign(FitApp, {
               <button class="btn btn-secondary btn-tiny" onclick="FitApp.previewCredential('${m.id}')" title="Enviar credencial por WhatsApp">${ic("chat")}</button>
               <button class="btn btn-secondary btn-tiny" onclick="FitApp.printMemberCard('${m.id}')" title="Imprimir credencial">${ic("printer")}</button>
               ${canEdit ? `<button class="btn btn-secondary btn-tiny" onclick="FitApp.openEditMemberModal('${m.id}')" title="Editar">${ic("pencil")}</button>` : ""}
+              ${this.can("members:*") ? (this.isFrozen(m)
+                ? `<button class="btn btn-secondary btn-tiny" style="color:var(--status-yellow);" onclick="FitApp.unfreezeMember('${m.id}')" title="Reactivar la cuota (está congelada)">${ic("play")}</button>`
+                : `<button class="btn btn-secondary btn-tiny" onclick="FitApp.openFreezeModal('${m.id}')" title="Congelar la cuota">${ic("pause")}</button>`) : ""}
               <button class="btn btn-secondary btn-tiny" onclick="FitApp.regenerateCode('${m.id}')" title="Regenerar código de activación">${ic("key")}</button>
               ${this.can("members:delete") ? `<button class="btn btn-secondary btn-tiny" style="color:var(--status-red);" onclick="FitApp.deleteMember('${m.id}')" title="Eliminar">${ic("trash")}</button>` : ""}
             </div>
@@ -4142,11 +4597,33 @@ Object.assign(FitApp, {
   sendWhatsAppReminder(memberId) {
     const m = this.findMember(memberId);
     if (!m) return;
-    if (!m.phone) return this.showToast("⚠️ El socio no tiene teléfono cargado.");
+    if (!m.phone) return this.showToast("El socio no tiene teléfono cargado.");
     const gym = this.activeGym();
     const plan = this.planOf(m);
-    const msg = encodeURIComponent(`¡Hola ${m.name}! Te escribimos de ${gym.name}. Tu cuota del plan ${plan.name} (${this.money(plan.price)}) vence el ${m.dueDate}. Podés renovarla desde tu carnet digital. ¡Te esperamos! 💪`);
+
+    /* El texto cambia según si ya venció o está por vencer: mandarle "tu cuota
+       vence" a alguien que debe hace dos semanas queda mal y no cobra. */
+    const dias = Math.ceil((new Date(m.dueDate) - new Date()) / 86400000);
+    const cuerpo = dias < 0
+      ? `Tu cuota del plan ${plan.name} (${this.money(plan.price)}) venció hace ${Math.abs(dias)} día${Math.abs(dias) === 1 ? "" : "s"}, el ${m.dueDate}.`
+      : (dias === 0
+        ? `Tu cuota del plan ${plan.name} (${this.money(plan.price)}) vence hoy.`
+        : `Tu cuota del plan ${plan.name} (${this.money(plan.price)}) vence en ${dias} día${dias === 1 ? "" : "s"}, el ${m.dueDate}.`);
+
+    const link = (gym.settings && gym.settings.paymentLink)
+      ? `\n\nPodés pagarla acá: ${gym.settings.paymentLink}`
+      : `\n\nPodés renovarla desde tu carnet digital.`;
+
+    const msg = encodeURIComponent(`¡Hola ${m.name}! Te escribimos de ${gym.name}. ${cuerpo}${link}\n\n¡Te esperamos!`);
     window.open(`https://wa.me/${m.phone.replace(/[^0-9]/g, "")}?text=${msg}`, "_blank");
+
+    // Queda registrado para no escribirle dos veces el mismo día.
+    if (this.can("members:*")) {
+      m.lastReminderAt = new Date().toISOString();
+      this.persist("members");
+      this.pushCloud("member", m);
+      this.renderReminders();
+    }
     this.logAudit("member:remind", `Recordatorio de WhatsApp a ${m.name}`, "member", m.id);
   },
 
@@ -4470,6 +4947,11 @@ Object.assign(FitApp, {
     if (m) m.style.display = "none";
   },
 
+  showModal(id) {
+    const m = document.getElementById(id);
+    if (m) m.style.display = "flex";
+  },
+
   /* ------------------------------------------------------ carnet digital */
   renderMemberView(memberId) {
     let m = null;
@@ -4662,43 +5144,573 @@ Object.assign(FitApp, {
   },
 
   /* -------------------------------------------------------------- cobros */
-  chargeMembership(memberId, source) {
+  /* Registra un cobro.
+     `opts.method` es el medio de pago real (efectivo, débito, transferencia,
+     mercadopago). Sin ese dato no se puede cerrar la caja al final del día,
+     que es la tarea diaria más importante de un mostrador.
+     `opts.amount` permite cobrar un importe distinto al del plan: recargos,
+     descuentos por pago adelantado y pagos parciales existen en todos los
+     gimnasios.
+     `opts.days` permite forzar la cantidad de días; por defecto los del plan. */
+  chargeMembership(memberId, source, opts = {}) {
     const m = this.findMember(memberId);
     if (!m) return this.showToast("🚫 Socio inexistente en este gimnasio.");
     if (this.role() === "socio" && m.id !== this.session.memberId) return;
     if (!this.can("payments:charge") && !this.can("self:pay")) return this.showToast("🚫 Sin permiso de cobro.");
 
     const plan = this.planOf(m);
+    const monto = Number.isFinite(parseFloat(opts.amount)) ? parseFloat(opts.amount) : plan.price;
+
+    /* La duración sale del plan. Antes estaba fija en 30 días, así que un plan
+       trimestral o anual acreditaba un mes y el gimnasio regalaba el resto. */
+    const dias = Number.isFinite(parseInt(opts.days, 10)) ? parseInt(opts.days, 10) : this.planDuration(plan);
+
     const base = (m.dueDate && new Date(m.dueDate) > new Date()) ? new Date(m.dueDate) : new Date();
-    base.setDate(base.getDate() + 30);
+    base.setDate(base.getDate() + dias);
     m.dueDate = base.toISOString().split("T")[0];
     m.subscriptionStatus = "al_dia";
     m.payments = m.payments || [];
     m.payments.unshift({
       at: new Date().toISOString(),
-      amount: plan.price,
+      amount: monto,
       planId: m.planId,
-      method: source === "reception" ? "mostrador" : "app",
-      byUserId: this.session.userId
+      days: dias,
+      method: opts.method || (source === "reception" ? "efectivo" : "app"),
+      note: (opts.note || "").trim() || null,
+      discountName: opts.discountName || null,
+      discountAmount: opts.discountAmount || 0,
+      byUserId: this.session.userId,
+      byUserName: this.session.name || this.session.email || null,
+      branchId: this.activeBranchId || m.branchId || null
     });
 
     this.persist("members");
     this.pushCloud("member", m);
-    this.logAudit("payment:charge", `Cobro de ${this.money(plan.price)} a ${m.name} (${source === "reception" ? "mostrador" : "app del socio"}). Nuevo vencimiento ${m.dueDate}`, "member", m.id, m.gymId);
+    const metodo = this.paymentMethodLabel(opts.method || (source === "reception" ? "efectivo" : "app"));
+    this.logAudit("payment:charge", `Cobro de ${this.money(monto)} a ${m.name} por ${metodo} (${dias} días). Nuevo vencimiento ${m.dueDate}`, "member", m.id, m.gymId);
     this.renderAll();
-    this.showToast(`💳 ${this.money(plan.price)} acreditados a ${m.name}. Vence el ${m.dueDate}.`);
+    this.showToast(`${this.money(monto)} acreditados a ${m.name}. Vence el ${m.dueDate}.`);
     return m;
+  },
+
+  /* ---------------------------------------------------------------- caja */
+
+  /* Medios de pago. "app" es el histórico de cobros hechos desde el carnet
+     antes de que existiera el selector, y se conserva para no reescribir
+     pagos ya registrados. */
+  /* ============================================================
+     DESCUENTOS Y PROMOCIONES
+     Antes el importe se editaba a mano en cada cobro. Funciona, pero no deja
+     rastro de POR QUÉ se cobró menos: al cierre de mes el dueño ve importes
+     raros y no sabe si fue una promoción o un error. Definir el descuento una
+     vez y elegirlo al cobrar deja el motivo registrado.
+     ============================================================ */
+
+  addDiscount() {
+    if (!this.can("gym:settings")) return;
+    const gym = this.activeGym();
+    const nameEl = document.getElementById("new-discount-name");
+    const valEl = document.getElementById("new-discount-value");
+    const typeEl = document.getElementById("new-discount-type");
+    const name = (nameEl.value || "").trim();
+    const value = parseFloat(valEl.value);
+    const type = typeEl.value;
+
+    if (!gym || !name || !Number.isFinite(value) || value <= 0) {
+      return this.showToast("Completá nombre y valor del descuento.");
+    }
+    if (type === "percent" && value > 100) return this.showToast("Un porcentaje no puede pasar de 100.");
+
+    gym.discounts = gym.discounts || [];
+    gym.discounts.push({ id: uid("dsc"), name, type, value });
+    nameEl.value = ""; valEl.value = "";
+    this.persistGym();
+    this.pushCloud("gym", gym, gym.id);
+    this.renderGymSettings();
+    this.logAudit("gym:discount_add", `Creó el descuento ${name} (${type === "percent" ? value + "%" : this.money(value)})`, "gym", gym.id);
+    this.showToast(`Descuento "${name}" creado.`);
+  },
+
+  removeDiscount(id) {
+    if (!this.can("gym:settings")) return;
+    const gym = this.activeGym();
+    if (!gym) return;
+    const d = (gym.discounts || []).find(x => x.id === id);
+    if (!d) return;
+    if (!confirm(`¿Borrar el descuento "${d.name}"?\n\nLos cobros ya hechos con ese descuento no se modifican.`)) return;
+    gym.discounts = gym.discounts.filter(x => x.id !== id);
+    this.persistGym();
+    this.pushCloud("gym", gym, gym.id);
+    this.renderGymSettings();
+    this.logAudit("gym:discount_remove", `Borró el descuento ${d.name}`, "gym", gym.id);
+  },
+
+  discountLabel(d) {
+    return d.type === "percent" ? `${d.value}%` : this.money(d.value);
+  },
+
+  /* Cuánto descuenta sobre un precio. Nunca deja el importe en negativo. */
+  discountAmountFor(d, base) {
+    if (!d) return 0;
+    const bruto = d.type === "percent" ? (base * d.value / 100) : d.value;
+    return Math.min(Math.round(bruto), base);
+  },
+
+  paymentMethodLabel(method) {
+    const map = {
+      efectivo: "Efectivo",
+      debito: "Débito / Crédito",
+      transferencia: "Transferencia",
+      mercadopago: "Mercado Pago",
+      mostrador: "Mostrador",
+      app: "App del socio",
+      otro: "Otro"
+    };
+    return map[method] || "Sin especificar";
+  },
+
+  /* Todos los cobros del gimnasio activo en una fecha, ya aplanados.
+     Junta dos orígenes: los pagos de cuota, que viven dentro de cada socio, y
+     los pases diarios, que viven en el registro de accesos porque no tienen
+     ficha de socio. */
+  paymentsOn(dateISO = todayISO()) {
+    const out = [];
+    this.scopedMembers().forEach(m => {
+      (m.payments || []).forEach(p => {
+        if ((p.at || "").startsWith(dateISO)) out.push({ ...p, memberId: m.id, memberName: m.name });
+      });
+    });
+    this.scopedLogs().forEach(l => {
+      if (l.kind === "daypass" && (l.at || "").startsWith(dateISO)) {
+        out.push({
+          at: l.at, amount: l.amount || 0, method: l.method || "efectivo",
+          days: 1, note: l.note || null, isDayPass: true,
+          memberId: "pase", memberName: `${l.memberName} (pase diario)`,
+          byUserName: l.byUserName || null
+        });
+      }
+    });
+    return out.sort((a, b) => (b.at || "").localeCompare(a.at || ""));
+  },
+
+  /* ============================================================
+     PASE DIARIO
+     Alguien que viene una sola vez: un turista, el amigo de un socio, alguien
+     probando el gimnasio. Antes había que inventarle una ficha de socio, que
+     ensuciaba el padrón y consumía el límite del plan.
+     Se guarda como un registro de acceso con plata asociada. Ese es el lugar
+     correcto: un pase diario ES una entrada, sólo que cobrada. Y además es lo
+     único que las reglas de Firestore le permiten crear a recepción, que es
+     justamente quien los vende.
+     ============================================================ */
+
+  /* Precio sugerido: si el gimnasio tiene un plan de un día, se usa ese. */
+  dayPassPrice() {
+    const gym = this.activeGym();
+    if (!gym) return 0;
+    const plan = (gym.plans || []).find(p => this.planDuration(p) === 1);
+    return plan ? plan.price : 0;
+  },
+
+  openDayPassModal() {
+    if (!this.can("payments:charge")) return this.showToast("Sin permiso de cobro.");
+    if (!this.activeGymId) return;
+    const set = (id, v) => { const e = document.getElementById(id); if (e) e.value = v; };
+    set("pass-name", "");
+    set("pass-dni", "");
+    set("pass-amount", this.dayPassPrice());
+    set("pass-method", "efectivo");
+    const hint = document.getElementById("pass-price-hint");
+    if (hint) {
+      hint.textContent = this.dayPassPrice()
+        ? "Sugerido según tu plan de un día."
+        : "No tenés un plan de un día cargado. Poné el precio a mano, o creá uno en Mi Gimnasio con duración \"Por día\".";
+    }
+    this.showModal("modal-daypass");
+  },
+
+  submitDayPass() {
+    if (!this.can("payments:charge")) return this.showToast("Sin permiso de cobro.");
+    const gym = this.activeGym();
+    if (!gym) return;
+
+    const nombre = (document.getElementById("pass-name").value || "").trim();
+    const dni = (document.getElementById("pass-dni").value || "").trim();
+    const amount = parseFloat(document.getElementById("pass-amount").value);
+    const method = document.getElementById("pass-method").value;
+
+    if (!nombre) return this.showToast("Poné al menos el nombre de la persona.");
+    if (!Number.isFinite(amount) || amount < 0) return this.showToast("Revisá el importe.");
+
+    const now = new Date();
+    const branch = (gym.branches || []).find(b => b.id === this.activeBranchId);
+
+    this.logs.unshift({
+      id: uid("log"),
+      gymId: this.activeGymId,
+      branchId: this.activeBranchId,
+      branchName: branch ? branch.name : "—",
+      isVisit: false,
+      kind: "daypass",
+      direction: "in",
+      at: now.toISOString(),
+      time: now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+      memberName: nombre,
+      memberId: dni ? `DNI ${dni}` : "pase diario",
+      visitorDni: dni || null,
+      amount, method,
+      status: "GREEN",
+      reason: `Pase diario · ${this.money(amount)} · ${this.paymentMethodLabel(method)}`,
+      byUserId: this.session.userId,
+      byUserName: this.session.name || this.session.email || null
+    });
+
+    this.persist("logs");
+    this.pushCloud("log", this.logs[0]);
+    this.logAudit("daypass:sell", `Vendió un pase diario a ${nombre} por ${this.money(amount)} (${this.paymentMethodLabel(method)})`, "gym", this.activeGymId);
+    this.hideModal("modal-daypass");
+    this.renderAll();
+    this.showToast(`Pase diario de ${nombre} cobrado: ${this.money(amount)}.`);
+  },
+
+  renderCashRegister() {
+    const card = document.getElementById("cash-card");
+    if (!card) return;
+
+    const puede = this.can("payments:charge") && !!this.activeGymId;
+    card.style.display = puede ? "" : "none";
+    if (!puede) return;
+
+    const input = document.getElementById("cash-date");
+    if (input && !input.value) input.value = todayISO();
+    const fecha = (input && input.value) || todayISO();
+
+    const pagos = this.paymentsOn(fecha);
+    const total = pagos.reduce((s, p) => s + (parseFloat(p.amount) || 0), 0);
+
+    const sub = document.getElementById("cash-subtitle");
+    if (sub) {
+      sub.textContent = fecha === todayISO()
+        ? "Lo cobrado hoy, separado por medio de pago."
+        : `Lo cobrado el ${fecha}, separado por medio de pago.`;
+    }
+
+    const t = document.getElementById("cash-total");
+    if (t) t.textContent = this.money(total);
+    const c = document.getElementById("cash-count");
+    if (c) c.textContent = pagos.length ? `${pagos.length} cobro${pagos.length > 1 ? "s" : ""}` : "Sin cobros registrados";
+
+    /* Desglose por medio de pago: es lo que se compara contra el efectivo que
+       hay en el cajón y contra el resumen del posnet. */
+    const porMedio = {};
+    pagos.forEach(p => {
+      const k = p.method || "otro";
+      porMedio[k] = porMedio[k] || { total: 0, n: 0 };
+      porMedio[k].total += parseFloat(p.amount) || 0;
+      porMedio[k].n += 1;
+    });
+
+    const cm = document.getElementById("cash-methods");
+    if (cm) {
+      const claves = Object.keys(porMedio).sort((a, b) => porMedio[b].total - porMedio[a].total);
+      cm.innerHTML = claves.length ? claves.map(k => `
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; padding:8px 12px; background:var(--surface-2); border-radius:9px;">
+          <span style="font-size:0.85rem;">${esc(this.paymentMethodLabel(k))}
+            <span style="color:var(--text-dim); font-size:0.76rem;">· ${porMedio[k].n}</span></span>
+          <strong style="font-size:0.9rem;">${this.money(porMedio[k].total)}</strong>
+        </div>`).join("") : "";
+    }
+
+    /* Espejo compacto en la vista de Recepción. Siempre muestra el día de hoy,
+       sin selector de fecha: es para el cierre del turno, no para auditar. */
+    const hoyPagos = this.paymentsOn(todayISO());
+    const hoyTotal = hoyPagos.reduce((s, p) => s + (parseFloat(p.amount) || 0), 0);
+    const rt = document.getElementById("reception-cash-total");
+    if (rt) rt.textContent = this.money(hoyTotal);
+    const rm = document.getElementById("reception-cash-methods");
+    if (rm) {
+      const porMedioHoy = {};
+      hoyPagos.forEach(p => {
+        const k = p.method || "otro";
+        porMedioHoy[k] = (porMedioHoy[k] || 0) + (parseFloat(p.amount) || 0);
+      });
+      const claves = Object.keys(porMedioHoy).sort((a, b) => porMedioHoy[b] - porMedioHoy[a]);
+      rm.innerHTML = claves.length
+        ? claves.map(k => `<span class="chip-inline">${esc(this.paymentMethodLabel(k))}: <strong>${this.money(porMedioHoy[k])}</strong></span>`).join("")
+        : `<span class="form-hint">Todavía no se cobró nada en el día.</span>`;
+    }
+
+    const cd = document.getElementById("cash-detail");
+    if (cd) {
+      cd.innerHTML = pagos.length ? pagos.map(p => {
+        const hora = new Date(p.at).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+        const quien = p.byUserName ? ` · cobró ${esc(p.byUserName)}` : "";
+        const nota = p.note ? `<div style="font-size:0.74rem; color:var(--text-dim); margin-top:2px;">${esc(p.note)}</div>` : "";
+        return `
+          <div style="padding:9px 12px; background:var(--surface-2); border-radius:9px;">
+            <div style="display:flex; justify-content:space-between; gap:10px;">
+              <strong style="font-size:0.86rem;">${esc(p.memberName)}</strong>
+              <strong style="font-size:0.86rem; color:var(--status-green);">${this.money(p.amount)}</strong>
+            </div>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">
+              ${hora} · ${esc(this.paymentMethodLabel(p.method))} · ${p.days || 30} día${(p.days || 30) === 1 ? "" : "s"}${quien}
+            </div>
+            ${p.discountName ? `<div style="font-size:0.74rem; color:var(--status-yellow); margin-top:2px;">${esc(p.discountName)} · −${this.money(p.discountAmount || 0)}</div>` : ""}
+            ${nota}
+          </div>`;
+      }).join("") : `<div class="empty-state" style="padding:16px;">${ic("money")}<div>Todavía no se cobró nada.</div></div>`;
+    }
+  },
+
+  /* ============================================================
+     RECORDATORIOS DE VENCIMIENTO
+     Ojo con la palabra "automático": mandar mensajes solo, sin que nadie toque
+     nada, necesita un servidor corriendo y la API de WhatsApp Business, o sea
+     plan pago y aprobación de Meta. Lo que sí se puede hacer gratis, y es lo
+     que resuelve el problema real, es que no haya que buscar a quién avisarle
+     ni redactar nada: el sistema arma la lista y el mensaje, y queda registrado
+     a quién ya se le avisó para no escribirle dos veces.
+     Requiere members:* porque las reglas de Firestore no dejan a recepción
+     escribir lastReminderAt.
+     ============================================================ */
+
+  /* A quién hay que avisarle: vencidos, y los que vencen dentro de los días de
+     aviso del gimnasio. Los congelados quedan afuera: no deben nada. */
+  remindersDue() {
+    const gym = this.activeGym();
+    const warnDays = (gym && gym.settings && gym.settings.warnDays) || 3;
+    const hoy = new Date();
+
+    return this.scopedMembers()
+      .filter(m => !this.isFrozen(m))
+      .map(m => {
+        const dias = Math.ceil((new Date(m.dueDate) - hoy) / 86400000);
+        return { m, dias };
+      })
+      .filter(x => x.dias <= warnDays)
+      .sort((a, b) => a.dias - b.dias);
+  },
+
+  /* Si ya se le avisó hoy, no vuelve a aparecer como pendiente. */
+  remindedToday(m) {
+    return !!m.lastReminderAt && (m.lastReminderAt || "").startsWith(todayISO());
+  },
+
+  renderReminders() {
+    const card = document.getElementById("reminders-card");
+    if (!card) return;
+
+    const puede = this.can("members:*") && !!this.activeGymId;
+    card.style.display = puede ? "" : "none";
+    if (!puede) return;
+
+    const todos = this.remindersDue();
+    const pendientes = todos.filter(x => !this.remindedToday(x.m));
+
+    const chip = document.getElementById("reminders-count");
+    if (chip) {
+      chip.textContent = pendientes.length ? `${pendientes.length} por avisar` : "todo avisado";
+      chip.className = `status-badge ${pendientes.length ? "badge-yellow" : "badge-green"}`;
+    }
+
+    const box = document.getElementById("reminders-list");
+    if (!box) return;
+
+    if (!todos.length) {
+      box.innerHTML = `<div class="empty-state" style="padding:16px;">${ic("check-circle")}<div>Nadie con la cuota por vencer.</div></div>`;
+      return;
+    }
+
+    box.innerHTML = todos.map(({ m, dias }) => {
+      const estado = dias < 0
+        ? `<span class="status-badge badge-red">vencida hace ${Math.abs(dias)} día${Math.abs(dias) === 1 ? "" : "s"}</span>`
+        : (dias === 0
+          ? `<span class="status-badge badge-yellow">vence hoy</span>`
+          : `<span class="status-badge badge-yellow">vence en ${dias} día${dias === 1 ? "" : "s"}</span>`);
+      const avisado = this.remindedToday(m);
+      const sinTel = !m.phone;
+      return `
+        <div class="list-row" style="align-items:flex-start; flex-direction:column; gap:9px;">
+          <div style="display:flex; justify-content:space-between; width:100%; gap:10px; flex-wrap:wrap; align-items:center;">
+            <div>
+              <strong>${esc(m.name)}</strong>
+              <div style="font-size:0.76rem; color:var(--text-muted);">
+                ${esc(m.id)} · ${esc(this.money(this.planOf(m).price))} · ${sinTel ? "sin teléfono cargado" : esc(m.phone)}
+              </div>
+            </div>
+            ${estado}
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; width:100%;">
+            <button class="btn btn-tiny" ${sinTel ? "disabled style=\"opacity:.45;\"" : ""} onclick="FitApp.sendWhatsAppReminder('${m.id}')">
+              ${ic("chat")} ${avisado ? "Volver a avisar" : "Avisar por WhatsApp"}
+            </button>
+            <button class="btn btn-secondary btn-tiny" onclick="FitApp.openChargeModal('${m.id}','carnet')">${ic("money")} Cobrar</button>
+            ${avisado ? `<span class="chip-inline">avisado hoy</span>` : ""}
+          </div>
+        </div>`;
+    }).join("");
+  },
+
+  /* Marca a todos los pendientes como avisados de una, para cuando el aviso se
+     hizo por otro medio (una llamada, un cartel, el grupo del gimnasio). */
+  markAllReminded() {
+    if (!this.can("members:*")) return this.showToast("Sin permiso.");
+    const pendientes = this.remindersDue().filter(x => !this.remindedToday(x.m));
+    if (!pendientes.length) return this.showToast("No hay nadie pendiente de aviso.");
+    if (!confirm(`¿Marcar como avisados a ${pendientes.length} socio(s)?`)) return;
+
+    pendientes.forEach(({ m }) => {
+      m.lastReminderAt = new Date().toISOString();
+      this.pushCloud("member", m);
+    });
+    this.persist("members");
+    this.logAudit("member:remind_bulk", `Marcó como avisados a ${pendientes.length} socios`, "gym", this.activeGymId);
+    this.renderAll();
+    this.showToast(`${pendientes.length} socio(s) marcados como avisados.`);
+  },
+
+  exportCashCSV() {
+    if (!this.can("data:export")) return this.showToast("Sin permiso de exportación.");
+    const input = document.getElementById("cash-date");
+    const fecha = (input && input.value) || todayISO();
+    const pagos = this.paymentsOn(fecha);
+    if (!pagos.length) return this.showToast("No hay cobros en esa fecha.");
+
+    const rows = [["Fecha y hora", "Socio", "ID", "Importe", "Medio de pago", "Dias", "Descuento", "Monto descontado", "Cobro", "Observacion"]];
+    pagos.forEach(p => rows.push([
+      new Date(p.at).toLocaleString("es-AR"), p.memberName, p.memberId,
+      p.amount, this.paymentMethodLabel(p.method), p.days || 30,
+      p.discountName || "", p.discountAmount || 0,
+      p.byUserName || "", p.note || ""
+    ]));
+    const gym = this.activeGym();
+    this.download(`${gym ? gym.slug : "gimnasio"}_caja_${fecha}.csv`, this.toCSV(rows), "text/csv;charset=utf-8;");
+    this.logAudit("data:export", `Exportó la caja del ${fecha} (${pagos.length} cobros)`, "gym", this.activeGymId);
   },
 
   processSelectedPayment() {
     if (!this.currentActiveMember) return;
-    this.chargeMembership(this.currentActiveMember.id, "app");
-    this.renderMemberView(this.currentActiveMember.id);
+    // Staff cobrando desde el carnet: también pasa por el modal, para que el
+    // medio de pago quede registrado y entre en el cierre de caja.
+    this.openChargeModal(this.currentActiveMember.id, "carnet");
   },
 
+  /* Abre el modal de cobro en lugar de acreditar de una.
+     El cobro de un clic era cómodo pero peligroso: un toque de más marcaba
+     como paga una cuota que nadie pagó, y no quedaba registro del medio de
+     pago. El modal resuelve las dos cosas: pide el medio (que hace falta para
+     cerrar la caja) y de paso obliga a confirmar. */
   quickCobrarCuota(memberId) {
-    const m = this.chargeMembership(memberId, "reception");
-    if (m) this.evaluateAccess(m.id);
+    this.openChargeModal(memberId, "reception");
+  },
+
+  openChargeModal(memberId, source = "reception") {
+    if (!this.can("payments:charge")) return this.showToast("Sin permiso de cobro.");
+    const m = this.findMember(memberId);
+    if (!m) return this.showToast("Socio inexistente en este gimnasio.");
+
+    const plan = this.planOf(m);
+    this.chargeTarget = { memberId: m.id, source, basePrice: plan.price };
+
+    const set = (id, v) => { const e = document.getElementById(id); if (e) e.value = v; };
+    const txt = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+
+    txt("charge-member-name", m.name);
+    txt("charge-member-meta", `${m.id} · ${plan.name} · ${this.planDurationLabel(plan)}`);
+    set("charge-amount", plan.price);
+    set("charge-days", this.planDuration(plan));
+    set("charge-method", "efectivo");
+    set("charge-note", "");
+
+    // Descuentos del gimnasio, si tiene alguno definido
+    const gym = this.activeGym();
+    const dsel = document.getElementById("charge-discount");
+    const dgroup = document.getElementById("charge-discount-group");
+    const lista = (gym && gym.discounts) || [];
+    if (dgroup) dgroup.style.display = lista.length ? "" : "none";
+    if (dsel) {
+      dsel.innerHTML = `<option value="">Sin descuento</option>` +
+        lista.map(d => `<option value="${d.id}">${esc(d.name)} · ${esc(this.discountLabel(d))}</option>`).join("");
+      dsel.value = "";
+    }
+
+    const nuevo = new Date((m.dueDate && new Date(m.dueDate) > new Date()) ? m.dueDate : new Date());
+    nuevo.setDate(nuevo.getDate() + this.planDuration(plan));
+    txt("charge-newdue", this.dateLong(nuevo));
+
+    this.showModal("modal-charge");
+  },
+
+  /* Recalcula el vencimiento resultante mientras se editan los días, así
+     recepción ve exactamente hasta cuándo queda habilitado antes de confirmar. */
+  updateChargePreview() {
+    if (!this.chargeTarget) return;
+    const m = this.findMember(this.chargeTarget.memberId);
+    if (!m) return;
+    const d = parseInt(document.getElementById("charge-days").value, 10);
+    const dias = (Number.isFinite(d) && d > 0) ? d : this.planDuration(this.planOf(m));
+    const nuevo = new Date((m.dueDate && new Date(m.dueDate) > new Date()) ? m.dueDate : new Date());
+    nuevo.setDate(nuevo.getDate() + dias);
+    const e = document.getElementById("charge-newdue");
+    if (e) e.textContent = this.dateLong(nuevo);
+  },
+
+  /* Fecha en palabras. "2026-12-09" obliga a traducir; "9 de diciembre de
+     2026" se lee de una, que es lo que hace falta con gente esperando. */
+  dateLong(d) {
+    const f = (d instanceof Date) ? d : new Date(d);
+    if (isNaN(f)) return "—";
+    try {
+      return f.toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" });
+    } catch (e) {
+      return f.toISOString().split("T")[0];
+    }
+  },
+
+  /* Al elegir un descuento se recalcula el importe sobre el precio del plan,
+     no sobre el importe que hay en pantalla: si no, aplicar y cambiar de
+     descuento iría descontando en cascada. */
+  applyChargeDiscount() {
+    if (!this.chargeTarget) return;
+    const gym = this.activeGym();
+    const sel = document.getElementById("charge-discount");
+    const d = ((gym && gym.discounts) || []).find(x => x.id === sel.value);
+    const base = this.chargeTarget.basePrice || 0;
+    const desc = this.discountAmountFor(d, base);
+    const campo = document.getElementById("charge-amount");
+    if (campo) campo.value = base - desc;
+    const hint = document.getElementById("charge-discount-hint");
+    if (hint) {
+      hint.textContent = d
+        ? `${this.money(base)} menos ${this.money(desc)} de descuento.`
+        : "Sobre el precio del plan.";
+    }
+  },
+
+  submitCharge() {
+    if (!this.chargeTarget) return;
+    const { memberId, source, basePrice } = this.chargeTarget;
+    const amount = parseFloat(document.getElementById("charge-amount").value);
+    const days = parseInt(document.getElementById("charge-days").value, 10);
+    const method = document.getElementById("charge-method").value;
+    const note = document.getElementById("charge-note").value;
+
+    if (!Number.isFinite(amount) || amount < 0) return this.showToast("Revisá el importe.");
+    if (!Number.isFinite(days) || days <= 0) return this.showToast("Los días tienen que ser mayores a cero.");
+
+    const gym = this.activeGym();
+    const dsel = document.getElementById("charge-discount");
+    const d = ((gym && gym.discounts) || []).find(x => x.id === (dsel && dsel.value));
+
+    const m = this.chargeMembership(memberId, source, {
+      amount, days, method, note,
+      discountName: d ? d.name : null,
+      discountAmount: d ? Math.max(0, (basePrice || 0) - amount) : 0
+    });
+    this.hideModal("modal-charge");
+    this.chargeTarget = null;
+    if (m && source === "reception") this.evaluateAccess(m.id);
+    else if (m) this.renderMemberView(m.id);
   },
 
   /* ==================================================================
@@ -4716,18 +5728,50 @@ Object.assign(FitApp, {
       sel.value = this.activeBranchId || "";
     }
 
+    /* En la demo esta lista sirve para probar el semáforo. En un gimnasio real
+       "casos de prueba" no significa nada y ocupa la mejor parte de la
+       pantalla: se convierte en la lista de socios a los que hay que
+       reclamarles algo hoy, que es lo que el mostrador necesita a mano. */
+    const demo = this.isDemoData() && !this.cloudOn();
+    const titulo = document.getElementById("reception-side-title");
+    const nota = document.getElementById("reception-side-note");
+    if (titulo) titulo.textContent = demo ? "Sede activa & Casos de prueba" : "Sede activa & Pendientes";
+    if (nota) {
+      nota.textContent = demo
+        ? "Probá el semáforo con socios reales del padrón de este gimnasio:"
+        : "Socios que necesitan atención. Tocá uno para verlo en el semáforo:";
+    }
+
     const box = document.getElementById("reception-test-cases");
     if (box) {
-      const list = this.scopedMembers().slice(0, 4);
-      box.innerHTML = list.length ? list.map(m => {
-        const st = this.memberAccessState(m);
-        const color = st.color === "green" ? "var(--status-green)" : (st.color === "yellow" ? "var(--status-yellow)" : "var(--status-red)");
-        const dot = st.color === "green" ? "🟢" : (st.color === "yellow" ? "🟡" : "🔴");
-        return `<button class="btn" style="background: ${this.hexToRgba(st.color === 'green' ? '#10b981' : st.color === 'yellow' ? '#f59e0b' : '#ef4444', 0.18)}; border:1px solid ${color}; color:${color}; justify-content:flex-start;"
-                  onclick="FitApp.evaluateAccess('${m.id}')">
-          ${dot} ${esc(m.name)} — ${esc(st.short)}
-        </button>`;
-      }).join("") : `<span class="form-hint">Cargá socios en el padrón para probar el semáforo.</span>`;
+      const todos = this.scopedMembers();
+      const list = demo
+        ? todos.slice(0, 4)
+        : todos
+            .map(m => ({ m, st: this.memberAccessState(m) }))
+            .filter(x => x.st.color !== "green")
+            .sort((a, b) => (a.st.color === "red" ? -1 : 1) - (b.st.color === "red" ? -1 : 1))
+            .slice(0, 6)
+            .map(x => x.m);
+
+      if (!todos.length) {
+        box.innerHTML = `<span class="form-hint">Cargá socios en el padrón para usar el semáforo.</span>`;
+      } else if (!list.length) {
+        box.innerHTML = `<div class="empty-state" style="padding:14px;">${ic("check-circle")}<div>Todos los socios están al día.</div></div>`;
+      } else {
+        box.innerHTML = list.map(m => {
+          const st = this.memberAccessState(m);
+          const hex = st.color === "green" ? "#10b981" : (st.color === "yellow" ? "#f59e0b" : "#ef4444");
+          const color = st.color === "green" ? "var(--status-green)" : (st.color === "yellow" ? "var(--status-yellow)" : "var(--status-red)");
+          // Punto dibujado con CSS: un emoji de color no existe en todas las
+          // fuentes y en una terminal vieja saldría como un cuadrado.
+          const dot = `<span style="width:10px;height:10px;border-radius:50%;background:${hex};display:inline-block;flex:0 0 10px;"></span>`;
+          return `<button class="btn" style="background: ${this.hexToRgba(hex, 0.18)}; border:1px solid ${color}; color:${color}; justify-content:flex-start; gap:9px; text-align:left; white-space:normal;"
+                    onclick="FitApp.evaluateAccess('${m.id}')">
+            ${dot} <span>${esc(m.name)} — ${esc(st.short)}</span>
+          </button>`;
+        }).join("");
+      }
     }
   },
 
@@ -4751,16 +5795,38 @@ Object.assign(FitApp, {
     const visitNote = isVisit && homeBranch ? `visita · socio de ${homeBranch.name}` : null;
 
     const base = { visit: isVisit, homeBranch, visitNote };
+
+    /* El congelamiento se evalúa antes que todo lo demás: la cuota puede estar
+       al día justamente porque se le corrió el vencimiento al congelar, así que
+       si se mirara primero la cuota daría verde y entraría. */
+    const frz = this.activeFreeze(m);
+    if (frz) {
+      return {
+        ...base, color: "red", frozen: true,
+        short: `cuota congelada hasta el ${frz.until}`,
+        reasons: [`Cuota congelada hasta el ${frz.until}${frz.reason ? ` · ${frz.reason}` : ""}`],
+        canCharge: false
+      };
+    }
+
     const days = Math.ceil((new Date(m.dueDate) - new Date()) / 86400000);
     const cuotaVencida = m.subscriptionStatus === "vencido" || days < 0;
     const aptoOk = m.aptoMedico === "vigente";
 
-    if (cuotaVencida) return { ...base, color: "red", short: `cuota vencida (${m.dueDate})`, reasons: [`Cuota vencida el ${m.dueDate}`], canCharge: true };
+    /* Se dice "hace 11 días" en lugar de sólo la fecha: en el mostrador, con
+       gente esperando, nadie resta fechas de cabeza. */
+    const diasVencida = Math.abs(days);
+    const haceCuanto = diasVencida === 0 ? "vence hoy" : `hace ${diasVencida} día${diasVencida > 1 ? "s" : ""}`;
+
+    if (cuotaVencida) return { ...base, color: "red", short: `cuota vencida ${haceCuanto}`, reasons: [`Cuota vencida ${haceCuanto} (${m.dueDate})`], canCharge: true };
     if (!aptoOk && requireApto) return { ...base, color: "red", short: `apto ${m.aptoMedico}`, reasons: [`Apto médico ${m.aptoMedico}`], canCharge: false };
     // Único caso en que la sede bloquea: el gimnasio desactivó el acceso cruzado.
     if (isVisit && !crossBranch) return { ...base, color: "red", short: `sólo ${homeBranch ? homeBranch.name : "su sede"}`, reasons: [`Su plan es válido sólo en ${homeBranch ? homeBranch.name : "su sede"}`], canCharge: false };
     if (!aptoOk) return { ...base, color: "yellow", short: `apto ${m.aptoMedico}`, reasons: [`Apto médico ${m.aptoMedico} (no bloqueante)`], canCharge: false };
-    if (days <= warnDays) return { ...base, color: "yellow", short: `vence en ${days} día(s)`, reasons: [`La cuota vence en ${days} día(s)`], canCharge: true };
+    if (days <= warnDays) {
+      const cuando = days === 0 ? "vence hoy" : `vence en ${days} día${days === 1 ? "" : "s"}`;
+      return { ...base, color: "yellow", short: cuando, reasons: [`La cuota ${cuando} (${m.dueDate})`], canCharge: true };
+    }
     return { ...base, color: "green", short: "al día", reasons: [], canCharge: false };
   },
 
@@ -4806,6 +5872,18 @@ Object.assign(FitApp, {
     if (Date.now() - last < 6000) return;
     this.lastScanAt[member.id] = Date.now();
 
+    /* Si ya está adentro, este escaneo es la SALIDA. Es como funciona cualquier
+       molinete y es lo que hace que el aforo sea real sin pedirle al socio que
+       aprenda nada nuevo: pasa la credencial al entrar y al salir.
+       No se evalúa cuota ni apto: quien está adentro tiene derecho a salir. */
+    if (this.isInside(member.id)) {
+      this.addLog(member, "GREEN", "Salida registrada", false, "out");
+      this.trafficLight("green", "SALIDA REGISTRADA",
+        `Hasta luego, ${member.name}. Que descanses.`, member);
+      this.playSound("green");
+      return;
+    }
+
     /* Segundo ingreso del día. La credencial es una imagen y se puede reenviar,
        así que si el mismo socio ya entró hoy conviene avisarlo. No bloquea:
        hay gente que entrena dos veces por día. */
@@ -4819,14 +5897,24 @@ Object.assign(FitApp, {
     const visitTag = st.visitNote ? ` · visita · socio de ${st.homeBranch ? st.homeBranch.name : "otra sede"}` : "";
     const reTag = previo ? ` · ya ingresó hoy a las ${previo.time}` : "";
 
+    /* Aforo completo: se avisa, no se bloquea. Dejar afuera a un socio al día
+       porque el sistema contó mal sería peor que la sobrecarga; la decisión es
+       de quien está en el mostrador, que ve la sala. */
+    const cap = parseInt((gym.settings && gym.settings.capacity) || 0, 10) || 0;
+    const dentro = this.insideNow().length;
+    const aforoTag = (cap && dentro >= cap) ? ` · SALA COMPLETA (${dentro}/${cap})` : "";
+
     if (st.color === "red") {
       this.trafficLight("red", "ACCESO DENEGADO", st.reasons.join(" · ") + visitTag, member, st.canCharge);
       this.playSound("red");
       this.addLog(member, "RED", st.reasons.join(" · "), st.visit);
-    } else if (st.color === "yellow" || previo) {
+    } else if (st.color === "yellow" || previo || aforoTag) {
       // Un reingreso no bloquea, pero baja a amarillo para que recepción mire
-      const motivos = st.reasons.length ? st.reasons.join(" · ") : `Segundo ingreso del día (el primero fue a las ${previo.time})`;
-      const titulo = st.reasons.length ? "ACCESO CON ADVERTENCIA" : "YA INGRESÓ HOY";
+      const razones = st.reasons.slice();
+      if (previo && !st.reasons.length) razones.push(`Segundo ingreso del día (el primero fue a las ${previo.time})`);
+      if (aforoTag) razones.push(`Sala completa: ${dentro} de ${cap} lugares`);
+      const motivos = razones.join(" · ");
+      const titulo = st.reasons.length ? "ACCESO CON ADVERTENCIA" : (aforoTag ? "SALA COMPLETA" : "YA INGRESÓ HOY");
       this.trafficLight("yellow", titulo, `¡Hola ${member.name}! ${motivos}.${visitTag}`, member, st.canCharge);
       this.playSound("yellow");
       this.addLog(member, "YELLOW", motivos + (previo && st.reasons.length ? reTag : ""), st.visit);
@@ -4872,7 +5960,7 @@ Object.assign(FitApp, {
       </div>`;
   },
 
-  addLog(member, status, reason, isVisit = false) {
+  addLog(member, status, reason, isVisit = false, direction = "in") {
     const now = new Date();
     const branch = (this.activeGym().branches || []).find(b => b.id === this.activeBranchId);
     this.logs.unshift({
@@ -4881,23 +5969,117 @@ Object.assign(FitApp, {
       branchId: this.activeBranchId,
       branchName: (branch ? branch.name : "—") + (isVisit ? " (visita)" : ""),
       isVisit,
+      kind: "member",
+      direction,
       at: now.toISOString(),
       time: now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
       memberName: member ? member.name : "Desconocido",
       memberId: member ? member.id : "-",
       status, reason,
-      byUserId: this.session.userId
+      byUserId: this.session.userId,
+      byUserName: this.session.name || this.session.email || null
     });
-    // Retención acotada por tenant
-    const mine = this.logs.filter(l => l.gymId === this.activeGymId);
-    if (mine.length > 300) {
-      const drop = new Set(mine.slice(300).map(l => l.id));
-      this.logs = this.logs.filter(l => !drop.has(l.id));
-    }
+    this.prunelogs();
     this.persist("logs");
     this.pushCloud("log", this.logs[0]);
     this.renderLogTable();
     this.updateStats();
+  },
+
+  /* ============================================================
+     AFORO — quiénes están adentro ahora
+     Hace falta para dos cosas concretas: saber si entra más gente cuando el
+     gimnasio está lleno, y saber a quién buscar si hay que evacuar.
+     El registro guardaba sólo entradas, así que era imposible. Ahora cada
+     registro tiene `direction`, y la salida es un registro nuevo: las reglas
+     de Firestore no permiten editar un registro ya escrito, y está bien que
+     sea así porque es evidencia operativa.
+     ============================================================ */
+
+  /* Último movimiento de hoy de cada persona. Si fue "in", está adentro.
+     Se mira sólo el día de hoy: si alguien entró ayer y nadie marcó su salida,
+     no queda contado para siempre. */
+  insideNow() {
+    const hoy = todayISO();
+    const porPersona = new Map();
+    /* scopedLogs viene del más nuevo al más viejo, así que el primero que
+       aparece para cada persona es su último movimiento. */
+    this.scopedLogs().forEach(l => {
+      if (!(l.at || "").startsWith(hoy)) return;
+      if (l.status !== "GREEN" && l.status !== "YELLOW") return;   // los rechazados no entraron
+      const clave = l.memberId || l.memberName;
+      if (!porPersona.has(clave)) porPersona.set(clave, l);
+    });
+    return [...porPersona.values()].filter(l => (l.direction || "in") === "in");
+  },
+
+  isInside(memberId) {
+    return this.insideNow().some(l => l.memberId === memberId);
+  },
+
+  /* Registra la salida de un socio. */
+  checkOut(memberId) {
+    if (!this.can("access:scan")) return this.showToast("Sin permiso para registrar accesos.");
+    const m = this.findMember(memberId);
+    if (!m) return this.showToast("Socio inexistente en este gimnasio.");
+    if (!this.isInside(memberId)) return this.showToast(`${m.name} no figura adentro.`);
+    this.addLog(m, "GREEN", "Salida registrada", false, "out");
+    this.showToast(`Salida de ${m.name} registrada.`);
+  },
+
+  renderOccupancy() {
+    const card = document.getElementById("occupancy-card");
+    if (!card) return;
+    const puede = this.can("access:scan") && !!this.activeGymId;
+    card.style.display = puede ? "" : "none";
+    if (!puede) return;
+
+    const gym = this.activeGym();
+    const cap = parseInt((gym && gym.settings && gym.settings.capacity) || 0, 10) || 0;
+    const dentro = this.insideNow();
+
+    const n = document.getElementById("occupancy-count");
+    if (n) n.textContent = dentro.length;
+
+    const lim = document.getElementById("occupancy-limit");
+    if (lim) {
+      if (!cap) {
+        lim.textContent = "Sin límite configurado";
+        lim.style.color = "";
+      } else {
+        const pct = Math.round((dentro.length / cap) * 100);
+        lim.textContent = `de ${cap} lugares · ${pct}%`;
+        lim.style.color = dentro.length >= cap ? "var(--status-red)"
+          : (dentro.length >= cap * 0.85 ? "var(--status-yellow)" : "");
+      }
+    }
+
+    const lista = document.getElementById("occupancy-list");
+    if (lista) {
+      lista.innerHTML = dentro.length ? dentro.map(l => {
+        const esSocio = l.kind !== "daypass";
+        const salida = esSocio
+          ? `<button class="btn btn-secondary btn-tiny" onclick="FitApp.checkOut('${l.memberId}')" title="Registrar salida">${ic("logout")}</button>`
+          : `<span class="chip-inline">pase diario</span>`;
+        return `<div class="list-row">
+          <span><strong>${esc(l.memberName)}</strong>
+            <span style="color:var(--text-dim); font-size:0.76rem;">· entró ${esc(l.time)}</span></span>
+          ${salida}
+        </div>`;
+      }).join("") : `<div class="empty-state" style="padding:14px;">${ic("users")}<div>No hay nadie adentro.</div></div>`;
+    }
+  },
+
+  /* Retención acotada por tenant, pero los pases diarios NO se recortan:
+     llevan plata y son el respaldo del cierre de caja. Recortarlos sería
+     borrar ingresos a los tres días en un gimnasio con movimiento. */
+  prunelogs() {
+    const mine = this.logs.filter(l => l.gymId === this.activeGymId);
+    const comunes = mine.filter(l => l.kind !== "daypass");
+    if (comunes.length > 300) {
+      const drop = new Set(comunes.slice(300).map(l => l.id));
+      this.logs = this.logs.filter(l => !drop.has(l.id));
+    }
   },
 
   renderLogTable() {
@@ -4922,7 +6104,11 @@ Object.assign(FitApp, {
 
   clearGymLogs() {
     if (!this.activeGymId) return;
-    if (!confirm(`¿Borrar el registro de ingresos de ${this.gymName()}?`)) return;
+    /* El registro de ingresos es la única evidencia de quién entró y cuándo.
+       Recepción no debería poder borrarlo: se restringe a quien ve auditoría,
+       o sea dueño y administrador. */
+    if (!this.can("audit:view")) return this.showToast("Sólo el dueño o el administrador pueden borrar el registro.");
+    if (!confirm(`¿Borrar el registro de ingresos de ${this.gymName()}?\n\nEsto no se puede deshacer. Conviene exportar el CSV antes.`)) return;
     this.logs = this.logs.filter(l => l.gymId !== this.activeGymId);
     this.persist("logs");
     this.logAudit("logs:clear", "Limpió el registro de ingresos", "gym", this.activeGymId);
@@ -5653,14 +6839,19 @@ Object.assign(FitApp, {
     if (!m || !m.pendingPayment) return;
     const p = m.pendingPayment;
 
+    // La duración sale del plan del socio, no de un 30 fijo.
+    const dias = this.planDuration(this.planOf(m));
     const base = (m.dueDate && new Date(m.dueDate) > new Date()) ? new Date(m.dueDate) : new Date();
-    base.setDate(base.getDate() + 30);
+    base.setDate(base.getDate() + dias);
     m.dueDate = base.toISOString().split("T")[0];
     m.subscriptionStatus = "al_dia";
     m.payments = m.payments || [];
     m.payments.unshift({
       at: new Date().toISOString(), amount: p.amount, planId: p.planId,
-      method: "mercadopago", proof: p.proof,
+      days: dias, method: "mercadopago", proof: p.proof,
+      byUserId: this.session.userId,
+      byUserName: this.session.name || this.session.email || null,
+      branchId: m.branchId || null,
       confirmedBy: this.session.userId, confirmedAt: new Date().toISOString()
     });
     m.pendingPayment = null;
@@ -5803,13 +6994,13 @@ Object.assign(FitApp, {
       faltaba.push("branches");
     }
     if (!Array.isArray(g.plans) || !g.plans.length) {
-      g.plans = [{ id: "pl-mensual", name: "Plan Mensual", price: 20000 }];
+      g.plans = [{ id: "pl-mensual", name: "Plan Mensual", price: 20000, durationDays: 30 }];
       faltaba.push("plans");
     }
     if (!g.settings || g.settings.qrTtlSeconds === undefined) {
       g.settings = {
         currency: "ARS", warnDays: 3, requireApto: true,
-        qrTtlSeconds: 30, crossBranchAccess: true, paymentLink: "",
+        qrTtlSeconds: 30, crossBranchAccess: true, paymentLink: "", capacity: 0,
         ...(g.settings || {})
       };
       faltaba.push("settings");
