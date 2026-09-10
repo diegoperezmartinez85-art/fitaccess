@@ -448,6 +448,34 @@
     </p>
   </div>
 
+  <h3>Cargar muchos socios de una vez</h3>
+  <p>
+    Si ya tenés tu padrón en un Excel, no lo tipees. En el padrón hay un botón
+    <span class="btn-ref">Importar</span> que lee un archivo <strong>CSV</strong>.
+  </p>
+  <ol>
+    <li>Tocá <strong>Descargar plantilla de ejemplo</strong> para ver el formato.</li>
+    <li>Abrí la plantilla en Excel, reemplazá los ejemplos por tus socios.</li>
+    <li>Guardala como <strong>CSV</strong> (en Excel: Archivo &gt; Guardar como &gt; CSV).</li>
+    <li>Tocá <strong>Importar</strong> y elegí el archivo.</li>
+  </ol>
+  <p>
+    Antes de cargar nada te dice cuántos socios va a crear y cuántas filas quedaron afuera. Después te muestra
+    exactamente qué fila falló y por qué, con el número de línea, así lo corregís en la planilla y volvés a intentar.
+  </p>
+  <div class="box">
+    <span class="tag">No hace falta que la planilla sea perfecta</span>
+    <p>
+      La columna del nombre es la única obligatoria. Reconoce los encabezados escritos de varias formas
+      —"DNI", "Documento" o "Nro Documento" son lo mismo— y acepta las fechas como <code>31/12/2026</code>,
+      que es como las escribe todo el mundo. Lo que falte se completa con valores razonables.
+    </p>
+    <p>
+      Si un socio ya está cargado con el mismo DNI, lo saltea en lugar de duplicarlo. Podés importar el mismo
+      archivo dos veces sin miedo.
+    </p>
+  </div>
+
   <h3>Bajar el padrón a Excel</h3>
   <p>
     El botón <span class="btn-ref">CSV</span> del padrón te descarga un archivo con todos tus socios, que se
@@ -591,12 +619,28 @@
         credencial otra vez con el botón del globo de diálogo.
       </p>
       <div class="box warn">
-        <span class="tag">Si perdió el acceso a su cuenta</span>
+        <span class="tag">Si olvidó la contraseña</span>
         <p>
-          Si el socio olvidó la contraseña, que use <b>¿Olvidaste tu contraseña?</b> en la pantalla de ingreso y
-          le llega un mail para cambiarla. Generar un código nuevo <b>no</b> resuelve eso, porque su ficha ya
-          quedó vinculada a una cuenta. Si perdió el acceso al email también, avisale a quien administra el
-          sistema para que desvincule la ficha.
+          Que use <b>¿Olvidaste tu contraseña?</b> en la pantalla de ingreso y le llega un mail para cambiarla.
+          Generar un código nuevo <b>no</b> sirve para esto, porque su ficha ya quedó vinculada a una cuenta.
+        </p>
+      </div>
+
+      <div class="box danger">
+        <span class="tag">Si perdió el acceso al correo</span>
+        <p>
+          Cambió de mail, lo cerró, o era el de un ex. Ahí no puede recuperar la contraseña ni activarse de
+          nuevo, porque su ficha figura como ya reclamada.
+        </p>
+        <p>
+          En su fila del padrón aparece un botón de <b>flecha de salida</b> —sólo si ya activó una cuenta— que
+          <b>desvincula</b> la ficha: la libera y genera un código nuevo. Le mandás la credencial otra vez y se
+          activa con el correo nuevo.
+        </p>
+        <p>
+          Ojo con el alcance: eso libera la ficha pero <b>no borra la cuenta vieja</b>, que sigue pudiendo ver
+          esa ficha hasta que se la borre en <b>Firebase Console &gt; Authentication</b>. Si el socio se fue en
+          malos términos, pedile a quien administra el sistema que la borre.
         </p>
       </div>
     </div>
@@ -828,6 +872,33 @@
     </p>
   </div>
 
+  <h3>Si cobraste mal</h3>
+  <p>
+    Pasa: se le cobra al socio equivocado, o se tipea 260.000 en lugar de 26.000. En el detalle de
+    <strong>Caja del día</strong>, cada cobro tiene un botón <span class="btn-ref">Anular</span>.
+  </p>
+  <p>Al anular te pide el motivo, y con eso hace tres cosas:</p>
+  <ul>
+    <li>Le <strong>devuelve el vencimiento exacto</strong> que tenía antes de ese cobro.</li>
+    <li>Lo <strong>saca del total</strong> de la caja.</li>
+    <li>Lo deja <strong>tachado y a la vista</strong>, con el motivo y quién lo anuló.</li>
+  </ul>
+  <div class="box">
+    <span class="tag">Por qué queda a la vista y no desaparece</span>
+    <p>
+      Un movimiento de plata que se borra sin dejar rastro es exactamente lo que no querés en una caja. Queda
+      tachado para que se pueda ver que existió, por qué se dio de baja y quién lo hizo. En el CSV también sale,
+      con su motivo.
+    </p>
+  </div>
+  <div class="box warn">
+    <span class="tag">Recepción no puede anular</span>
+    <p>
+      Sólo vos y tu administrador. Es el control de siempre en cualquier mostrador: <b>quien cobra no es quien
+      corrige</b>. Si tu recepcionista se equivocó, te avisa y lo arreglás vos.
+    </p>
+  </div>
+
   <h3>Cerrar la caja al final del día</h3>
   <p>
     En <strong>Panel Gimnasio</strong> tenés la tarjeta <strong>Caja del día</strong>. Te muestra:
@@ -846,6 +917,14 @@
     Con el selector de fecha podés mirar cualquier día anterior, y con <span class="btn-ref">CSV</span> te lo
     descargás para tu contador.
   </p>
+
+  <h3>El total del mes</h3>
+  <p>
+    Arriba de la tarjeta hay dos botones: <span class="btn-ref">Día</span> y <span class="btn-ref">Mes</span>.
+    En <strong>Mes</strong> te muestra todo lo facturado en el mes de la fecha elegida, y agrega un desglose de
+    <strong>quién cobró</strong>, así ves cuánto movió cada persona del mostrador.
+  </p>
+  <p>Es la vista que le vas a pasar a tu contador. El botón CSV exporta el período que estés viendo.</p>
   <div class="box">
     <span class="tag">Recepción también ve su parte</span>
     <p>
