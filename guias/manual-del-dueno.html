@@ -313,14 +313,28 @@
     <div class="step-body">
       <h3>Planes y precios</h3>
       <p>
-        Viene creado un <strong>Plan Mensual</strong>. Ponele el precio real. Agregá los que uses: Trimestral,
-        Anual, Pase Libre, Estudiantes. Escribí nombre y precio y tocá el <span class="btn-ref">+</span>.
+        Viene creado un <strong>Plan Mensual</strong>. Ponele el precio real. Para agregar otro, completá tres
+        cosas y tocá el <span class="btn-ref">+</span>:
       </p>
-      <div class="box">
-        <span class="tag">El precio se usa solo</span>
+      <table>
+        <tr><th style="width:26%">Campo</th><th>Qué poner</th></tr>
+        <tr><td><strong>Nombre</strong></td><td>Como lo llamás vos: "Musculación", "Full Crossfit", "Pase del día"</td></tr>
+        <tr><td><strong>Precio</strong></td><td>Lo que cobrás por ese plan</td></tr>
+        <tr><td><strong>Duración</strong></td><td>Mensual, Trimestral, Anual, Semanal, Por día… lo que corresponda</td></tr>
+      </table>
+      <div class="box warn">
+        <span class="tag">La duración es lo más importante de los tres</span>
         <p>
-          Cuando recepción cobra en el mostrador, el botón ya muestra el monto del plan de ese socio. No hay que
-          acordarse de nada ni tipear el precio. Por eso vale la pena cargarlos bien.
+          La duración define <b>cuántos días se le acreditan al socio cuando cobrás</b>. Un plan trimestral suma
+          90 días; uno anual, 365; un pase del día, 1. Si le ponés la duración equivocada, vas a cobrar tres
+          meses y habilitarlo sólo uno, o al revés.
+        </p>
+      </div>
+      <div class="box">
+        <span class="tag">El precio y la duración se usan solos</span>
+        <p>
+          Cuando cobrás, el sistema ya trae el monto y los días de ese plan. No hay que acordarse de nada ni
+          tipear el precio. Por eso vale la pena cargarlos bien una vez.
         </p>
       </div>
     </div>
@@ -640,6 +654,24 @@
   </div>
 
   <div class="box">
+    <span class="tag">Está escrito en días, no en fechas</span>
+    <p>
+      La pantalla dice <b>"cuota vencida hace 11 días"</b> o <b>"vence en 2 días"</b>, no una fecha suelta.
+      Es a propósito: con cola en el mostrador nadie resta fechas de cabeza.
+    </p>
+  </div>
+
+  <h3>La lista de pendientes</h3>
+  <p>
+    A la derecha del escáner, la tarjeta <strong>Sede activa &amp; Pendientes</strong> muestra a los socios que
+    necesitan algo hoy: los que tienen la cuota vencida, los que están por vencer y los que tienen problema de
+    apto. Tocás uno y lo ves en el semáforo, listo para cobrarle.
+  </p>
+  <p>
+    Si dice <strong>"Todos los socios están al día"</strong>, no tenés nada pendiente.
+  </p>
+
+  <div class="box">
     <span class="tag">Cómo entrenar a tu recepcionista</span>
     <p>
       No hace falta que entienda el sistema. Alcanza con: <b>verde pasa, amarillo pasa y le avisás, rojo no pasa
@@ -677,8 +709,55 @@
   <h3>Camino B — Paga en el mostrador</h3>
   <p>
     Recepción lo escanea, sale rojo por cuota vencida, y en la misma pantalla aparece un botón
-    <span class="btn-ref">Cobrar $… ahora</span> con el monto de su plan ya calculado. Un clic y queda al día.
+    <span class="btn-ref">Cobrar $… ahora</span> con el monto de su plan ya calculado.
   </p>
+  <p>Al tocarlo se abre una ventana que pide cuatro cosas:</p>
+  <table>
+    <tr><th style="width:26%">Campo</th><th>Qué hacer</th></tr>
+    <tr><td><strong>¿Cómo pagó?</strong></td><td>Efectivo, Débito/Crédito, Transferencia, Mercado Pago u Otro. <strong>Esto es lo que después te deja cerrar la caja.</strong></td></tr>
+    <tr><td><strong>Importe</strong></td><td>Viene el del plan. Editalo si le hiciste un descuento o si pagó de más.</td></tr>
+    <tr><td><strong>Días a acreditar</strong></td><td>Vienen los del plan. Editalos sólo si es un caso especial.</td></tr>
+    <tr><td><strong>Observación</strong></td><td>Opcional. Ej: "pagó 2 meses juntos".</td></tr>
+  </table>
+  <p>
+    Abajo te muestra en letras <strong>hasta cuándo queda habilitado</strong> antes de que confirmes, así que si
+    algo está mal lo ves a tiempo. Recién cuando tocás <span class="btn-ref">Confirmar cobro</span> se acredita.
+  </p>
+  <div class="box">
+    <span class="tag">Por qué pide confirmación y no cobra de un toque</span>
+    <p>
+      Antes alcanzaba un clic y quedaba cobrado. Con gente esperando eso significa marcar como paga una cuota que
+      nadie pagó, y sin forma de saber cómo entró la plata. La ventana resuelve las dos cosas de una: te obliga a
+      elegir el medio de pago y de paso te da un segundo para confirmar.
+    </p>
+  </div>
+
+  <h3>Cerrar la caja al final del día</h3>
+  <p>
+    En <strong>Panel Gimnasio</strong> tenés la tarjeta <strong>Caja del día</strong>. Te muestra:
+  </p>
+  <ul>
+    <li>El <strong>total cobrado</strong> en el día.</li>
+    <li>El <strong>desglose por medio de pago</strong>: cuánto en efectivo, cuánto en débito, cuánto por transferencia.</li>
+    <li>El <strong>detalle de cada cobro</strong>: socio, hora, importe, días acreditados y <strong>quién lo cobró</strong>.</li>
+  </ul>
+  <p>
+    El desglose es lo que compará contra la realidad: el renglón de <strong>Efectivo</strong> tiene que coincidir
+    con la plata que hay en el cajón, y el de <strong>Débito</strong> con el cierre del posnet. Si no coincide,
+    el detalle te dice cobro por cobro dónde buscar.
+  </p>
+  <p>
+    Con el selector de fecha podés mirar cualquier día anterior, y con <span class="btn-ref">CSV</span> te lo
+    descargás para tu contador.
+  </p>
+  <div class="box">
+    <span class="tag">Recepción también ve su parte</span>
+    <p>
+      En la pantalla de Recepción hay una tarjeta <b>"Cobrado hoy en esta terminal"</b> con el total y el
+      desglose. Sirve para que quien cierra el turno cuente el cajón sin tener que entrar al Panel, al que no
+      tiene acceso.
+    </p>
+  </div>
 
   <div class="box">
     <span class="tag">Mirá "Pendientes de revisión" todos los días</span>
@@ -702,6 +781,14 @@
     También podés cargarlo vos: editás al socio en el padrón y cambiás el estado del apto a mano. Sirve para
     los que te traen el papel al mostrador.
   </p>
+  <div class="box">
+    <span class="tag">Te avisa 15 días antes</span>
+    <p>
+      En el padrón, cuando a un apto le faltan 15 días o menos, la etiqueta pasa a amarillo y dice
+      <b>"Vence en 8 días"</b> en lugar de "Vigente". Aprovechá ese margen para pedirle el certificado nuevo:
+      es mucho más fácil que discutir en la puerta el día que ya venció.
+    </p>
+  </div>
   <div class="box warn">
     <span class="tag">Decidí esto a conciencia</span>
     <p>
@@ -749,9 +836,10 @@
   <h2 id="rutina">11. Rutina recomendada</h2>
 
   <div class="routine">
-    <h4>Todos los días · 2 minutos</h4>
+    <h4>Todos los días · 5 minutos</h4>
     <ul>
       <li>Abrí <strong>Pendientes de revisión</strong> y despachá lo que haya.</li>
+      <li>Al cerrar, mirá <strong>Caja del día</strong> y compará el efectivo con el cajón y el débito con el posnet.</li>
       <li>Mirá los socios en amarillo y mandales un mensaje avisando del vencimiento.</li>
     </ul>
   </div>
@@ -832,7 +920,7 @@
     <li>Instalé la app en mi PC, en mi celular y en el mostrador.</li>
     <li>El nombre comercial de mi gimnasio está bien escrito.</li>
     <li>Le puse el nombre real a mi sede.</li>
-    <li>Cargué mis planes con los precios reales.</li>
+    <li>Cargué mis planes con los precios reales <strong>y la duración correcta de cada uno</strong>.</li>
     <li>Decidí si el apto médico es obligatorio.</li>
     <li>Pegué mi link de pago de Mercado Pago.</li>
     <li>Cargué 5 socios de prueba con teléfono y foto.</li>
@@ -841,6 +929,7 @@
     <li>Confirmé ese comprobante desde Pendientes de revisión.</li>
     <li>Le di permiso a la cámara en el dispositivo del mostrador.</li>
     <li>Escaneé una credencial y vi el semáforo funcionando.</li>
+    <li>Cobré una cuota de prueba eligiendo el medio de pago, y la vi aparecer en <strong>Caja del día</strong>.</li>
     <li>Mi recepcionista tiene su propia cuenta y sabe leer los tres colores.</li>
     <li>Descargué el CSV del padrón como respaldo.</li>
   </ul>

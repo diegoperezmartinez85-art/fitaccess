@@ -1404,7 +1404,7 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
 
         <div class="glass-card">
           <div class="glass-card-header">
-            <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-bolt"/></svg> Sede activa & Casos de prueba</h3>
+            <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-bolt"/></svg> <span id="reception-side-title">Sede activa</span></h3>
           </div>
 
           <div class="form-group">
@@ -1413,9 +1413,22 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
             <span class="form-hint">Los ingresos se registran contra esta sede.</span>
           </div>
 
-          <p class="section-note" style="margin-bottom: 12px;">Probá el semáforo con socios reales del padrón de este gimnasio:</p>
+          <p class="section-note" style="margin-bottom: 12px;" id="reception-side-note">Socios que necesitan atención hoy:</p>
           <div id="reception-test-cases" style="display: flex; flex-direction: column; gap: 10px;"></div>
         </div>
+      </div>
+
+      <!-- Resumen de caja para el turno: recepción tiene que poder contar lo
+           que cobró sin entrar al Panel del Gimnasio, al que no tiene acceso. -->
+      <div class="glass-card" id="reception-cash-card" style="margin-top: 20px;" data-cap="payments:charge">
+        <div class="glass-card-header">
+          <div>
+            <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-money"/></svg> Cobrado hoy en esta terminal</h3>
+            <p class="section-note">Para comparar contra el efectivo del cajón al cerrar el turno.</p>
+          </div>
+          <strong id="reception-cash-total" style="font-size:1.5rem; font-weight:900; color:var(--status-green);">—</strong>
+        </div>
+        <div id="reception-cash-methods" style="display:flex; gap:8px; flex-wrap:wrap;"></div>
       </div>
 
       <div class="glass-card" style="margin-top: 20px;">
@@ -1423,7 +1436,7 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
           <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-clipboard"/></svg> Registro de Ingresos</h3>
           <div style="display: flex; gap: 8px;">
             <button class="btn btn-secondary btn-tiny" data-cap="data:export" onclick="FitApp.exportLogsCSV()"><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg> Exportar CSV</button>
-            <button class="btn btn-secondary btn-tiny" onclick="FitApp.clearGymLogs()">Limpiar</button>
+            <button class="btn btn-secondary btn-tiny" data-cap="audit:view" onclick="FitApp.clearGymLogs()">Limpiar</button>
           </div>
         </div>
         <div style="overflow-x: auto;">
@@ -1459,9 +1472,36 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
           <div class="metric-trend">Requieren seguimiento</div>
         </div>
         <div class="metric-card">
-          <div class="metric-label">Ingresos de Hoy</div>
+          <div class="metric-label">Accesos de Hoy</div>
           <div id="stat-today-logs" class="metric-value" style="color: var(--primary-color);">0</div>
-          <div class="metric-trend">Registros en molinete</div>
+          <div class="metric-trend">Socios que entraron</div>
+        </div>
+      </div>
+
+      <!-- Cierre de caja: qué entró hoy y por qué medio -->
+      <div class="glass-card" id="cash-card" style="margin-bottom: 24px; display:none;" data-cap="payments:charge">
+        <div class="glass-card-header">
+          <div>
+            <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-money"/></svg> Caja del día</h3>
+            <p class="section-note" id="cash-subtitle">Lo cobrado hoy, separado por medio de pago.</p>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <input type="date" id="cash-date" class="form-input" style="max-width:165px; padding:8px 12px; font-size:0.85rem;" onchange="FitApp.renderCashRegister()">
+            <button class="btn btn-secondary btn-tiny" data-cap="data:export" onclick="FitApp.exportCashCSV()"><svg class="ico" aria-hidden="true"><use href="#i-download"/></svg> CSV</button>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div>
+            <div style="font-size:0.78rem; color:var(--text-muted); font-weight:700; text-transform:uppercase; letter-spacing:.6px; margin-bottom:6px;">Total cobrado</div>
+            <div id="cash-total" style="font-size:2rem; font-weight:900; color:var(--status-green); line-height:1.1;">—</div>
+            <div id="cash-count" style="font-size:0.82rem; color:var(--text-muted); margin-top:4px;">—</div>
+            <div id="cash-methods" style="display:flex; flex-direction:column; gap:7px; margin-top:14px;"></div>
+          </div>
+          <div>
+            <div style="font-size:0.78rem; color:var(--text-muted); font-weight:700; text-transform:uppercase; letter-spacing:.6px; margin-bottom:8px;">Detalle</div>
+            <div id="cash-detail" style="display:flex; flex-direction:column; gap:8px; max-height:280px; overflow-y:auto;"></div>
+          </div>
         </div>
       </div>
 
@@ -1522,11 +1562,25 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
           <div>
             <h4 style="font-size: 0.95rem; font-weight: 800; margin-bottom: 10px;"><svg class="ico" aria-hidden="true"><use href="#i-money"/></svg> Planes y Precios</h4>
             <div id="gym-plans-list" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px;"></div>
-            <div style="display: flex; gap: 8px;">
-              <input type="text" id="new-plan-name" class="form-input" placeholder="Nombre del plan">
-              <input type="number" id="new-plan-price" class="form-input" placeholder="Precio" style="max-width: 120px;">
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <input type="text" id="new-plan-name" class="form-input" placeholder="Nombre del plan" style="min-width: 130px; flex: 1;">
+              <input type="number" id="new-plan-price" class="form-input" placeholder="Precio" style="max-width: 110px;">
+              <select id="new-plan-duration" class="form-select" style="max-width: 135px;" title="Cuánto dura el plan">
+                <option value="30" selected>Mensual</option>
+                <option value="1">Por día</option>
+                <option value="7">Semanal</option>
+                <option value="15">Quincenal</option>
+                <option value="60">Bimestral</option>
+                <option value="90">Trimestral</option>
+                <option value="180">Semestral</option>
+                <option value="365">Anual</option>
+              </select>
               <button class="btn btn-secondary" style="white-space: nowrap;" onclick="FitApp.addPlan()"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg></button>
             </div>
+            <span class="form-hint" style="margin-top:6px; display:block;">
+              La duración define cuántos días se acreditan al cobrar. Un plan trimestral
+              suma 90 días, no 30.
+            </span>
           </div>
         </div>
 
@@ -1737,6 +1791,62 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
       <button class="btn" style="width:100%; margin-top:12px; padding:12px;" onclick="FitApp.sendPreviewedCredential()">
         <svg class="ico" aria-hidden="true"><use href="#i-chat"/></svg> Enviar por WhatsApp
       </button>
+    </div>
+  </div>
+
+  <!-- Cobro en mostrador: pide el medio de pago y confirma de paso -->
+  <div id="modal-charge" class="modal-overlay" style="display:none;">
+    <div class="modal-card" style="max-width: 460px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-money"/></svg> Registrar cobro</h3>
+        <button class="btn btn-secondary btn-tiny" onclick="FitApp.hideModal('modal-charge')"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
+      </div>
+
+      <div style="background: var(--surface-2); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 16px;">
+        <strong id="charge-member-name" style="font-size:1.02rem;">—</strong>
+        <div id="charge-member-meta" style="font-size:0.78rem; color:var(--text-muted); margin-top:3px;">—</div>
+      </div>
+
+      <form onsubmit="event.preventDefault(); FitApp.submitCharge();">
+        <div class="form-group">
+          <label class="form-label">¿Cómo pagó?</label>
+          <select id="charge-method" class="form-select">
+            <option value="efectivo">Efectivo</option>
+            <option value="debito">Débito / Crédito</option>
+            <option value="transferencia">Transferencia</option>
+            <option value="mercadopago">Mercado Pago</option>
+            <option value="otro">Otro</option>
+          </select>
+          <span class="form-hint">Sirve para el cierre de caja del día.</span>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">Importe:</label>
+            <input type="number" id="charge-amount" class="form-input" min="0" step="any" required>
+            <span class="form-hint">Editalo si hubo descuento o recargo.</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Días a acreditar:</label>
+            <input type="number" id="charge-days" class="form-input" min="1" max="730" required oninput="FitApp.updateChargePreview()">
+            <span class="form-hint">Viene del plan del socio.</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Observación (opcional):</label>
+          <input type="text" id="charge-note" class="form-input" placeholder="Ej: pagó 2 meses juntos">
+        </div>
+
+        <div style="background: rgba(20,184,166,0.1); border:1px solid var(--primary-glow); border-radius: var(--radius-sm); padding: 11px 14px; margin-bottom:14px; font-size:0.86rem;">
+          Queda habilitado hasta el <strong id="charge-newdue">—</strong>
+        </div>
+
+        <div style="display:flex; gap:10px;">
+          <button type="button" class="btn btn-secondary" style="flex:1;" onclick="FitApp.hideModal('modal-charge')">Cancelar</button>
+          <button type="submit" class="btn" style="flex:2; padding:12px; font-weight:800;"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg> Confirmar cobro</button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -2425,9 +2535,11 @@ function buildSeed() {
         { id: "br-ph-2", name: "Sede Belgrano", address: "Cabildo 2100" }
       ],
       plans: [
-        { id: "pl-ph-1", name: "Musculación Libre", price: 18500 },
-        { id: "pl-ph-2", name: "Full Crossfit", price: 26000 },
-        { id: "pl-ph-3", name: "VIP Todo Incluido", price: 34000 }
+        { id: "pl-ph-1", name: "Musculación Libre", price: 18500, durationDays: 30 },
+        { id: "pl-ph-2", name: "Full Crossfit", price: 26000, durationDays: 30 },
+        { id: "pl-ph-3", name: "VIP Todo Incluido", price: 34000, durationDays: 30 },
+        { id: "pl-ph-4", name: "Trimestral Libre", price: 49500, durationDays: 90 },
+        { id: "pl-ph-5", name: "Pase del día", price: 4500, durationDays: 1 }
       ],
       settings: { currency: "ARS", warnDays: 3, requireApto: true, qrTtlSeconds: 30, crossBranchAccess: true },
       saas: { plan: "pro", status: "active", nextInvoice: dPlus(24) }
@@ -2445,8 +2557,9 @@ function buildSeed() {
       branding: { primaryColor: "#a855f7", secondaryColor: "#3b82f6", logoUrl: BRAND_MARK },
       branches: [{ id: "br-vx-1", name: "Sede Villa Crespo", address: "Corrientes 5200" }],
       plans: [
-        { id: "pl-vx-1", name: "Funcional 3 veces", price: 21000 },
-        { id: "pl-vx-2", name: "Libre + Clases", price: 29500 }
+        { id: "pl-vx-1", name: "Funcional 3 veces", price: 21000, durationDays: 30 },
+        { id: "pl-vx-2", name: "Libre + Clases", price: 29500, durationDays: 30 },
+        { id: "pl-vx-3", name: "Anual Full", price: 295000, durationDays: 365 }
       ],
       settings: { currency: "ARS", warnDays: 5, requireApto: true, qrTtlSeconds: 30, crossBranchAccess: true },
       saas: { plan: "starter", status: "trial", nextInvoice: dPlus(9) }
@@ -2893,8 +3006,27 @@ const FitApp = {
 
   planOf(member) {
     const g = this.gymById(member.gymId);
-    if (!g) return { name: "Sin plan", price: 0 };
-    return (g.plans || []).find(p => p.id === member.planId) || { name: "Sin plan", price: 0 };
+    if (!g) return { name: "Sin plan", price: 0, durationDays: 30 };
+    const p = (g.plans || []).find(p => p.id === member.planId);
+    if (!p) return { name: "Sin plan", price: 0, durationDays: 30 };
+    /* durationDays llegó después: los planes viejos no lo tienen y valen 30
+       días, que es lo que el sistema hacía antes para todos. */
+    return { ...p, durationDays: this.planDuration(p) };
+  },
+
+  /* Duración de un plan en días. Un plan sin el campo es mensual, que es como
+     se comportaba el sistema cuando la duración estaba fija en 30. */
+  planDuration(plan) {
+    const d = plan && parseInt(plan.durationDays, 10);
+    return (Number.isFinite(d) && d > 0) ? d : 30;
+  },
+
+  /* Etiqueta legible de la duración, para no obligar a nadie a traducir
+     "90 días" a "trimestral" mentalmente. */
+  planDurationLabel(plan) {
+    const d = this.planDuration(plan);
+    const conocidas = { 1: "por día", 7: "semanal", 15: "quincenal", 30: "mensual", 60: "bimestral", 90: "trimestral", 180: "semestral", 365: "anual" };
+    return conocidas[d] || `${d} días`;
   },
 
   money(amount, gymId = this.activeGymId) {
@@ -3373,6 +3505,7 @@ const FitApp = {
     this.renderConsole();
     this.renderReceptionPanel();
     this.renderPendingQueues();
+    this.renderCashRegister();
   },
 
   /* Los indicadores cuentan hasta el valor en vez de aparecer de golpe.
@@ -3553,7 +3686,7 @@ const FitApp = {
       createdAt: new Date().toISOString(),
       branding: { primaryColor: "#14b8a6", secondaryColor: "#6366f1", logoUrl: DEFAULT_PHOTO },
       branches: [{ id: uid("br"), name: branchName, address: "" }],
-      plans: [{ id: uid("pl"), name: "Plan Mensual", price: 20000 }],
+      plans: [{ id: uid("pl"), name: "Plan Mensual", price: 20000, durationDays: 30 }],
       settings: { currency: "ARS", warnDays: 3, requireApto: true, qrTtlSeconds: 30, crossBranchAccess: true },
       saas: { plan: saasPlan, status: saasPlan === "trial" ? "trial" : "active", nextInvoice: dPlus(30) }
     };
@@ -3659,7 +3792,7 @@ const FitApp = {
       plans.innerHTML = (gym.plans || []).map(p => {
         const count = this.scopedMembers().filter(m => m.planId === p.id).length;
         return `<div class="list-row">
-          <span>${ic("credit")} <strong>${esc(p.name)}</strong> <span style="color:var(--text-dim); font-size:0.78rem;">· ${count} socio(s)</span></span>
+          <span>${ic("credit")} <strong>${esc(p.name)}</strong> <span style="color:var(--text-dim); font-size:0.78rem;">· ${this.planDurationLabel(p)} · ${count} socio(s)</span></span>
           <span style="display:flex; align-items:center; gap:8px;">
             <strong style="color:var(--primary-color);">${this.money(p.price)}</strong>
             <button class="btn btn-secondary btn-tiny" style="color:var(--status-red);" onclick="FitApp.removePlan('${p.id}')"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
@@ -3728,15 +3861,18 @@ const FitApp = {
     const gym = this.activeGym();
     const nameEl = document.getElementById("new-plan-name");
     const priceEl = document.getElementById("new-plan-price");
+    const durEl = document.getElementById("new-plan-duration");
     const name = (nameEl.value || "").trim();
     const price = parseInt(priceEl.value, 10);
+    const durationDays = parseInt((durEl && durEl.value) || "30", 10) || 30;
     if (!gym || !name || Number.isNaN(price)) return this.showToast("⚠️ Completá nombre y precio del plan.");
-    gym.plans.push({ id: uid("pl"), name, price });
+    gym.plans.push({ id: uid("pl"), name, price, durationDays });
     nameEl.value = ""; priceEl.value = "";
+    if (durEl) durEl.value = "30";
     this.persistGym();
     this.renderGymSettings();
-    this.logAudit("gym:plan_add", `Agregó el plan ${name} a ${this.money(price)}`, "gym", gym.id);
-    this.showToast(`💳 Plan "${name}" creado.`);
+    this.logAudit("gym:plan_add", `Agregó el plan ${name} a ${this.money(price)} (${durationDays} días)`, "gym", gym.id);
+    this.showToast(`Plan "${name}" creado.`);
   },
 
   removePlan(planId) {
@@ -3805,8 +3941,16 @@ Object.assign(FitApp, {
       const branch = this.branchOf(m);
       const plan = this.planOf(m);
       const okCuota = m.subscriptionStatus === "al_dia";
+      /* Un apto que vence la semana que viene es un problema del gimnasio, no
+         del socio: cuando vence, deja de poder entrar. Avisar antes evita la
+         discusión en el mostrador y el riesgo de tener gente entrenando sin
+         certificado vigente. */
+      const diasApto = m.aptoDueDate ? Math.ceil((new Date(m.aptoDueDate) - new Date()) / 86400000) : null;
+      const aptoPorVencer = m.aptoMedico === "vigente" && diasApto !== null && diasApto >= 0 && diasApto <= 15;
       const aptoMap = {
-        vigente: `<span class="status-badge badge-green">Vigente</span>`,
+        vigente: aptoPorVencer
+          ? `<span class="status-badge badge-yellow" title="Vence el ${esc(m.aptoDueDate)}">Vence en ${diasApto} día${diasApto === 1 ? "" : "s"}</span>`
+          : `<span class="status-badge badge-green">Vigente</span>`,
         vencido: `<span class="status-badge badge-red">Vencido</span>`,
         pendiente: `<span class="status-badge badge-yellow">Pendiente</span>`
       };
@@ -3817,7 +3961,7 @@ Object.assign(FitApp, {
             <span style="font-size:0.75rem;color:var(--text-muted);">DNI ${esc(m.dni)} · ${esc(m.id)}</span></td>
           <td data-l="Sede" style="font-size:0.82rem;">${esc(branch ? branch.name : "—")}</td>
           <td data-l="Plan" style="font-size:0.82rem;">${esc(plan.name)}<br>
-            <span style="font-size:0.74rem;color:var(--text-dim);">${this.money(plan.price)}</span></td>
+            <span style="font-size:0.74rem;color:var(--text-dim);">${this.money(plan.price)} · ${this.planDurationLabel(plan)}</span></td>
           <td data-l="Cuota">${okCuota
             ? `<span class="status-badge badge-green">Al día (${esc(m.dueDate)})</span>`
             : `<span class="status-badge badge-red">Vencida (${esc(m.dueDate)})</span>`}</td>
@@ -4470,6 +4614,11 @@ Object.assign(FitApp, {
     if (m) m.style.display = "none";
   },
 
+  showModal(id) {
+    const m = document.getElementById(id);
+    if (m) m.style.display = "flex";
+  },
+
   /* ------------------------------------------------------ carnet digital */
   renderMemberView(memberId) {
     let m = null;
@@ -4662,43 +4811,272 @@ Object.assign(FitApp, {
   },
 
   /* -------------------------------------------------------------- cobros */
-  chargeMembership(memberId, source) {
+  /* Registra un cobro.
+     `opts.method` es el medio de pago real (efectivo, débito, transferencia,
+     mercadopago). Sin ese dato no se puede cerrar la caja al final del día,
+     que es la tarea diaria más importante de un mostrador.
+     `opts.amount` permite cobrar un importe distinto al del plan: recargos,
+     descuentos por pago adelantado y pagos parciales existen en todos los
+     gimnasios.
+     `opts.days` permite forzar la cantidad de días; por defecto los del plan. */
+  chargeMembership(memberId, source, opts = {}) {
     const m = this.findMember(memberId);
     if (!m) return this.showToast("🚫 Socio inexistente en este gimnasio.");
     if (this.role() === "socio" && m.id !== this.session.memberId) return;
     if (!this.can("payments:charge") && !this.can("self:pay")) return this.showToast("🚫 Sin permiso de cobro.");
 
     const plan = this.planOf(m);
+    const monto = Number.isFinite(parseFloat(opts.amount)) ? parseFloat(opts.amount) : plan.price;
+
+    /* La duración sale del plan. Antes estaba fija en 30 días, así que un plan
+       trimestral o anual acreditaba un mes y el gimnasio regalaba el resto. */
+    const dias = Number.isFinite(parseInt(opts.days, 10)) ? parseInt(opts.days, 10) : this.planDuration(plan);
+
     const base = (m.dueDate && new Date(m.dueDate) > new Date()) ? new Date(m.dueDate) : new Date();
-    base.setDate(base.getDate() + 30);
+    base.setDate(base.getDate() + dias);
     m.dueDate = base.toISOString().split("T")[0];
     m.subscriptionStatus = "al_dia";
     m.payments = m.payments || [];
     m.payments.unshift({
       at: new Date().toISOString(),
-      amount: plan.price,
+      amount: monto,
       planId: m.planId,
-      method: source === "reception" ? "mostrador" : "app",
-      byUserId: this.session.userId
+      days: dias,
+      method: opts.method || (source === "reception" ? "efectivo" : "app"),
+      note: (opts.note || "").trim() || null,
+      byUserId: this.session.userId,
+      byUserName: this.session.name || this.session.email || null,
+      branchId: this.activeBranchId || m.branchId || null
     });
 
     this.persist("members");
     this.pushCloud("member", m);
-    this.logAudit("payment:charge", `Cobro de ${this.money(plan.price)} a ${m.name} (${source === "reception" ? "mostrador" : "app del socio"}). Nuevo vencimiento ${m.dueDate}`, "member", m.id, m.gymId);
+    const metodo = this.paymentMethodLabel(opts.method || (source === "reception" ? "efectivo" : "app"));
+    this.logAudit("payment:charge", `Cobro de ${this.money(monto)} a ${m.name} por ${metodo} (${dias} días). Nuevo vencimiento ${m.dueDate}`, "member", m.id, m.gymId);
     this.renderAll();
-    this.showToast(`💳 ${this.money(plan.price)} acreditados a ${m.name}. Vence el ${m.dueDate}.`);
+    this.showToast(`${this.money(monto)} acreditados a ${m.name}. Vence el ${m.dueDate}.`);
     return m;
+  },
+
+  /* ---------------------------------------------------------------- caja */
+
+  /* Medios de pago. "app" es el histórico de cobros hechos desde el carnet
+     antes de que existiera el selector, y se conserva para no reescribir
+     pagos ya registrados. */
+  paymentMethodLabel(method) {
+    const map = {
+      efectivo: "Efectivo",
+      debito: "Débito / Crédito",
+      transferencia: "Transferencia",
+      mercadopago: "Mercado Pago",
+      mostrador: "Mostrador",
+      app: "App del socio",
+      otro: "Otro"
+    };
+    return map[method] || "Sin especificar";
+  },
+
+  /* Todos los pagos del gimnasio activo en una fecha, ya aplanados.
+     Los pagos viven dentro de cada socio, así que hay que recorrer el padrón. */
+  paymentsOn(dateISO = todayISO()) {
+    const out = [];
+    this.scopedMembers().forEach(m => {
+      (m.payments || []).forEach(p => {
+        if ((p.at || "").startsWith(dateISO)) out.push({ ...p, memberId: m.id, memberName: m.name });
+      });
+    });
+    return out.sort((a, b) => (b.at || "").localeCompare(a.at || ""));
+  },
+
+  renderCashRegister() {
+    const card = document.getElementById("cash-card");
+    if (!card) return;
+
+    const puede = this.can("payments:charge") && !!this.activeGymId;
+    card.style.display = puede ? "" : "none";
+    if (!puede) return;
+
+    const input = document.getElementById("cash-date");
+    if (input && !input.value) input.value = todayISO();
+    const fecha = (input && input.value) || todayISO();
+
+    const pagos = this.paymentsOn(fecha);
+    const total = pagos.reduce((s, p) => s + (parseFloat(p.amount) || 0), 0);
+
+    const sub = document.getElementById("cash-subtitle");
+    if (sub) {
+      sub.textContent = fecha === todayISO()
+        ? "Lo cobrado hoy, separado por medio de pago."
+        : `Lo cobrado el ${fecha}, separado por medio de pago.`;
+    }
+
+    const t = document.getElementById("cash-total");
+    if (t) t.textContent = this.money(total);
+    const c = document.getElementById("cash-count");
+    if (c) c.textContent = pagos.length ? `${pagos.length} cobro${pagos.length > 1 ? "s" : ""}` : "Sin cobros registrados";
+
+    /* Desglose por medio de pago: es lo que se compara contra el efectivo que
+       hay en el cajón y contra el resumen del posnet. */
+    const porMedio = {};
+    pagos.forEach(p => {
+      const k = p.method || "otro";
+      porMedio[k] = porMedio[k] || { total: 0, n: 0 };
+      porMedio[k].total += parseFloat(p.amount) || 0;
+      porMedio[k].n += 1;
+    });
+
+    const cm = document.getElementById("cash-methods");
+    if (cm) {
+      const claves = Object.keys(porMedio).sort((a, b) => porMedio[b].total - porMedio[a].total);
+      cm.innerHTML = claves.length ? claves.map(k => `
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; padding:8px 12px; background:var(--surface-2); border-radius:9px;">
+          <span style="font-size:0.85rem;">${esc(this.paymentMethodLabel(k))}
+            <span style="color:var(--text-dim); font-size:0.76rem;">· ${porMedio[k].n}</span></span>
+          <strong style="font-size:0.9rem;">${this.money(porMedio[k].total)}</strong>
+        </div>`).join("") : "";
+    }
+
+    /* Espejo compacto en la vista de Recepción. Siempre muestra el día de hoy,
+       sin selector de fecha: es para el cierre del turno, no para auditar. */
+    const hoyPagos = this.paymentsOn(todayISO());
+    const hoyTotal = hoyPagos.reduce((s, p) => s + (parseFloat(p.amount) || 0), 0);
+    const rt = document.getElementById("reception-cash-total");
+    if (rt) rt.textContent = this.money(hoyTotal);
+    const rm = document.getElementById("reception-cash-methods");
+    if (rm) {
+      const porMedioHoy = {};
+      hoyPagos.forEach(p => {
+        const k = p.method || "otro";
+        porMedioHoy[k] = (porMedioHoy[k] || 0) + (parseFloat(p.amount) || 0);
+      });
+      const claves = Object.keys(porMedioHoy).sort((a, b) => porMedioHoy[b] - porMedioHoy[a]);
+      rm.innerHTML = claves.length
+        ? claves.map(k => `<span class="chip-inline">${esc(this.paymentMethodLabel(k))}: <strong>${this.money(porMedioHoy[k])}</strong></span>`).join("")
+        : `<span class="form-hint">Todavía no se cobró nada en el día.</span>`;
+    }
+
+    const cd = document.getElementById("cash-detail");
+    if (cd) {
+      cd.innerHTML = pagos.length ? pagos.map(p => {
+        const hora = new Date(p.at).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+        const quien = p.byUserName ? ` · cobró ${esc(p.byUserName)}` : "";
+        const nota = p.note ? `<div style="font-size:0.74rem; color:var(--text-dim); margin-top:2px;">${esc(p.note)}</div>` : "";
+        return `
+          <div style="padding:9px 12px; background:var(--surface-2); border-radius:9px;">
+            <div style="display:flex; justify-content:space-between; gap:10px;">
+              <strong style="font-size:0.86rem;">${esc(p.memberName)}</strong>
+              <strong style="font-size:0.86rem; color:var(--status-green);">${this.money(p.amount)}</strong>
+            </div>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">
+              ${hora} · ${esc(this.paymentMethodLabel(p.method))} · ${p.days || 30} día${(p.days || 30) === 1 ? "" : "s"}${quien}
+            </div>
+            ${nota}
+          </div>`;
+      }).join("") : `<div class="empty-state" style="padding:16px;">${ic("money")}<div>Todavía no se cobró nada.</div></div>`;
+    }
+  },
+
+  exportCashCSV() {
+    if (!this.can("data:export")) return this.showToast("Sin permiso de exportación.");
+    const input = document.getElementById("cash-date");
+    const fecha = (input && input.value) || todayISO();
+    const pagos = this.paymentsOn(fecha);
+    if (!pagos.length) return this.showToast("No hay cobros en esa fecha.");
+
+    const rows = [["Fecha y hora", "Socio", "ID", "Importe", "Medio de pago", "Dias", "Cobro", "Observacion"]];
+    pagos.forEach(p => rows.push([
+      new Date(p.at).toLocaleString("es-AR"), p.memberName, p.memberId,
+      p.amount, this.paymentMethodLabel(p.method), p.days || 30,
+      p.byUserName || "", p.note || ""
+    ]));
+    const gym = this.activeGym();
+    this.download(`${gym ? gym.slug : "gimnasio"}_caja_${fecha}.csv`, this.toCSV(rows), "text/csv;charset=utf-8;");
+    this.logAudit("data:export", `Exportó la caja del ${fecha} (${pagos.length} cobros)`, "gym", this.activeGymId);
   },
 
   processSelectedPayment() {
     if (!this.currentActiveMember) return;
-    this.chargeMembership(this.currentActiveMember.id, "app");
-    this.renderMemberView(this.currentActiveMember.id);
+    // Staff cobrando desde el carnet: también pasa por el modal, para que el
+    // medio de pago quede registrado y entre en el cierre de caja.
+    this.openChargeModal(this.currentActiveMember.id, "carnet");
   },
 
+  /* Abre el modal de cobro en lugar de acreditar de una.
+     El cobro de un clic era cómodo pero peligroso: un toque de más marcaba
+     como paga una cuota que nadie pagó, y no quedaba registro del medio de
+     pago. El modal resuelve las dos cosas: pide el medio (que hace falta para
+     cerrar la caja) y de paso obliga a confirmar. */
   quickCobrarCuota(memberId) {
-    const m = this.chargeMembership(memberId, "reception");
-    if (m) this.evaluateAccess(m.id);
+    this.openChargeModal(memberId, "reception");
+  },
+
+  openChargeModal(memberId, source = "reception") {
+    if (!this.can("payments:charge")) return this.showToast("Sin permiso de cobro.");
+    const m = this.findMember(memberId);
+    if (!m) return this.showToast("Socio inexistente en este gimnasio.");
+
+    const plan = this.planOf(m);
+    this.chargeTarget = { memberId: m.id, source };
+
+    const set = (id, v) => { const e = document.getElementById(id); if (e) e.value = v; };
+    const txt = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+
+    txt("charge-member-name", m.name);
+    txt("charge-member-meta", `${m.id} · ${plan.name} · ${this.planDurationLabel(plan)}`);
+    set("charge-amount", plan.price);
+    set("charge-days", this.planDuration(plan));
+    set("charge-method", "efectivo");
+    set("charge-note", "");
+
+    const nuevo = new Date((m.dueDate && new Date(m.dueDate) > new Date()) ? m.dueDate : new Date());
+    nuevo.setDate(nuevo.getDate() + this.planDuration(plan));
+    txt("charge-newdue", this.dateLong(nuevo));
+
+    this.showModal("modal-charge");
+  },
+
+  /* Recalcula el vencimiento resultante mientras se editan los días, así
+     recepción ve exactamente hasta cuándo queda habilitado antes de confirmar. */
+  updateChargePreview() {
+    if (!this.chargeTarget) return;
+    const m = this.findMember(this.chargeTarget.memberId);
+    if (!m) return;
+    const d = parseInt(document.getElementById("charge-days").value, 10);
+    const dias = (Number.isFinite(d) && d > 0) ? d : this.planDuration(this.planOf(m));
+    const nuevo = new Date((m.dueDate && new Date(m.dueDate) > new Date()) ? m.dueDate : new Date());
+    nuevo.setDate(nuevo.getDate() + dias);
+    const e = document.getElementById("charge-newdue");
+    if (e) e.textContent = this.dateLong(nuevo);
+  },
+
+  /* Fecha en palabras. "2026-12-09" obliga a traducir; "9 de diciembre de
+     2026" se lee de una, que es lo que hace falta con gente esperando. */
+  dateLong(d) {
+    const f = (d instanceof Date) ? d : new Date(d);
+    if (isNaN(f)) return "—";
+    try {
+      return f.toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" });
+    } catch (e) {
+      return f.toISOString().split("T")[0];
+    }
+  },
+
+  submitCharge() {
+    if (!this.chargeTarget) return;
+    const { memberId, source } = this.chargeTarget;
+    const amount = parseFloat(document.getElementById("charge-amount").value);
+    const days = parseInt(document.getElementById("charge-days").value, 10);
+    const method = document.getElementById("charge-method").value;
+    const note = document.getElementById("charge-note").value;
+
+    if (!Number.isFinite(amount) || amount < 0) return this.showToast("Revisá el importe.");
+    if (!Number.isFinite(days) || days <= 0) return this.showToast("Los días tienen que ser mayores a cero.");
+
+    const m = this.chargeMembership(memberId, source, { amount, days, method, note });
+    this.hideModal("modal-charge");
+    this.chargeTarget = null;
+    if (m && source === "reception") this.evaluateAccess(m.id);
+    else if (m) this.renderMemberView(m.id);
   },
 
   /* ==================================================================
@@ -4716,18 +5094,50 @@ Object.assign(FitApp, {
       sel.value = this.activeBranchId || "";
     }
 
+    /* En la demo esta lista sirve para probar el semáforo. En un gimnasio real
+       "casos de prueba" no significa nada y ocupa la mejor parte de la
+       pantalla: se convierte en la lista de socios a los que hay que
+       reclamarles algo hoy, que es lo que el mostrador necesita a mano. */
+    const demo = this.isDemoData() && !this.cloudOn();
+    const titulo = document.getElementById("reception-side-title");
+    const nota = document.getElementById("reception-side-note");
+    if (titulo) titulo.textContent = demo ? "Sede activa & Casos de prueba" : "Sede activa & Pendientes";
+    if (nota) {
+      nota.textContent = demo
+        ? "Probá el semáforo con socios reales del padrón de este gimnasio:"
+        : "Socios que necesitan atención. Tocá uno para verlo en el semáforo:";
+    }
+
     const box = document.getElementById("reception-test-cases");
     if (box) {
-      const list = this.scopedMembers().slice(0, 4);
-      box.innerHTML = list.length ? list.map(m => {
-        const st = this.memberAccessState(m);
-        const color = st.color === "green" ? "var(--status-green)" : (st.color === "yellow" ? "var(--status-yellow)" : "var(--status-red)");
-        const dot = st.color === "green" ? "🟢" : (st.color === "yellow" ? "🟡" : "🔴");
-        return `<button class="btn" style="background: ${this.hexToRgba(st.color === 'green' ? '#10b981' : st.color === 'yellow' ? '#f59e0b' : '#ef4444', 0.18)}; border:1px solid ${color}; color:${color}; justify-content:flex-start;"
-                  onclick="FitApp.evaluateAccess('${m.id}')">
-          ${dot} ${esc(m.name)} — ${esc(st.short)}
-        </button>`;
-      }).join("") : `<span class="form-hint">Cargá socios en el padrón para probar el semáforo.</span>`;
+      const todos = this.scopedMembers();
+      const list = demo
+        ? todos.slice(0, 4)
+        : todos
+            .map(m => ({ m, st: this.memberAccessState(m) }))
+            .filter(x => x.st.color !== "green")
+            .sort((a, b) => (a.st.color === "red" ? -1 : 1) - (b.st.color === "red" ? -1 : 1))
+            .slice(0, 6)
+            .map(x => x.m);
+
+      if (!todos.length) {
+        box.innerHTML = `<span class="form-hint">Cargá socios en el padrón para usar el semáforo.</span>`;
+      } else if (!list.length) {
+        box.innerHTML = `<div class="empty-state" style="padding:14px;">${ic("check-circle")}<div>Todos los socios están al día.</div></div>`;
+      } else {
+        box.innerHTML = list.map(m => {
+          const st = this.memberAccessState(m);
+          const hex = st.color === "green" ? "#10b981" : (st.color === "yellow" ? "#f59e0b" : "#ef4444");
+          const color = st.color === "green" ? "var(--status-green)" : (st.color === "yellow" ? "var(--status-yellow)" : "var(--status-red)");
+          // Punto dibujado con CSS: un emoji de color no existe en todas las
+          // fuentes y en una terminal vieja saldría como un cuadrado.
+          const dot = `<span style="width:10px;height:10px;border-radius:50%;background:${hex};display:inline-block;flex:0 0 10px;"></span>`;
+          return `<button class="btn" style="background: ${this.hexToRgba(hex, 0.18)}; border:1px solid ${color}; color:${color}; justify-content:flex-start; gap:9px; text-align:left; white-space:normal;"
+                    onclick="FitApp.evaluateAccess('${m.id}')">
+            ${dot} <span>${esc(m.name)} — ${esc(st.short)}</span>
+          </button>`;
+        }).join("");
+      }
     }
   },
 
@@ -4755,12 +5165,20 @@ Object.assign(FitApp, {
     const cuotaVencida = m.subscriptionStatus === "vencido" || days < 0;
     const aptoOk = m.aptoMedico === "vigente";
 
-    if (cuotaVencida) return { ...base, color: "red", short: `cuota vencida (${m.dueDate})`, reasons: [`Cuota vencida el ${m.dueDate}`], canCharge: true };
+    /* Se dice "hace 11 días" en lugar de sólo la fecha: en el mostrador, con
+       gente esperando, nadie resta fechas de cabeza. */
+    const diasVencida = Math.abs(days);
+    const haceCuanto = diasVencida === 0 ? "vence hoy" : `hace ${diasVencida} día${diasVencida > 1 ? "s" : ""}`;
+
+    if (cuotaVencida) return { ...base, color: "red", short: `cuota vencida ${haceCuanto}`, reasons: [`Cuota vencida ${haceCuanto} (${m.dueDate})`], canCharge: true };
     if (!aptoOk && requireApto) return { ...base, color: "red", short: `apto ${m.aptoMedico}`, reasons: [`Apto médico ${m.aptoMedico}`], canCharge: false };
     // Único caso en que la sede bloquea: el gimnasio desactivó el acceso cruzado.
     if (isVisit && !crossBranch) return { ...base, color: "red", short: `sólo ${homeBranch ? homeBranch.name : "su sede"}`, reasons: [`Su plan es válido sólo en ${homeBranch ? homeBranch.name : "su sede"}`], canCharge: false };
     if (!aptoOk) return { ...base, color: "yellow", short: `apto ${m.aptoMedico}`, reasons: [`Apto médico ${m.aptoMedico} (no bloqueante)`], canCharge: false };
-    if (days <= warnDays) return { ...base, color: "yellow", short: `vence en ${days} día(s)`, reasons: [`La cuota vence en ${days} día(s)`], canCharge: true };
+    if (days <= warnDays) {
+      const cuando = days === 0 ? "vence hoy" : `vence en ${days} día${days === 1 ? "" : "s"}`;
+      return { ...base, color: "yellow", short: cuando, reasons: [`La cuota ${cuando} (${m.dueDate})`], canCharge: true };
+    }
     return { ...base, color: "green", short: "al día", reasons: [], canCharge: false };
   },
 
@@ -4922,7 +5340,11 @@ Object.assign(FitApp, {
 
   clearGymLogs() {
     if (!this.activeGymId) return;
-    if (!confirm(`¿Borrar el registro de ingresos de ${this.gymName()}?`)) return;
+    /* El registro de ingresos es la única evidencia de quién entró y cuándo.
+       Recepción no debería poder borrarlo: se restringe a quien ve auditoría,
+       o sea dueño y administrador. */
+    if (!this.can("audit:view")) return this.showToast("Sólo el dueño o el administrador pueden borrar el registro.");
+    if (!confirm(`¿Borrar el registro de ingresos de ${this.gymName()}?\n\nEsto no se puede deshacer. Conviene exportar el CSV antes.`)) return;
     this.logs = this.logs.filter(l => l.gymId !== this.activeGymId);
     this.persist("logs");
     this.logAudit("logs:clear", "Limpió el registro de ingresos", "gym", this.activeGymId);
@@ -5653,14 +6075,19 @@ Object.assign(FitApp, {
     if (!m || !m.pendingPayment) return;
     const p = m.pendingPayment;
 
+    // La duración sale del plan del socio, no de un 30 fijo.
+    const dias = this.planDuration(this.planOf(m));
     const base = (m.dueDate && new Date(m.dueDate) > new Date()) ? new Date(m.dueDate) : new Date();
-    base.setDate(base.getDate() + 30);
+    base.setDate(base.getDate() + dias);
     m.dueDate = base.toISOString().split("T")[0];
     m.subscriptionStatus = "al_dia";
     m.payments = m.payments || [];
     m.payments.unshift({
       at: new Date().toISOString(), amount: p.amount, planId: p.planId,
-      method: "mercadopago", proof: p.proof,
+      days: dias, method: "mercadopago", proof: p.proof,
+      byUserId: this.session.userId,
+      byUserName: this.session.name || this.session.email || null,
+      branchId: m.branchId || null,
       confirmedBy: this.session.userId, confirmedAt: new Date().toISOString()
     });
     m.pendingPayment = null;
@@ -5803,7 +6230,7 @@ Object.assign(FitApp, {
       faltaba.push("branches");
     }
     if (!Array.isArray(g.plans) || !g.plans.length) {
-      g.plans = [{ id: "pl-mensual", name: "Plan Mensual", price: 20000 }];
+      g.plans = [{ id: "pl-mensual", name: "Plan Mensual", price: 20000, durationDays: 30 }];
       faltaba.push("plans");
     }
     if (!g.settings || g.settings.qrTtlSeconds === undefined) {
