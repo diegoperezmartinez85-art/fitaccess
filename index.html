@@ -20,7 +20,28 @@
   <meta name="description" content="FitAccess - Plataforma SaaS multi-gimnasio: control de acceso QR, cobros y credencial digital de socios.">
   <link rel="manifest" href="./manifest.json">
   <style>
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Bebas+Neue&display=swap');
+/* --------------------------------------------------------------------------
+   TIPOGRAFÍA PROPIA
+   Antes esto era un @import a Google Fonts, que es la peor forma de cargar
+   una fuente: se encola después de parsear todo el CSS y bloquea el dibujado.
+   Peor todavía, en un gimnasio con wifi flojo la fuente no llegaba y la app
+   se dibujaba con la del sistema, que es justamente la mitad de la impresión
+   de calidad. Comprobado sin conexión: document.fonts quedaba vacío.
+
+   Ahora Outfit vive en el repo. Es la VARIABLE, así que un solo archivo de
+   110 KB cubre los pesos 100 a 900: menos bytes que las siete variantes
+   estáticas que se pedían antes, una sola request, y funciona sin internet.
+
+   La licencia (OFL) va en fonts/OFL.txt, como exige la licencia al
+   redistribuir la fuente.
+   -------------------------------------------------------------------------- */
+@font-face {
+  font-family: 'Outfit';
+  src: url('./fonts/Outfit-Variable.ttf') format('truetype-variations');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
 
 /* ==========================================================================
    FITACCESS — SISTEMA VISUAL
@@ -35,7 +56,18 @@
   --secondary-color: #6366f1;
   --primary-glow: rgba(20, 184, 166, 0.4);
   --secondary-glow: rgba(99, 102, 241, 0.4);
+  /* Naranja de recepción.
+     Iba a sacarlo pensando que era un tono suelto usado una sola vez, pero es
+     al revés: es el color establecido del rol, y la insignia de recepción
+     también lo usa. Pasarlo a celeste habría dejado recepción y entrenador
+     con el mismo color, que es peor que tener seis tonos.
+     Lo que sí estaba mal era que las insignias escribían los colores a mano
+     en lugar de leer los tokens: había dos fuentes de verdad para el mismo
+     color y podían separarse sin que nadie se diera cuenta. */
   --accent-warm: #fb923c;
+  --accent-warm-text: #fdba74;
+  --accent-sky: #38bdf8;
+  --accent-sky-text: #7dd3fc;
 
   /* Base: negro azulado, no gris. Da profundidad sin verse sucio. */
   --ink-950: #04050a;
@@ -61,7 +93,18 @@
 
   --text-main: #f5f7fb;
   --text-muted: #98a2b7;
-  --text-dim: #5d6779;
+  /* Estaba en #5d6779, que sobre tarjeta da 3,18:1 y no llega al mínimo de
+     4,5:1 para texto. Se usa en ayudas y etiquetas secundarias, o sea
+     justamente lo que hay que poder leer en una tablet en el mostrador con
+     luz entrando por la puerta. En #7c8798 queda en 4,99:1. */
+  --text-dim: #7c8798;
+
+  /* El violeta de marca sobre fondo oscuro da 4,06:1: alcanza para un ícono,
+     no para texto. Este token lo aclara mezclándolo con blanco en lugar de
+     fijar un valor, porque el secundario lo define cada gimnasio y un valor
+     fijo le rompería la identidad. Al 78% sigue siendo su color y pasa AA en
+     los cuatro temas (5,9 a 8,0:1). */
+  --secondary-text: color-mix(in srgb, var(--secondary-color) 78%, #ffffff);
 
   --status-green: #22c55e;
   --status-green-glow: rgba(34, 197, 94, 0.4);
@@ -89,7 +132,11 @@
   --sheen-strong: inset 0 1px 0 rgba(255,255,255,.16);
 
   --font-ui: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-  --font-display: 'Bebas Neue', 'Oswald', 'Arial Narrow', Impact, sans-serif;
+  /* Antes acá había Bebas Neue. Se usaba en dos lugares y es LA fuente de
+     póster de gimnasio: la usa todo el rubro, así que en vez de distinguir,
+     igualaba. Con Outfit en peso 900 y el tracking cerrado se logra la misma
+     contundencia, queda una sola familia y es una descarga menos. */
+  --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
   --ease-out: cubic-bezier(.16, 1, .3, 1);
   --ease-spring: cubic-bezier(.34, 1.56, .64, 1);
@@ -141,8 +188,33 @@ h1, h2, h3, h4 { letter-spacing: -0.025em; line-height: 1.15; }
 ::-webkit-scrollbar-thumb:hover { background: var(--hairline-3); background-clip: content-box; }
 
 /* Iconos SVG en línea: reemplazan a los emojis del prototipo */
-.ico { width: 1em; height: 1em; flex: none; display: inline-block; vertical-align: -.125em; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
-.ico-lg { width: 1.35em; height: 1.35em; }
+/* --------------------------------------------------------------------------
+   ICONOS
+   Antes esto era `width: 1em`, así que cada icono heredaba el cuerpo de texto
+   del lugar donde caía: había ONCE tamaños distintos en la misma pantalla
+   (11,8 / 12,5 / 13,1 / 13,3 / 13,4 / 13,8 / 14,4 / 15,2 / 18 / 19,5 / 34 px).
+   No era una decisión, era un accidente.
+
+   Peor: con el trazo fijo en 1.75 sobre un lienzo de 24, un icono de 11,8 px
+   dibuja una línea de 0,86 px. Abajo de 1 píxel el navegador no puede trazarla
+   y la difumina en gris: 56 iconos se veían blandos y lavados. Eso es lo que
+   el ojo lee como "barato" sin saber por qué.
+
+   Ahora hay tres tamaños fijos y el trazo se compensa: más grueso en los
+   chicos para que llegue a un píxel entero, más fino en los grandes para que
+   no se vean toscos. Es el mismo criterio de tamaño óptico que recomiendan
+   Feather y Lucide para sus propios sets.
+   -------------------------------------------------------------------------- */
+.ico {
+  width: 16px; height: 16px; flex: none; display: inline-block;
+  vertical-align: -.18em;
+  fill: none; stroke: currentColor;
+  stroke-width: 2.25;                /* 2.25/24 * 16px = 1,5 px reales */
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.ico-md { width: 20px; height: 20px; stroke-width: 2; }      /* 1,67 px */
+.ico-lg { width: 24px; height: 24px; stroke-width: 1.75; }   /* 1,75 px */
+.ico-xl { width: 34px; height: 34px; stroke-width: 1.6; }    /* 2,27 px */
 .ico-solid { fill: currentColor; stroke: none; }
 #icon-sprite { display: none; }
 
@@ -266,8 +338,8 @@ h1, h2, h3, h4 { letter-spacing: -0.025em; line-height: 1.15; }
 .role-badge-superadmin { background: rgba(236,72,153,.16); color: #f9a8d4; border-color: rgba(236,72,153,.4); }
 .role-badge-owner      { background: rgba(250,204,21,.14); color: #fde047; border-color: rgba(250,204,21,.38); }
 .role-badge-admin      { background: rgba(99,102,241,.18); color: #a5b4fc; border-color: rgba(99,102,241,.4); }
-.role-badge-recepcion  { background: rgba(251,146,60,.16); color: #fdba74; border-color: rgba(251,146,60,.4); }
-.role-badge-entrenador { background: rgba(56,189,248,.16); color: #7dd3fc; border-color: rgba(56,189,248,.4); }
+.role-badge-recepcion  { background: color-mix(in srgb, var(--accent-warm) 16%, transparent); color: var(--accent-warm-text); border-color: color-mix(in srgb, var(--accent-warm) 40%, transparent); }
+.role-badge-entrenador { background: color-mix(in srgb, var(--accent-sky) 16%, transparent); color: var(--accent-sky-text); border-color: color-mix(in srgb, var(--accent-sky) 40%, transparent); }
 .role-badge-socio      { background: rgba(20,184,166,.16); color: #5eead4; border-color: rgba(20,184,166,.4); }
 
 /* ==========================================================================
@@ -312,7 +384,7 @@ h1, h2, h3, h4 { letter-spacing: -0.025em; line-height: 1.15; }
   display: flex; align-items: center; gap: 10px;
   font-size: 1.06rem; font-weight: 800; letter-spacing: -.02em;
 }
-.card-title .ico { color: var(--primary-color); width: 1.15em; height: 1.15em; }
+.card-title .ico { color: var(--primary-color); width: 20px; height: 20px; stroke-width: 2; }
 
 .section-note { font-size: .82rem; color: var(--text-muted); margin-top: 4px; line-height: 1.5; }
 
@@ -340,7 +412,7 @@ h1, h2, h3, h4 { letter-spacing: -0.025em; line-height: 1.15; }
 .btn:hover::after { transform: translateX(120%); }
 .btn:active { transform: translateY(0) scale(.985); }
 .btn:focus-visible { outline: 2px solid var(--primary-color); outline-offset: 2px; }
-.btn .ico { width: 1.05em; height: 1.05em; stroke-width: 2.1; }
+.btn .ico { width: 16px; height: 16px; stroke-width: 2.25; }
 
 .btn-secondary {
   color: var(--text-main);
@@ -357,7 +429,9 @@ h1, h2, h3, h4 { letter-spacing: -0.025em; line-height: 1.15; }
 .btn-danger:hover { background: rgba(239,68,68,.3); box-shadow: 0 6px 18px -6px var(--status-red-glow); }
 
 .btn-tiny { padding: 5px 10px; font-size: .74rem; border-radius: 8px; gap: 5px; }
-.btn-tiny .ico { width: 1em; height: 1em; }
+/* El botón chico es el más usado del padrón: 14 px con trazo 2.4 da 1,4 px
+   reales, que es lo mínimo para que se vea filoso y no gris. */
+.btn-tiny .ico { width: 14px; height: 14px; stroke-width: 2.4; }
 
 .preset-chip {
   display: inline-flex; align-items: center; gap: 6px;
@@ -444,8 +518,12 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
   border-radius: 0 0 2px 2px;
 }
 .metric-label { font-size: .68rem; font-weight: 800; text-transform: uppercase; letter-spacing: .13em; color: var(--text-dim); }
+/* Bebas era condensada, así que aguantaba 2.6rem sin desbordar. Outfit es
+   bastante más ancha: se baja el cuerpo y se cierra el tracking para tener el
+   mismo peso visual dentro del mismo ancho de tarjeta. */
 .metric-value {
-  font-family: var(--font-display); font-size: 2.6rem; line-height: 1; letter-spacing: .01em;
+  font-family: var(--font-display); font-weight: 900;
+  font-size: 2.15rem; line-height: 1; letter-spacing: -.035em;
   margin: 10px 0 6px; color: var(--text-main);
 }
 .metric-trend { font-size: .74rem; color: var(--text-dim); line-height: 1.4; }
@@ -542,7 +620,7 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
   animation: toastIn .45s var(--ease-spring);
 }
 .toast-ico { display: grid; place-items: center; flex: none; margin-top: 1px; }
-.toast-ico .ico { width: 18px; height: 18px; }
+.toast-ico .ico { width: 20px; height: 20px; stroke-width: 2; }
 .toast-info    { border-left-color: var(--primary-color); }
 .toast-info    .toast-ico .ico { color: var(--primary-color); }
 .toast-success { border-left-color: var(--status-green); }
@@ -588,7 +666,7 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
   box-shadow: var(--sheen);
   transition: background .25s, border-color .25s, box-shadow .3s;
 }
-.portal-icon .ico { width: 22px; height: 22px; color: var(--primary-color); }
+.portal-icon .ico { width: 24px; height: 24px; stroke-width: 1.75; color: var(--primary-color); }
 
 /* Color por rol.
    Antes el azulejo del ícono era gris en las tres opciones y el color estaba
@@ -604,12 +682,12 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
   background: color-mix(in srgb, var(--secondary-color) 16%, transparent);
   border-color: color-mix(in srgb, var(--secondary-color) 38%, transparent);
 }
-.portal-staff .portal-icon .ico { color: var(--secondary-color); }
+.portal-staff .portal-icon .ico { color: var(--secondary-text); }
 .portal-recepcion .portal-icon {
   background: color-mix(in srgb, var(--accent-warm) 16%, transparent);
   border-color: color-mix(in srgb, var(--accent-warm) 38%, transparent);
 }
-.portal-recepcion .portal-icon .ico { color: var(--accent-warm); }
+.portal-recepcion .portal-icon .ico { color: var(--accent-warm-text); }
 .portal-socio .portal-icon {
   background: color-mix(in srgb, var(--primary-color) 16%, transparent);
   border-color: color-mix(in srgb, var(--primary-color) 38%, transparent);
@@ -797,7 +875,7 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
   display: flex; align-items: center; justify-content: center; gap: 7px;
   font-size: .76rem; font-weight: 700; color: var(--primary-color);
 }
-.qr-timer .ico { width: 14px; height: 14px; animation: spin 4s linear infinite; }
+.qr-timer .ico { width: 14px; height: 14px; stroke-width: 2.4; animation: spin 4s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg) } }
 
 /* ==========================================================================
@@ -817,10 +895,13 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
   border-radius: 50%; border: 2px solid currentColor;
   background: rgba(0,0,0,.25);
 }
-.traffic-icon-wrap .ico { width: 38px; height: 38px; stroke-width: 2.4; }
+/* A 38 px, el trazo 2.4 daba 3,8 px reales: se veía tosco, casi de marcador.
+   Con 1.4 queda en 2,2 px, que a ese tamaño es lo que se lee como sólido. */
+.traffic-icon-wrap .ico { width: 38px; height: 38px; stroke-width: 1.4; }
 .traffic-light-banner h2 {
-  font-family: var(--font-display); font-size: 2.5rem; letter-spacing: .02em;
-  line-height: 1; margin-bottom: 10px; text-transform: uppercase;
+  font-family: var(--font-display); font-weight: 900;
+  font-size: 2.1rem; letter-spacing: -.03em;
+  line-height: 1.05; margin-bottom: 10px; text-transform: uppercase;
 }
 #traffic-desc { font-size: .98rem; font-weight: 600; opacity: .92; max-width: 620px; margin: 0 auto; }
 
@@ -883,7 +964,7 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
 }
 
 .empty-state { padding: 34px 20px; text-align: center; color: var(--text-dim); }
-.empty-state .ico { width: 34px; height: 34px; opacity: .45; margin-bottom: 10px; }
+.empty-state .ico { width: 34px; height: 34px; stroke-width: 1.6; opacity: .45; margin-bottom: 10px; }
 
 .data-table-wrap { overflow-x: auto; margin: 0 -4px; padding: 0 4px; }
 
@@ -927,7 +1008,7 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
     font-size: .6rem; font-weight: 700; letter-spacing: .02em;
     border-radius: 10px;
   }
-  .nav-btn .ico { width: 21px; height: 21px; }
+  .nav-btn .ico { width: 22px; height: 22px; stroke-width: 1.9; }
   .nav-btn.active { background: transparent; color: var(--primary-color); box-shadow: none; }
   .nav-btn.active .ico { filter: drop-shadow(0 0 9px var(--primary-glow)); }
   .nav-full { display: none; }
@@ -944,7 +1025,7 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
   .traffic-light-banner { padding: 26px 18px; }
   .traffic-light-banner h2 { font-size: 1.95rem; }
   .traffic-icon-wrap { width: 62px; height: 62px; }
-  .traffic-icon-wrap .ico { width: 31px; height: 31px; }
+  .traffic-icon-wrap .ico { width: 31px; height: 31px; stroke-width: 1.6; }
   #traffic-desc { font-size: .9rem; }
   .traffic-member { width: 100%; border-radius: 16px; padding: 12px; }
 
@@ -1671,7 +1752,11 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
         </div>
         <div class="metric-card">
           <div class="metric-label">Accesos de Hoy</div>
-          <div id="stat-today-logs" class="metric-value" style="color: var(--primary-color);">0</div>
+          <!-- Neutro a propósito. Estaba con el color de marca, y en un gimnasio
+               cuyo primario es rojo un contador inofensivo —cuánta gente entró—
+               se leía como una alarma. La regla del sistema queda: verde y rojo
+               significan algo, el color de marca no se usa para datos neutros. -->
+          <div id="stat-today-logs" class="metric-value">0</div>
           <div class="metric-trend">Socios que entraron</div>
         </div>
       </div>
@@ -1885,7 +1970,7 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
       <div class="glass-card" style="margin-bottom: 24px; border: 1px solid var(--secondary-glow);" data-cap="users:create">
         <div class="glass-card-header">
           <div>
-            <h3 class="card-title" style="color: var(--secondary-color);"><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg> Usuarios & Permisos</h3>
+            <h3 class="card-title" style="color: var(--secondary-text);"><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg> Usuarios & Permisos</h3>
             <p class="section-note">
               Todo usuario que crees queda vinculado a <strong class="gym-name-text">—</strong>. No podés ver ni crear usuarios de otros gimnasios.
             </p>
