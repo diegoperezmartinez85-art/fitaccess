@@ -181,6 +181,49 @@ service cloud.firestore {
               && request.resource.data.claimCode == resource.data.claimCode);
       }
 
+      // ------------------------------- invitaciones de staff (sin Blaze)
+      // El dueño/admin deja una invitación con un código y un rol de staff.
+      // La persona la reclama desde su propio dispositivo (createUser +
+      // escribe su /users), igual que el socio. Esto permite crear
+      // recepcionistas y entrenadores desde la app, sin Cloud Functions.
+      //
+      // El rol lo fija ACÁ el manager, no la persona que se registra: por eso
+      // no reabre la escalada de privilegios. Y 'owner'/'admin' NO se pueden
+      // invitar por esta vía —sólo 'recepcion' y 'entrenador'—, para que un
+      // código filtrado nunca alcance a crear un administrador del gimnasio.
+      match /staffInvites/{inviteId} {
+        /* CERRADA a lectura para el cliente. El invitado NO necesita leerla:
+           ya tiene su código (se lo mandó el dueño), y lo valida al ESCRIBIR
+           su /users, donde la regla compara contra la invitación con un get().
+           Si esto fuera legible por cualquier logueado, el código dejaría de
+           ser secreto y cualquiera se auto-crearía de staff. Sólo el manager
+           la ve, para gestionarla. */
+        allow read: if isPlatform() || isGymManager(gymId);
+
+        allow create: if (isPlatform() || isGymManager(gymId))
+          && request.resource.data.role in ['recepcion', 'entrenador']
+          && request.resource.data.code is string
+          // expiresAt obligatorio y numérico ya al crear: una invitación sin
+          // vencimiento nunca podría reclamarse, y es mejor rechazarla acá que
+          // dejar que falle sin explicación cuando el invitado intente activarse.
+          && request.resource.data.expiresAt is int
+          && request.resource.data.get('claimedUid', '') == ''
+          && request.resource.data.keys().hasOnly(
+               ['code', 'role', 'name', 'email', 'branchId', 'createdAt', 'createdBy', 'expiresAt', 'claimedUid', 'claimedAt']);
+
+        // La marca como usada quien la reclama, de a una y poniéndose a sí
+        // mismo, sin cambiar rol ni código; o el manager para gestionarla.
+        allow update: if isPlatform() || isGymManager(gymId)
+          || (signedIn()
+              && changedKeys().hasOnly(['claimedUid', 'claimedAt'])
+              && resource.data.get('claimedUid', '') == ''
+              && request.resource.data.claimedUid == request.auth.uid
+              && request.resource.data.role == resource.data.role
+              && request.resource.data.code == resource.data.code);
+
+        allow delete: if isPlatform() || isGymManager(gymId);
+      }
+
       // ------------------------------------- registro de accesos (molinete)
       match /accessLogs/{logId} {
         allow read: if isPlatform() || isGymStaff(gymId);
@@ -249,6 +292,51 @@ service cloud.firestore {
         && fichaDelSocio().get('claimCode', '') != ''
         && fichaDelSocio().get('claimCode', '') == request.resource.data.claimCode
         && fichaDelSocio().get('claimedUid', '') == '';
+
+      /* ------------------------------------------------------------------
+         ACTIVACIÓN DE STAFF SIN BACKEND (recepción / entrenador)
+
+         Misma idea que el socio, pero el rol NO está fijo en el código: sale
+         de la invitación que dejó el manager en /gyms/{gymId}/staffInvites.
+         La persona sólo puede quedar con el rol que el dueño ya eligió.
+
+         Lo que lo hace seguro:
+           1. Sólo su propio documento (uid == auth.uid), de un solo uso.
+           2. El rol del /users tiene que ser EXACTAMENTE el de la invitación.
+           3. La invitación tiene que existir, tener un código no vacío que
+              coincide, y no haber sido reclamada.
+           4. La invitación sólo pudo crearla un manager, y sólo con rol
+              'recepcion' o 'entrenador' (ver match /staffInvites). Así, aunque
+              el código se filtre, nadie llega a 'owner'/'admin'.
+
+         update y delete siguen cerrados: no puede cambiarse el rol después.
+         ------------------------------------------------------------------ */
+      function invitacionStaff() {
+        return get(/databases/$(database)/documents/gyms/$(request.resource.data.gymId)/staffInvites/$(request.resource.data.inviteId)).data;
+      }
+
+      allow create: if signedIn()
+        && request.auth.uid == uid
+        && request.resource.data.role in ['recepcion', 'entrenador']
+        && request.resource.data.active == true
+        && request.resource.data.keys().hasOnly(
+             ['uid', 'email', 'name', 'gymId', 'role', 'branchId', 'inviteId', 'inviteCode', 'active', 'claimedAt'])
+        && request.resource.data.uid == uid
+        && request.resource.data.gymId is string
+        && request.resource.data.inviteId is string
+        && request.resource.data.inviteCode is string
+        && invitacionStaff().get('code', '') != ''
+        && invitacionStaff().get('code', '') == request.resource.data.inviteCode
+        && invitacionStaff().get('role', '') == request.resource.data.role
+        && invitacionStaff().get('claimedUid', '') == ''
+        /* Vencimiento corto. Las reglas no pueden forzar que la invitación
+           quede marcada como usada en el mismo lote (son dos documentos), así
+           que un código, en teoría, podría reusarse hasta que la app lo marca.
+           Un expiresAt corto (la app lo pone a 24 h, en milisegundos) achica
+           esa ventana a casi nada: pasado ese rato el código no crea nada
+           aunque no se haya marcado. La app igual la marca como usada. */
+        && invitacionStaff().get('expiresAt', 0) is int
+        && invitacionStaff().get('expiresAt', 0) > request.time.toMillis();
 
       allow update, delete: if false;
     }

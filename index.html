@@ -2783,10 +2783,13 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
       </div>
 
       <form onsubmit="event.preventDefault(); FitApp.submitActivation();">
+        <!-- Aviso del rol al que activás, cuando es una invitación de staff. -->
+        <div id="act-staff-info" class="chip-inline" style="display:none; margin-bottom:14px; justify-content:center;"></div>
         <div class="grid-2">
-          <div class="form-group">
+          <!-- El número de socio sólo aplica a socios: para staff se oculta. -->
+          <div class="form-group" id="act-member-group">
             <label class="form-label">Número de socio:</label>
-            <input type="text" id="act-member" class="form-input" placeholder="SOC-1001" required>
+            <input type="text" id="act-member" class="form-input" placeholder="SOC-1001">
           </div>
           <div class="form-group">
             <label class="form-label">Código:</label>
@@ -3029,8 +3032,8 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
   <!-- Credenciales generadas -->
   <div id="modal-credentials" class="modal-overlay" style="display: none;">
     <div class="modal-card" style="max-width: 460px;">
-      <h3 class="card-title" style="margin-bottom: 6px;"><svg class="ico" aria-hidden="true"><use href="#i-check-circle"/></svg> Usuario creado</h3>
-      <p class="section-note" style="margin-bottom: 16px;">Copiá estos datos ahora: la contraseña se guarda hasheada y no vas a poder verla de nuevo.</p>
+      <h3 class="card-title" style="margin-bottom: 6px;"><svg class="ico" aria-hidden="true"><use href="#i-check-circle"/></svg> <span id="credentials-title">Usuario creado</span></h3>
+      <p class="section-note" style="margin-bottom: 16px;" id="credentials-sub">Copiá estos datos ahora: la contraseña se guarda hasheada y no vas a poder verla de nuevo.</p>
       <div class="credential-print" id="credentials-print-box">—</div>
       <div style="display: flex; gap: 10px; margin-top: 16px;">
         <button class="btn btn-secondary" style="flex:1;" onclick="FitApp.copyCredentials()"><svg class="ico" aria-hidden="true"><use href="#i-clipboard"/></svg> Copiar</button>
@@ -3223,6 +3226,7 @@ const LS = {
   users:   "fitaccess_users",
   logs:    "fitaccess_logs",
   audit:   "fitaccess_audit",
+  invites: "fitaccess_staff_invites",
   session: "fitaccess_session",
   meta:    "fitaccess_meta",
   // Claves de la v4 que se leen sólo para migrar hacia adelante.
@@ -3423,6 +3427,23 @@ const decodeActivation = (token) => {
     const s = atob(String(token).replace(/-/g, "+").replace(/_/g, "/"));
     const [gymId, memberId, code] = s.split("|");
     return gymId && memberId && code ? { gymId, memberId, code } : null;
+  } catch (e) { return null; }
+};
+
+/* Link de invitación de STAFF. Lleva un prefijo "s" para distinguirlo del de
+   socio (que no lo tiene), así el mismo parámetro ?a= sirve para los dos y los
+   links de socio ya enviados siguen funcionando. */
+const encodeStaffInvite = (gymId, inviteId, code) => {
+  try { return btoa(`s|${gymId}|${inviteId}|${code}`).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
+  catch (e) { return ""; }
+};
+const decodeStaffInvite = (token) => {
+  try {
+    const s = atob(String(token).replace(/-/g, "+").replace(/_/g, "/"));
+    const parts = s.split("|");
+    if (parts[0] !== "s") return null;
+    const [, gymId, inviteId, code] = parts;
+    return gymId && inviteId && code ? { gymId, inviteId, code } : null;
   } catch (e) { return null; }
 };
 const todayISO = () => new Date().toISOString().split("T")[0];
@@ -3870,6 +3891,7 @@ const FitApp = {
     this.users = Store.read(LS.users, []);
     this.logs = Store.read(LS.logs, []);
     this.audit = Store.read(LS.audit, []);
+    this.staffInvites = Store.read(LS.invites, []);
   },
 
   /* Guarda el gimnasio activo y lo empuja a Firestore si hay nube.
@@ -3890,6 +3912,7 @@ const FitApp = {
     if (!what || what === "users") ok.push(Store.write(LS.users, this.users));
     if (!what || what === "logs") ok.push(Store.write(LS.logs, this.logs));
     if (!what || what === "audit") ok.push(Store.write(LS.audit, this.audit));
+    if (!what || what === "staffInvites") ok.push(Store.write(LS.invites, this.staffInvites || []));
 
     if (ok.includes(false)) {
       const uso = Store.usage();
@@ -6168,6 +6191,69 @@ Object.assign(FitApp, {
     this.previewCredential(member.id);
   },
 
+  /* Alta de recepción/entrenador sin Cloud Functions (plan Spark). El dueño no
+     crea la cuenta (eso lo desloguearía): deja una INVITACIÓN con un código y
+     un vencimiento de 24 h, y la persona activa su cuenta desde su dispositivo,
+     igual que el socio. El rol lo fija la invitación, no quien se registra. */
+  async altaStaffSinBlaze({ name, email, role, branchId }) {
+    const gym = this.activeGym();
+    if (!gym) return;
+    if (role !== "recepcion" && role !== "entrenador") return;
+
+    const invite = {
+      id: uid("inv"),
+      gymId: gym.id,
+      code: randomClaimCode(),
+      role,
+      name: name || "",
+      email: email || "",
+      branchId: branchId || (gym.branches[0] && gym.branches[0].id) || "",
+      expiresAt: Date.now() + 24 * 60 * 60 * 1000,  // 24 h, en milisegundos
+      claimedUid: "", claimedAt: "",
+      createdAt: new Date().toISOString(),
+      createdBy: this.session.userId
+    };
+
+    if (this.cloudOn()) {
+      const res = await FirebaseSaaS.createStaffInvite({
+        gymId: gym.id, inviteId: invite.id, code: invite.code, role,
+        name: invite.name, email: invite.email, branchId: invite.branchId, expiresAt: invite.expiresAt
+      });
+      if (!res.ok) return this.showToast(`No se pudo crear la invitación: ${res.message}`, "error");
+    }
+    // Espejo local para poder listarla/activarla en modo demo o sin conexión.
+    this.staffInvites = this.staffInvites || [];
+    this.staffInvites.push(invite);
+    this.persist("staffInvites");
+    this.logAudit("staff:invite", `Invitó a ${email || name} como ${ROLES[role].label}`, "user", invite.id);
+
+    this.renderAll();
+    this.showStaffInvite(invite);
+  },
+
+  /* Muestra el link y el código de la invitación, listo para mandar por
+     WhatsApp o mail. Reusa el modal de credenciales (texto copiable). */
+  showStaffInvite(invite) {
+    const gym = this.gymById(invite.gymId) || this.activeGym();
+    const link = this.staffInviteLink(invite);
+    const vence = new Date(invite.expiresAt);
+    this.showCredentials(
+      `Invitación de ${ROLES[invite.role].label} — ${gym ? gym.name : ""}\n` +
+      `Para: ${invite.name || invite.email}\n\n` +
+      `Mandale este link para que active su cuenta:\n${link}\n\n` +
+      `Código: ${invite.code}\n` +
+      `Vence: ${this.dateLong(vence)} ${vence.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })}\n\n` +
+      `Cuando lo abra, elige su propia contraseña. El código sirve una sola vez.`,
+      { title: "Invitación lista para enviar",
+        subtitle: "Mandale el link por WhatsApp. La persona elige su propia contraseña al activarse; el código vence en 24 horas." });
+  },
+
+  staffInviteLink(invite) {
+    const token = encodeStaffInvite(invite.gymId, invite.id, invite.code);
+    const base = location.origin + location.pathname;
+    return `${base}?a=${token}`;
+  },
+
   async saveNewUser() {
     if (!this.can("users:create")) return;
     const gym = this.activeGym();
@@ -6259,12 +6345,17 @@ Object.assign(FitApp, {
           this.hideModal("modal-create-user");
           return this.altaSocioSinBlaze({ name, email, branchId, memberId, existingMemberSel: memberId });
         }
-        /* Para staff (recepción, entrenador, admin) el alta de un login SÍ
-           necesita Blaze o crearse a mano en la consola de Firebase. Se explica,
-           no se esconde detrás de "internal". */
+        /* Recepción y entrenador se pueden crear sin Blaze con una invitación:
+           el dueño deja el código y la persona activa su cuenta desde su propio
+           dispositivo (así el dueño no pierde su sesión). Admin queda afuera a
+           propósito: por seguridad no se puede auto-asignar un rol de manager. */
+        if (res.noBlaze && (role === "recepcion" || role === "entrenador")) {
+          this.hideModal("modal-create-user");
+          return this.altaStaffSinBlaze({ name, email, role, branchId });
+        }
         if (res.noBlaze) {
           return this.showToast(
-            `Para crear el acceso de ${ROLES[role].label} hace falta el plan de pago de Firebase, o cargar el usuario a mano en la consola. Escribime y te paso los pasos.`,
+            `Para crear un ${ROLES[role].label} hace falta el plan de pago de Firebase. Recepción y entrenador sí se pueden crear desde acá.`,
             "warn");
         }
         return this.showToast(`🚫 ${res.message}`);
@@ -6388,10 +6479,18 @@ Object.assign(FitApp, {
     return p;
   },
 
-  showCredentials(text) {
+  /* `opts` (opcional) cambia el encabezado. El título por defecto ("Usuario
+     creado" + aviso de contraseña) sólo aplica cuando de verdad se creó un
+     login con contraseña; para una invitación no hay contraseña que copiar. */
+  showCredentials(text, opts) {
     this.pendingCredentials = text;
     const box = document.getElementById("credentials-print-box");
     if (box) box.textContent = text;
+    const t = document.getElementById("credentials-title");
+    const s = document.getElementById("credentials-sub");
+    if (t) t.textContent = (opts && opts.title) || "Usuario creado";
+    if (s) s.textContent = (opts && opts.subtitle)
+      || "Copiá estos datos ahora: la contraseña se guarda hasheada y no vas a poder verla de nuevo.";
     document.getElementById("modal-credentials").style.display = "flex";
   },
 
@@ -8585,7 +8684,9 @@ Object.assign(FitApp, {
     const p = new URLSearchParams(location.search);
     const token = p.get("a");
     if (!token) return;
-    const datos = decodeActivation(token);
+    // Primero se prueba si es una invitación de staff (lleva prefijo "s").
+    const staff = decodeStaffInvite(token);
+    const datos = staff || decodeActivation(token);
     // La URL se limpia para que el código no quede en el historial
     history.replaceState(null, "", location.pathname);
     if (datos) setTimeout(() => this.openActivation(datos), 400);
@@ -8594,9 +8695,29 @@ Object.assign(FitApp, {
   openActivation(prefill) {
     this.hideLoginModal();
     const set = (id, v) => { const e = document.getElementById(id); if (e) e.value = v || ""; };
+
+    // Una invitación de staff trae inviteId; una de socio trae memberId.
+    const esStaff = !!(prefill && prefill.inviteId);
+    this.activationInvite = esStaff ? prefill : null;
+
     set("act-code", prefill && prefill.code);
     set("act-member", prefill && prefill.memberId);
     this.activationGymId = (prefill && prefill.gymId) || null;
+
+    // El número de socio no aplica a staff: se oculta y se muestra el rol.
+    const memberGroup = document.getElementById("act-member-group");
+    if (memberGroup) memberGroup.style.display = esStaff ? "none" : "";
+    const staffInfo = document.getElementById("act-staff-info");
+    if (staffInfo) {
+      if (esStaff) {
+        const inv = this.staffInviteByToken(prefill);
+        const label = inv ? ROLES[inv.role].label : "Staff";
+        staffInfo.textContent = `Activás tu cuenta de ${label}`;
+        staffInfo.style.display = "flex";
+      } else {
+        staffInfo.style.display = "none";
+      }
+    }
 
     const info = document.getElementById("act-gym-info");
     if (info) {
@@ -8606,6 +8727,14 @@ Object.assign(FitApp, {
     }
     this.clearStatus(document.getElementById("act-status"));
     document.getElementById("modal-activation").style.display = "flex";
+  },
+
+  /* Busca la invitación local que corresponde al token (para mostrar el rol
+     antes de activar). En modo nube puede no estar, y no pasa nada: el rol se
+     confirma igual al activar contra la regla. */
+  staffInviteByToken(prefill) {
+    if (!prefill || !prefill.inviteId) return null;
+    return (this.staffInvites || []).find(i => i.id === prefill.inviteId) || null;
   },
 
   closeActivation() {
@@ -8622,6 +8751,15 @@ Object.assign(FitApp, {
     const email = val("act-email").toLowerCase();
     const pass = document.getElementById("act-pass").value;
     const pass2 = document.getElementById("act-pass2").value;
+
+    // Invitación de staff: no hay número de socio, y va por su propio flujo.
+    if (this.activationInvite) {
+      if (!code) return fail("Completá el código.");
+      if (pass !== pass2) return fail("Las contraseñas no coinciden.");
+      if (pass.length < 8) return fail("La contraseña necesita al menos 8 caracteres.");
+      if (!email) return fail("Escribí un correo.");
+      return this.submitStaffActivation({ code, email, pass, fail, st });
+    }
 
     if (!code || !memberId) return fail("Completá tu número de socio y el código.");
     if (pass !== pass2) return fail("Las contraseñas no coinciden.");
@@ -8667,6 +8805,60 @@ Object.assign(FitApp, {
     this.hideModal("modal-activation");
     this.showToast("Listo, tu cuenta quedó activa.");
     this.selectAccessPortal("socio");
+    document.getElementById("portal-login-email").value = email;
+    document.getElementById("portal-login-password").value = "";
+    this.showLoginModal();
+  },
+
+  /* Activación de un usuario de staff (recepción/entrenador) con su invitación.
+     Modo nube: lo valida la regla de Firestore contra la invitación.
+     Modo local: se valida contra la invitación guardada en el dispositivo. */
+  async submitStaffActivation({ code, email, pass, fail, st }) {
+    const inv = this.activationInvite;
+    this.setStatus(st, "Verificando el código…", "espera");
+
+    if (this.cloudOn()) {
+      const res = await FirebaseSaaS.activateStaff({
+        gymId: inv.gymId, inviteId: inv.inviteId, code,
+        role: (this.staffInviteByToken(inv) || {}).role,
+        name: (this.staffInviteByToken(inv) || {}).name,
+        branchId: (this.staffInviteByToken(inv) || {}).branchId,
+        email, password: pass
+      });
+      if (!res.ok) return fail(res.message);
+      this.activationInvite = null;
+      this.showToast("Cuenta activada. Ya podés entrar con tu correo y contraseña.", "success");
+      this.hideModal("modal-activation");
+      this.selectAccessPortal("staff");
+      document.getElementById("portal-login-email").value = email;
+      this.showLoginModal();
+      return;
+    }
+
+    // Modo local (demo / sin conexión): se valida contra la invitación local.
+    const local = (this.staffInvites || []).find(i => i.id === inv.inviteId && i.gymId === inv.gymId);
+    if (!local) return fail("No encontramos esa invitación.");
+    if (!local.code || local.code.toUpperCase() !== code) return fail("El código no es correcto. Pedile uno nuevo al gimnasio.");
+    if (local.claimedUid) return fail("Esa invitación ya fue usada.");
+    if (local.expiresAt && Date.now() > local.expiresAt) return fail("La invitación venció. Pedile una nueva al gimnasio.");
+    if (this.users.some(u => (u.email || "").toLowerCase() === email)) return fail("Ese correo ya está registrado. Usá otro.");
+
+    const sec = await Security.make(pass);
+    const nuevo = {
+      id: uid("usr"), gymId: local.gymId, name: local.name || email, email,
+      role: local.role, branchId: local.branchId || null,
+      active: true, isDemo: false, createdAt: new Date().toISOString(), ...sec
+    };
+    this.users.push(nuevo);
+    local.claimedUid = nuevo.id;
+    local.claimedAt = new Date().toISOString();
+    this.persist("users"); this.persist("staffInvites");
+    this.logAudit("staff:activated", `${nuevo.name} activó su cuenta de ${ROLES[local.role].label} (${email})`, "user", nuevo.id, local.gymId);
+
+    this.activationInvite = null;
+    this.hideModal("modal-activation");
+    this.showToast("Listo, tu cuenta quedó activa.", "success");
+    this.selectAccessPortal("staff");
     document.getElementById("portal-login-email").value = email;
     document.getElementById("portal-login-password").value = "";
     this.showLoginModal();
@@ -9748,6 +9940,70 @@ document.addEventListener("DOMContentLoaded", () => FitApp.init());
 
         // Se cierra la sesión para que entre por el portal normal y el token
         // llegue ya con los datos del vínculo.
+        await signOut(this.auth).catch(() => {});
+        return { ok: true };
+      },
+
+      /* Invitación de staff SIN Cloud Functions. El dueño (manager) escribe la
+         invitación con el código y el rol; las reglas sólo lo dejan si es
+         manager de ese gym y el rol es recepcion/entrenador. Es el equivalente
+         a la ficha del socio con claimCode, pero para el staff. */
+      async createStaffInvite({ gymId, inviteId, code, role, name, email, branchId, expiresAt }) {
+        if (!this.db) return { ok: false, message: "Firebase no está inicializado." };
+        try {
+          await setDoc(doc(this.db, "gyms", gymId, "staffInvites", inviteId), {
+            code: String(code).toUpperCase(), role,
+            name: name || "", email: email || "", branchId: branchId || "",
+            expiresAt, claimedUid: "", claimedAt: "",
+            createdAt: new Date().toISOString(), createdBy: (this.auth.currentUser || {}).uid || ""
+          });
+          return { ok: true };
+        } catch (e) {
+          return { ok: false, message: this.ruleErrorMessage(e) };
+        }
+      },
+
+      /* Activación del staff, gemela de activateMember: el invitado se crea la
+         cuenta (gratis) y escribe su vínculo. El rol NO lo elige él: la regla
+         lo obliga a coincidir con el de la invitación que dejó el dueño. */
+      async activateStaff({ gymId, inviteId, code, role, name, branchId, email, password }) {
+        if (!this.auth || !this.db) return { ok: false, message: "Firebase no está inicializado." };
+        if (!gymId || !inviteId) return { ok: false, message: "Abrí el enlace que te mandó el gimnasio." };
+
+        let cred;
+        try {
+          cred = await createUserWithEmailAndPassword(this.auth, email, password);
+        } catch (e) {
+          if (e && e.code === "auth/email-already-in-use") {
+            try { cred = await signInWithEmailAndPassword(this.auth, email, password); }
+            catch (e2) { return { ok: false, message: "Ese correo ya tiene cuenta y la contraseña no coincide." }; }
+          } else {
+            return { ok: false, message: this.authErrorMessage(e) };
+          }
+        }
+
+        const uid = cred.user.uid;
+        try {
+          const lote = writeBatch(this.db);
+          // La forma exacta que exige la regla de /users para staff.
+          lote.set(doc(this.db, "users", uid), {
+            uid, email, name: name || cred.user.displayName || email,
+            gymId, role, branchId: branchId || "",
+            inviteId, inviteCode: String(code).toUpperCase(),
+            active: true, claimedAt: new Date().toISOString()
+          });
+          lote.update(doc(this.db, "gyms", gymId, "staffInvites", inviteId), {
+            claimedUid: uid, claimedAt: new Date().toISOString()
+          });
+          await lote.commit();
+        } catch (e) {
+          await signOut(this.auth).catch(() => {});
+          const msg = (e && e.code || "").includes("permission-denied")
+            ? "El código no es válido, ya venció, o esa invitación ya fue usada. Pedile al gimnasio uno nuevo."
+            : this.ruleErrorMessage(e);
+          return { ok: false, message: msg };
+        }
+
         await signOut(this.auth).catch(() => {});
         return { ok: true };
       },
