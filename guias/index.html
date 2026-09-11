@@ -22,6 +22,9 @@
     padding: 22px 24px; margin-bottom: 16px; transition: border-color .15s, transform .15s;
   }
   a.card:hover { border-color: #2dd4bf; transform: translateY(-2px); }
+  /* La visual va destacada: es la que conviene abrir la primera vez. */
+  a.card.destacada { border-color: #2dd4bf; box-shadow: 0 0 24px -8px rgba(45,212,191,.45); }
+  a.card.destacada .n { color: #5eead4; }
   .n { font-size: .72rem; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: #2dd4bf; }
   h2 { font-size: 1.2rem; margin: 5px 0 7px; }
   p { margin: 0; color: #9fc9c2; font-size: .93rem; }
@@ -36,10 +39,17 @@
     <h1>Guías paso a paso</h1>
     <p class="sub">Abrí la que necesites. Cada una tiene un botón arriba para guardarla como PDF o imprimirla.</p>
 
+    <a class="card destacada" href="alta-visual.html">
+      <div class="n">Empezá por acá</div>
+      <h2>Dar de alta un gimnasio, paso a paso</h2>
+      <p>Con el dibujo de cada pantalla de Firebase y un número rojo marcando dónde tocar. Seis pasos, con las tildes que se van guardando solas.</p>
+      <span class="who">Para el operador de la plataforma</span>
+    </a>
+
     <a class="card" href="alta-de-gimnasios-y-usuarios.html">
-      <div class="n">Guía 1</div>
+      <div class="n">Guía 1 · referencia</div>
       <h2>Alta de gimnasios y usuarios</h2>
-      <p>Crear un gimnasio nuevo, darle acceso a su dueño y agregar recepcionistas y entrenadores. Incluye ficha para llenar y solución de errores comunes.</p>
+      <p>La versión completa: además del alta, cómo agregar recepcionistas y entrenadores, cómo dar de baja a alguien y la tabla de errores frecuentes.</p>
       <span class="who">Para el operador de la plataforma</span>
     </a>
 

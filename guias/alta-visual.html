@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FitAccess · Dar de alta un gimnasio, paso a paso</title>
+<style>
+  :root {
+    --ink:#16211f; --soft:#55625f; --line:#dde5e3;
+    --teal:#0d9488; --tealbg:#effcf9;
+    --amber:#b45309; --amberbg:#fffaeb;
+    --red:#b91c1c; --redbg:#fef4f2;
+    --green:#15803d; --greenbg:#f0fdf5;
+    /* Cada cosa tiene SU color y no cambia nunca en toda la guía.
+       Es lo que evita confundir la colección de gimnasios con la de usuarios,
+       que es donde se equivoca todo el mundo. */
+    --cGym:#7c3aed; --cGymBg:#f5f2ff;
+    --cCuenta:#0284c7; --cCuentaBg:#eff9ff;
+    --cVinculo:#db2777; --cVinculoBg:#fdf2f8;
+  }
+  * { box-sizing:border-box; }
+  html { -webkit-text-size-adjust:100%; scroll-behavior:smooth; }
+  body { margin:0; background:#eef3f2; color:var(--ink);
+    font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+
+  .top { position:sticky; top:0; z-index:50; background:#0f2b28; color:#fff; padding:9px 18px;
+    display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .top strong { font-size:.92rem; }
+  .top .prog { margin-left:auto; font-size:.8rem; color:#9fc9c2; }
+  .top button { background:#14b8a6; color:#06201d; border:0; padding:8px 15px; border-radius:8px;
+    font:inherit; font-weight:800; font-size:.83rem; cursor:pointer; }
+  .barra { height:4px; background:#14352f; }
+  .barra > i { display:block; height:100%; width:0; background:#2dd4bf; transition:width .4s ease; }
+
+  .sheet { max-width:900px; margin:24px auto 70px; background:#fff; padding:44px 46px 60px;
+    border-radius:6px; box-shadow:0 1px 3px rgba(0,0,0,.12); }
+  h1 { font-size:2rem; line-height:1.15; margin:0 0 8px; letter-spacing:-.5px; }
+  .lede { font-size:1.05rem; color:var(--soft); margin:0 0 4px; }
+  h2 { font-size:1.3rem; margin:0; }
+  h3 { font-size:1rem; margin:22px 0 8px; }
+  p { margin:0 0 12px; }
+  ul,ol { margin:0 0 12px; padding-left:22px; } li { margin-bottom:6px; }
+  code { background:#eef3f2; border:1px solid #dbe4e2; border-radius:4px; padding:1px 6px;
+    font-family:ui-monospace,Menlo,Consolas,monospace; font-size:.87em; color:#0b3f39; }
+
+  /* ---------- paso ---------- */
+  .paso { border:1px solid var(--line); border-radius:12px; margin:26px 0; overflow:hidden;
+    break-inside:avoid; }
+  .paso > header { display:flex; align-items:center; gap:14px; padding:14px 18px;
+    background:#f6faf9; border-bottom:1px solid var(--line); }
+  .paso .num { flex:none; width:34px; height:34px; border-radius:50%; background:var(--teal);
+    color:#fff; display:grid; place-items:center; font-weight:900; font-size:1rem; }
+  .paso .cuerpo { padding:20px 18px; }
+  .paso .tag { font-size:.7rem; font-weight:800; letter-spacing:.9px; text-transform:uppercase;
+    padding:3px 9px; border-radius:20px; margin-left:auto; white-space:nowrap; }
+  .tGym { background:var(--cGymBg); color:var(--cGym); border:1px solid var(--cGym); }
+  .tCuenta { background:var(--cCuentaBg); color:var(--cCuenta); border:1px solid var(--cCuenta); }
+  .tVinculo { background:var(--cVinculoBg); color:var(--cVinculo); border:1px solid var(--cVinculo); }
+
+  /* ---------- maqueta de la consola ---------- */
+  .consola { border:1px solid #cbd5d3; border-radius:10px; overflow:hidden; margin:16px 0;
+    font-size:.8rem; background:#fff; }
+  .consola .cab { background:#f1f5f4; padding:7px 12px; border-bottom:1px solid #cbd5d3;
+    font-weight:700; color:var(--soft); font-size:.74rem; }
+  .consola .cols { display:flex; min-height:190px; }
+  .consola .lat { width:150px; flex:none; border-right:1px solid #e2e8e7; padding:10px 0; background:#fafcfc; }
+  .consola .lat div { padding:6px 12px; color:var(--soft); }
+  .consola .lat div.on { background:#e6f7f4; color:var(--teal); font-weight:800;
+    box-shadow:inset 3px 0 0 var(--teal); }
+  .consola .col { flex:1; border-right:1px solid #e2e8e7; padding:8px 0; min-width:0; }
+  .consola .col:last-child { border-right:0; }
+  .consola .ct { font-size:.68rem; text-transform:uppercase; letter-spacing:.7px; color:#94a3a1;
+    padding:2px 11px 7px; }
+  .consola .it { padding:6px 11px; color:var(--ink); display:flex; align-items:center; gap:7px; }
+  .consola .it.sel { background:#eef2ff; font-weight:700; }
+  .consola .it.gym { color:var(--cGym); }
+  .consola .it.usr { color:var(--cVinculo); }
+  .consola .add { padding:6px 11px; color:#2563eb; font-weight:700; }
+  .consola .vacio { padding:14px 11px; color:#a8b4b2; font-style:italic; }
+
+  /* marcador circular numerado que se pincha sobre la maqueta */
+  .marca { display:inline-grid; place-items:center; flex:none;
+    width:20px; height:20px; border-radius:50%; background:#dc2626; color:#fff;
+    font-size:.68rem; font-weight:900; box-shadow:0 0 0 3px rgba(220,38,38,.2); }
+
+  /* ---------- tabla de campos ---------- */
+  table { width:100%; border-collapse:collapse; margin:14px 0; font-size:.87rem; }
+  th,td { text-align:left; padding:9px 11px; border:1px solid var(--line); vertical-align:top; }
+  th { background:#f5f9f8; font-size:.72rem; text-transform:uppercase; letter-spacing:.6px; color:var(--soft); }
+  .copiar { cursor:pointer; background:#0f2b28; color:#b9ece4; border:0; border-radius:5px;
+    padding:3px 9px; font:inherit; font-size:.74rem; font-weight:700; margin-left:6px; }
+
+  /* ---------- avisos ---------- */
+  .box { border-left:4px solid var(--teal); background:var(--tealbg); padding:13px 16px;
+    margin:14px 0; border-radius:0 8px 8px 0; break-inside:avoid; }
+  .box.warn { border-color:#d97706; background:var(--amberbg); }
+  .box.bad { border-color:var(--red); background:var(--redbg); }
+  .box.good { border-color:var(--green); background:var(--greenbg); }
+  .box b { color:var(--ink); }
+  .box .t { display:block; font-weight:800; font-size:.72rem; letter-spacing:.9px;
+    text-transform:uppercase; margin-bottom:5px; color:var(--teal); }
+  .box.warn .t { color:var(--amber); } .box.bad .t { color:var(--red); } .box.good .t { color:var(--green); }
+  .box p:last-child { margin-bottom:0; }
+
+  /* ---------- bien / mal ---------- */
+  .bienmal { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:16px 0; }
+  .bm { border:2px solid; border-radius:10px; padding:12px 14px; font-size:.86rem; }
+  .bm.ok { border-color:var(--green); background:var(--greenbg); }
+  .bm.no { border-color:var(--red); background:var(--redbg); }
+  .bm .et { font-weight:900; font-size:.74rem; letter-spacing:.8px; text-transform:uppercase;
+    display:flex; align-items:center; gap:7px; margin-bottom:7px; }
+  .bm.ok .et { color:var(--green); } .bm.no .et { color:var(--red); }
+  .icono { width:17px; height:17px; position:relative; flex:none; }
+  .ok .icono::before { content:''; position:absolute; left:4px; top:1px; width:6px; height:11px;
+    border-right:2.5px solid var(--green); border-bottom:2.5px solid var(--green); transform:rotate(42deg); }
+  .no .icono::before, .no .icono::after { content:''; position:absolute; left:7px; top:2px;
+    width:2.5px; height:13px; border-radius:2px; background:var(--red); }
+  .no .icono::before { transform:rotate(45deg); } .no .icono::after { transform:rotate(-45deg); }
+  .ruta { font-family:ui-monospace,Menlo,Consolas,monospace; font-size:.8rem;
+    background:#fff; border:1px solid var(--line); border-radius:5px; padding:5px 8px; display:inline-block; }
+
+  /* ---------- mapa ---------- */
+  .mapa { display:grid; grid-template-columns:1fr auto 1fr auto 1fr; gap:8px; align-items:center;
+    margin:20px 0; }
+  .pieza { border:2px solid; border-radius:11px; padding:14px 12px; text-align:center; }
+  .pieza .q { font-size:.68rem; text-transform:uppercase; letter-spacing:.8px; font-weight:800; }
+  .pieza .n { font-weight:900; font-size:.98rem; margin:4px 0 3px; }
+  .pieza .d { font-size:.76rem; color:var(--soft); line-height:1.35; }
+  .p1 { border-color:var(--cGym); background:var(--cGymBg); } .p1 .q { color:var(--cGym); }
+  .p2 { border-color:var(--cCuenta); background:var(--cCuentaBg); } .p2 .q { color:var(--cCuenta); }
+  .p3 { border-color:var(--cVinculo); background:var(--cVinculoBg); } .p3 .q { color:var(--cVinculo); }
+  .mas { font-size:1.3rem; font-weight:900; color:#94a3a1; }
+
+  /* ---------- ficha para llenar ---------- */
+  .ficha { border:2px dashed var(--line); border-radius:11px; padding:16px 18px; margin:18px 0; }
+  .ficha h3 { margin-top:0; }
+  .ficha .linea { display:flex; align-items:baseline; gap:10px; margin-bottom:11px; flex-wrap:wrap; }
+  .ficha .linea span { font-size:.84rem; color:var(--soft); min-width:190px; }
+  .ficha .linea i { flex:1; min-width:140px; border-bottom:1.5px solid var(--line); height:20px; display:block; }
+
+  /* ---------- checklist con memoria ---------- */
+  .chk { list-style:none; padding:0; }
+  .chk li { display:flex; gap:11px; align-items:flex-start; padding:9px 0; border-top:1px solid var(--line); }
+  .chk input { width:19px; height:19px; margin-top:2px; flex:none; accent-color:var(--teal); cursor:pointer; }
+  .chk label { cursor:pointer; font-size:.92rem; }
+  .chk li.hecho label { color:#9aa5a3; text-decoration:line-through; }
+
+  .meta { font-size:.8rem; color:#8b9895; border-top:1px solid var(--line); margin-top:30px; padding-top:12px; }
+
+  @media (max-width:700px) {
+    .sheet { padding:24px 16px 40px; margin:10px 7px 30px; }
+    h1 { font-size:1.5rem; }
+    .mapa { grid-template-columns:1fr; }
+    .mas { display:none; }
+    .bienmal { grid-template-columns:1fr; }
+    .consola .lat { display:none; }
+    .consola .cols { flex-direction:column; }
+    .consola .col { border-right:0; border-bottom:1px solid #e2e8e7; }
+    .ficha .linea span { min-width:0; }
+  }
+  @media print {
+    body { background:#fff; } .top,.barra { display:none; }
+    .sheet { box-shadow:none; margin:0; max-width:none; padding:0; }
+    .paso { page-break-inside:avoid; }
+    @page { margin:14mm; }
+  }
+</style>
+</head>
+<body>
+
+<div class="top">
+  <strong>Dar de alta un gimnasio</strong>
+  <span class="prog"><b id="cuenta">0</b> de 6 pasos</span>
+  <button onclick="window.print()">Imprimir</button>
+</div>
+<div class="barra"><i id="barra"></i></div>
+
+<div class="sheet">
+
+  <h1>Dar de alta un gimnasio nuevo</h1>
+  <p class="lede">
+    Seis pasos. Cada uno tiene el dibujo de la pantalla que vas a ver y un número rojo
+    marcando exactamente dónde tocar.
+  </p>
+  <p class="lede"><strong>La primera vez tardás 15 minutos. Después, 5.</strong></p>
+
+  <div class="box">
+    <span class="t">Antes de arrancar</span>
+    <p>
+      Necesitás dos cosas: el <b>nombre del gimnasio</b> y el <b>correo del dueño</b>.
+      Nada más. Todo lo demás lo vas creando acá.
+    </p>
+  </div>
+
+  <h2>El mapa: qué vas a crear</h2>
+  <p>Son tres piezas. Las tres tienen que existir, y la tercera une a las otras dos:</p>
+
+  <div class="mapa">
+    <div class="pieza p1">
+      <div class="q">Pieza 1</div>
+      <div class="n">El gimnasio</div>
+      <div class="d">El local: su nombre, sus planes, sus socios</div>
+    </div>
+    <div class="mas">+</div>
+    <div class="pieza p2">
+      <div class="q">Pieza 2</div>
+      <div class="n">La cuenta</div>
+      <div class="d">El correo y la clave con los que entra el dueño</div>
+    </div>
+    <div class="mas">=</div>
+    <div class="pieza p3">
+      <div class="q">Pieza 3</div>
+      <div class="n">El vínculo</div>
+      <div class="d">Le avisa a la app que ese señor manda en ese gimnasio</div>
+    </div>
+  </div>
+
+  <div class="box warn">
+    <span class="t">Lo único que hay que entender</span>
+    <p>
+      Si te falta la <b>pieza 3</b>, el dueño va a poder escribir su correo y su clave, entrar…
+      y encontrarse con un error. La app no va a saber quién es.
+      <b>Ese es el 90% de los problemas.</b>
+    </p>
+  </div>
+
+  <h2>Paso 0: anotá esto en un papel</h2>
+  <p>
+    Llená esta ficha <b>antes</b> de tocar Firebase. Vas a necesitar copiar estos datos varias veces,
+    y tenerlos escritos evita el error más común: escribir el identificador distinto en dos lugares.
+  </p>
+
+  <div class="ficha">
+    <h3>Ficha del gimnasio</h3>
+    <div class="linea"><span>Nombre del gimnasio</span><i></i></div>
+    <div class="linea"><span>Identificador (lo armás abajo)</span><i></i></div>
+    <div class="linea"><span>Nombre del dueño</span><i></i></div>
+    <div class="linea"><span>Correo del dueño</span><i></i></div>
+    <div class="linea"><span>Clave provisoria que le vas a dar</span><i></i></div>
+    <div class="linea"><span>UID (lo copiás en el paso 3)</span><i></i></div>
+  </div>
+
+  <h3>Cómo armar el identificador</h3>
+  <p>Es un nombre corto e interno, que sólo ve el sistema. Tres reglas:</p>
+  <ul>
+    <li>Empieza con <code>gym-</code></li>
+    <li>Todo en minúsculas</li>
+    <li>Sin espacios, sin acentos, sin ñ. Dos palabras se unen con un guion</li>
+  </ul>
+  <table>
+    <tr><th>Si el gimnasio se llama</th><th>El identificador es</th></tr>
+    <tr><td>Power House</td><td><code>gym-power-house</code></td></tr>
+    <tr><td>Olimpo Fitness</td><td><code>gym-olimpo</code></td></tr>
+    <tr><td>Gimnasio El Ñandú</td><td><code>gym-el-nandu</code></td></tr>
+  </table>
+
+  <!-- ============================ PASO 1 ============================ -->
+  <div class="paso">
+    <header>
+      <span class="num">1</span>
+      <h2>Crear el gimnasio</h2>
+      <span class="tag tGym">Pieza 1</span>
+    </header>
+    <div class="cuerpo">
+      <p>
+        Entrá a <code>console.firebase.google.com</code> y elegí el proyecto
+        <strong>fitaccess-5ad19</strong>. Vas a ver una pantalla parecida a ésta:
+      </p>
+
+      <div class="consola">
+        <div class="cab">Firebase Console — Firestore Database</div>
+        <div class="cols">
+          <div class="lat">
+            <div>Descripción general</div>
+            <div style="font-weight:800;color:#16211f;">Compilación</div>
+            <div class="on"><span class="marca">1</span> Firestore Database</div>
+            <div>Authentication</div>
+            <div>Storage</div>
+          </div>
+          <div class="col">
+            <div class="ct">Colecciones</div>
+            <div class="it gym sel"><span class="marca">2</span> gyms</div>
+            <div class="it usr">users</div>
+          </div>
+          <div class="col">
+            <div class="ct">Documentos</div>
+            <div class="add"><span class="marca">3</span> + Agregar documento</div>
+            <div class="it">gym-nexos</div>
+          </div>
+        </div>
+      </div>
+
+      <ol>
+        <li><span class="marca">1</span> &nbsp;En el menú de la izquierda: <strong>Compilación</strong>, y ahí <strong>Firestore Database</strong></li>
+        <li><span class="marca">2</span> &nbsp;Clic en la colección <strong style="color:var(--cGym)">gyms</strong> <em>(en violeta, es la de los gimnasios)</em></li>
+        <li><span class="marca">3</span> &nbsp;Clic en <strong>+ Agregar documento</strong></li>
+      </ol>
+
+      <p>Se abre una ventanita. Llenala así:</p>
+
+      <table>
+        <tr><th style="width:33%">Casillero</th><th>Qué poner</th></tr>
+        <tr>
+          <td><strong>ID del documento</strong></td>
+          <td>Tu identificador: <code>gym-power-house</code><br>
+            <span style="color:var(--red); font-size:.84rem;">No aprietes el botón "ID automático"</span></td>
+        </tr>
+        <tr><td><strong>Campo</strong></td><td><code>name</code> <button class="copiar" onclick="copiar(this,'name')">copiar</button></td></tr>
+        <tr><td><strong>Tipo</strong></td><td><code>string</code> — puede aparecer como "cadena"</td></tr>
+        <tr><td><strong>Valor</strong></td><td>El nombre lindo y real: <code>Power House</code></td></tr>
+      </table>
+
+      <p>Apretá <strong>Guardar</strong>. Y listo el paso 1.</p>
+
+      <div class="box good">
+        <span class="t">Sí, con un solo campo</span>
+        <p>
+          No hace falta cargar sedes, planes ni colores. La app los completa sola la primera vez
+          que el dueño entra. Cuando en el paso 6 veas que ese documento tiene <b>muchos más
+          campos</b> que el que escribiste, es la señal de que todo funcionó.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================ PASO 2 ============================ -->
+  <div class="paso">
+    <header>
+      <span class="num">2</span>
+      <h2>Crear la cuenta del dueño</h2>
+      <span class="tag tCuenta">Pieza 2</span>
+    </header>
+    <div class="cuerpo">
+      <p>Ahora vas a otra sección, <strong>Authentication</strong>, que es donde viven los correos y las claves.</p>
+
+      <div class="consola">
+        <div class="cab">Firebase Console — Authentication</div>
+        <div class="cols">
+          <div class="lat">
+            <div>Descripción general</div>
+            <div style="font-weight:800;color:#16211f;">Compilación</div>
+            <div>Firestore Database</div>
+            <div class="on"><span class="marca">1</span> Authentication</div>
+          </div>
+          <div class="col" style="padding:10px 12px;">
+            <div style="display:flex; gap:16px; border-bottom:1px solid #e2e8e7; padding-bottom:7px; margin-bottom:10px;">
+              <span style="font-weight:800; color:var(--teal); box-shadow:inset 0 -2px 0 var(--teal);">
+                <span class="marca">2</span> Users</span>
+              <span style="color:#94a3a1;">Sign-in method</span>
+              <span style="color:#94a3a1;">Templates</span>
+            </div>
+            <div class="add" style="display:inline-block; border:1px solid #2563eb; border-radius:6px; padding:5px 11px;">
+              <span class="marca">3</span> Agregar usuario
+            </div>
+            <div style="margin-top:12px; font-size:.74rem; color:#94a3a1;">
+              Identificador · Proveedores · Fecha · UID
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <ol>
+        <li><span class="marca">1</span> &nbsp;Menú izquierdo: <strong>Compilación</strong>, y ahí <strong>Authentication</strong></li>
+        <li><span class="marca">2</span> &nbsp;Pestaña <strong>Users</strong> (suele estar elegida ya)</li>
+        <li><span class="marca">3</span> &nbsp;Botón <strong>Agregar usuario</strong></li>
+      </ol>
+
+      <table>
+        <tr><th style="width:33%">Casillero</th><th>Qué poner</th></tr>
+        <tr><td><strong>Correo electrónico</strong></td><td>El correo real del dueño</td></tr>
+        <tr><td><strong>Contraseña</strong></td><td>Una provisoria, por ejemplo <code>Power2026!</code><br>
+          <span style="color:var(--amber); font-size:.84rem;">Anotala en la ficha, se la vas a pasar</span></td></tr>
+      </table>
+
+      <p>Apretá <strong>Agregar usuario</strong>.</p>
+
+      <div class="box warn">
+        <span class="t">Un correo, un gimnasio</span>
+        <p>
+          El mismo correo <b>no</b> puede ser dueño de dos gimnasios. Si abre un segundo local
+          como gimnasio aparte, necesita otro correo.
+        </p>
+        <p>
+          Truco con Gmail: si tiene <code>juan@gmail.com</code>, también le llegan los mensajes a
+          <code>juan+olimpo@gmail.com</code>. Es la misma casilla, pero para Firebase es otra cuenta.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================ PASO 3 ============================ -->
+  <div class="paso">
+    <header>
+      <span class="num">3</span>
+      <h2>Copiar el UID</h2>
+      <span class="tag tCuenta">Pieza 2</span>
+    </header>
+    <div class="cuerpo">
+      <p>
+        El <strong>UID</strong> es el número de documento interno de esa cuenta. Un texto largo de
+        letras y números. Lo vas a necesitar en el paso 4.
+      </p>
+      <p>Quedate en la misma pantalla. Ahora tu usuario aparece en la lista:</p>
+
+      <div class="consola">
+        <div class="cab">Firebase Console — Authentication — Users</div>
+        <div style="padding:12px;">
+          <div style="display:grid; grid-template-columns:1.4fr .8fr 1.6fr; gap:8px;
+                      font-size:.68rem; text-transform:uppercase; letter-spacing:.6px; color:#94a3a1;
+                      border-bottom:1px solid #e2e8e7; padding-bottom:6px;">
+            <span>Identificador</span><span>Fecha</span><span>UID</span>
+          </div>
+          <div style="display:grid; grid-template-columns:1.4fr .8fr 1.6fr; gap:8px;
+                      padding:11px 0; align-items:center; background:#fffbe8;">
+            <span>juan@correo.com</span>
+            <span style="color:var(--soft);">hoy</span>
+            <span style="display:flex; align-items:center; gap:7px;">
+              <code style="font-size:.72rem;">eWt4OHYgsx…DRi2</code>
+              <span class="marca">1</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <ol>
+        <li><span class="marca">1</span> &nbsp;Pasá el mouse por encima del UID y aparece un
+          <strong>ícono de copiar</strong>. Hacé clic ahí.</li>
+        <li>Pegalo en la ficha de papel, o dejalo copiado y seguí directo al paso 4.</li>
+      </ol>
+
+      <div class="box bad">
+        <span class="t">Acá se equivoca todo el mundo</span>
+        <p>
+          Son <b>28 caracteres</b> y las mayúsculas cuentan. <b>Copiá y pegá. Nunca lo escribas a mano.</b>
+        </p>
+        <p>
+          Si lo copiás mal, el dueño va a poder entrar pero la app le va a decir que no tiene perfil,
+          y no vas a tener forma de darte cuenta mirando.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================ PASO 4 ============================ -->
+  <div class="paso">
+    <header>
+      <span class="num">4</span>
+      <h2>Unir las dos piezas</h2>
+      <span class="tag tVinculo">Pieza 3</span>
+    </header>
+    <div class="cuerpo">
+      <p>
+        Este es <strong>el paso más importante de todos</strong>: le avisás a la app que ese señor
+        manda en ese gimnasio.
+      </p>
+      <p>Volvé a <strong>Firestore Database</strong>, pero ahora a la colección <strong style="color:var(--cVinculo)">users</strong>:</p>
+
+      <div class="consola">
+        <div class="cab">Firebase Console — Firestore Database</div>
+        <div class="cols">
+          <div class="lat">
+            <div>Descripción general</div>
+            <div style="font-weight:800;color:#16211f;">Compilación</div>
+            <div class="on"><span class="marca">1</span> Firestore Database</div>
+            <div>Authentication</div>
+          </div>
+          <div class="col">
+            <div class="ct">Colecciones</div>
+            <div class="it gym">gyms</div>
+            <div class="it usr sel"><span class="marca">2</span> users</div>
+          </div>
+          <div class="col">
+            <div class="ct">Documentos</div>
+            <div class="add"><span class="marca">3</span> + Agregar documento</div>
+            <div class="it" style="font-size:.72rem;">lTFtwBpWERSX…</div>
+          </div>
+        </div>
+      </div>
+
+      <ol>
+        <li><span class="marca">1</span> &nbsp;<strong>Compilación</strong>, y ahí <strong>Firestore Database</strong></li>
+        <li><span class="marca">2</span> &nbsp;Clic en <strong style="color:var(--cVinculo)">users</strong>
+          <em>(en rosa — <b>ojo, NO es gyms</b>)</em></li>
+        <li><span class="marca">3</span> &nbsp;Clic en <strong>+ Agregar documento</strong></li>
+      </ol>
+
+      <div class="box bad">
+        <span class="t">La confusión número uno</span>
+        <p>
+          <code>gyms</code> y <code>users</code> están <b>una al lado de la otra</b> en la misma lista.
+          Si creás el documento en <code>gyms</code> por error, el dueño no va a poder entrar y todo
+          va a <em>parecer</em> bien hecho.
+        </p>
+      </div>
+
+      <p><strong>En "ID del documento" pegá el UID</strong> que copiaste en el paso 3. El ID del documento
+        <em>es</em> el UID, no un nombre que inventes.</p>
+
+      <p>Después agregá estos <strong>cinco campos</strong>, uno por uno:</p>
+
+      <table>
+        <tr><th>Campo</th><th>Tipo</th><th>Valor</th></tr>
+        <tr>
+          <td><code>name</code> <button class="copiar" onclick="copiar(this,'name')">copiar</button></td>
+          <td>string</td><td>Nombre y apellido del dueño</td>
+        </tr>
+        <tr>
+          <td><code>email</code> <button class="copiar" onclick="copiar(this,'email')">copiar</button></td>
+          <td>string</td><td>El mismo correo del paso 2</td>
+        </tr>
+        <tr>
+          <td><code>role</code> <button class="copiar" onclick="copiar(this,'role')">copiar</button></td>
+          <td>string</td>
+          <td><code>owner</code> <button class="copiar" onclick="copiar(this,'owner')">copiar</button>
+            <br><span style="color:var(--red); font-size:.84rem;">Todo en minúsculas, tal cual</span></td>
+        </tr>
+        <tr>
+          <td><code>gymId</code> <button class="copiar" onclick="copiar(this,'gymId')">copiar</button></td>
+          <td>string</td>
+          <td>El identificador del paso 1: <code>gym-power-house</code><br>
+            <span style="color:var(--red); font-size:.84rem;">Idéntico. Ni una letra distinta</span></td>
+        </tr>
+        <tr>
+          <td><code>active</code> <button class="copiar" onclick="copiar(this,'active')">copiar</button></td>
+          <td><strong style="color:var(--red)">boolean</strong></td>
+          <td><code>true</code><br>
+            <span style="color:var(--red); font-size:.84rem;">boolean, NO string</span></td>
+        </tr>
+      </table>
+
+      <p>Apretá <strong>Guardar</strong>.</p>
+
+      <h3>Ahora revisá que quedó donde tiene que estar</h3>
+      <p>Mirá la ruta que aparece arriba de la pantalla:</p>
+
+      <div class="bienmal">
+        <div class="bm ok">
+          <div class="et"><span class="icono"></span> Así va</div>
+          <div class="ruta">users &gt; eWt4OHYgsx…</div>
+          <p style="margin:8px 0 0;">Dice <b>users</b>. Perfecto.</p>
+        </div>
+        <div class="bm no">
+          <div class="et"><span class="icono"></span> Así NO</div>
+          <div class="ruta">gyms &gt; eWt4OHYgsx…</div>
+          <p style="margin:8px 0 0;">Dice <b>gyms</b>. Borralo y hacelo de nuevo dentro de <code>users</code>.</p>
+        </div>
+      </div>
+
+      <div class="box warn">
+        <span class="t">El campo active</span>
+        <p>
+          Cuando elegís el tipo, buscá <b>boolean</b> (puede decir "booleano"). Si dejás
+          <b>string</b> y escribís "true", queda el <em>texto</em> "true" y no sirve.
+        </p>
+        <p>Se nota: con el tipo correcto, el valor aparece en un color distinto al de los textos.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================ PASO 5 ============================ -->
+  <div class="paso">
+    <header>
+      <span class="num">5</span>
+      <h2>Probarlo vos, antes de avisarle</h2>
+    </header>
+    <div class="cuerpo">
+      <p>
+        Nunca le pases el acceso sin probarlo. Abrí una <strong>ventana de incógnito</strong>
+        —<code>Ctrl + Shift + N</code>— así no cerrás tu propia sesión.
+      </p>
+      <ol>
+        <li>Entrá al sitio de FitAccess</li>
+        <li>Tocá la opción <strong>Administro el gimnasio</strong></li>
+        <li>Poné el correo y la clave provisoria del paso 2</li>
+      </ol>
+
+      <h3>Qué tenés que ver</h3>
+      <ul class="chk">
+        <li><input type="checkbox" id="v1"><label for="v1">Arriba a la izquierda dice el <strong>nombre real del gimnasio</strong> (no "FitAccess", no "Mi Gimnasio")</label></li>
+        <li><input type="checkbox" id="v2"><label for="v2">Hay una insignia que dice <strong>Nube</strong></label></li>
+        <li><input type="checkbox" id="v3"><label for="v3">El padrón está vacío y aparece un aviso de que se completó la configuración</label></li>
+        <li><input type="checkbox" id="v4"><label for="v4">Existe el menú <strong>Panel Gimnasio</strong></label></li>
+      </ul>
+
+      <div class="box good">
+        <span class="t">La prueba definitiva</span>
+        <p>
+          Volvé a Firestore y abrí el documento del gimnasio. Si ahora tiene <b>muchos más campos</b>
+          que el <code>name</code> que escribiste —sedes, planes, colores— entonces está todo bien.
+          La app lo leyó y lo completó sola.
+        </p>
+      </div>
+
+      <div class="box bad">
+        <span class="t">Si algo no anda</span>
+        <table style="margin:8px 0 0; font-size:.84rem;">
+          <tr><th>Lo que ves</th><th>Qué revisar</th></tr>
+          <tr><td>Entra pero dice que no tiene perfil</td>
+              <td>El ID del documento no coincide con el UID. Casi siempre se copió con un espacio de más</td></tr>
+          <tr><td>Arriba dice "Mi Gimnasio"</td>
+              <td>El <code>gymId</code> no está escrito igual que el identificador del paso 1</td></tr>
+          <tr><td>Ve gimnasios que no son suyos</td>
+              <td>Le quedó un campo <code>platform</code>. Borralo</td></tr>
+          <tr><td>Error sin explicación</td>
+              <td>¿Tocó <b>Administro el gimnasio</b>? Después probá <code>Ctrl+Shift+R</code></td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================ PASO 6 ============================ -->
+  <div class="paso">
+    <header>
+      <span class="num">6</span>
+      <h2>Entregarlo</h2>
+    </header>
+    <div class="cuerpo">
+      <p>Mandale este mensaje por WhatsApp:</p>
+
+      <div style="background:#f6faf9; border:1px solid var(--line); border-radius:10px; padding:15px 17px; font-size:.9rem;">
+        <div id="msg" style="white-space:pre-line;">Hola! Ya está listo el sistema de tu gimnasio.
+
+Entrá acá: (pegá el link del sitio)
+Tocá la opción: Administro el gimnasio
+Usuario: (su correo)
+Clave: (la clave provisoria)
+
+Cambiá la clave cuando entres. Te paso también el manual.</div>
+        <button class="copiar" style="margin:12px 0 0;" onclick="copiarMensaje(this)">Copiar el mensaje</button>
+      </div>
+
+      <p style="margin-top:16px;">
+        Y adjuntale el <strong>Manual del dueño</strong> en PDF. Lo saca de
+        <code>/guias/</code> apretando "Guardar como PDF".
+      </p>
+
+      <h3>Decile que arranque por esto, en este orden</h3>
+      <ol>
+        <li><strong>Mi Gimnasio</strong>: el nombre de su sede y <strong>sus planes con la duración correcta</strong></li>
+        <li><strong>Importar</strong> en el padrón, si ya tiene los socios en un Excel</li>
+        <li>Su link de cobro de Mercado Pago</li>
+      </ol>
+
+      <div class="box warn">
+        <span class="t">Insistile con la duración de los planes</span>
+        <p>
+          Si carga un plan trimestral pero le deja duración "Mensual", va a cobrar tres meses y
+          habilitar uno. Es el error que más plata cuesta.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <h2>Lista final</h2>
+  <p>Marcá cada punto. Cuando estén los seis, el gimnasio quedó dado de alta.</p>
+  <ul class="chk">
+    <li><input type="checkbox" id="c1"><label for="c1">Llené la ficha de papel con el nombre, el identificador y el correo</label></li>
+    <li><input type="checkbox" id="c2"><label for="c2">Creé el documento en <strong>gyms</strong> con el campo <code>name</code></label></li>
+    <li><input type="checkbox" id="c3"><label for="c3">Creé la cuenta en <strong>Authentication</strong> y anoté la clave provisoria</label></li>
+    <li><input type="checkbox" id="c4"><label for="c4">Copié el UID (copiar y pegar, no a mano)</label></li>
+    <li><input type="checkbox" id="c5"><label for="c5">Creé el documento en <strong>users</strong>, y verifiqué que la ruta diga <code>users</code> y no <code>gyms</code></label></li>
+    <li><input type="checkbox" id="c6"><label for="c6">Entré en incógnito y vi el nombre real del gimnasio</label></li>
+  </ul>
+
+  <p class="meta">
+    FitAccess · Guía visual para dar de alta un gimnasio.<br>
+    Las tildes de esta página se guardan en tu navegador: podés cerrarla y seguir después.
+  </p>
+</div>
+
+<script>
+/* Las tildes se guardan solas. Alguien que está haciendo esto por primera vez
+   se interrumpe: lo llaman, cierra la pestaña, vuelve mañana. Si al volver
+   perdió el progreso, tiene que adivinar dónde quedó. */
+const CLAVE = "fitaccess_alta_visual";
+
+function leer() {
+  try { return JSON.parse(localStorage.getItem(CLAVE) || "{}"); } catch (e) { return {}; }
+}
+function guardar(d) {
+  try { localStorage.setItem(CLAVE, JSON.stringify(d)); } catch (e) {}
+}
+
+function pintar() {
+  const d = leer();
+  document.querySelectorAll(".chk input").forEach(i => {
+    i.checked = !!d[i.id];
+    i.closest("li").classList.toggle("hecho", i.checked);
+  });
+  // La barra de arriba cuenta sólo los seis pasos, no las verificaciones.
+  const pasos = ["c1", "c2", "c3", "c4", "c5", "c6"];
+  const hechos = pasos.filter(k => d[k]).length;
+  document.getElementById("cuenta").textContent = hechos;
+  document.getElementById("barra").style.width = (hechos / pasos.length * 100) + "%";
+}
+
+document.querySelectorAll(".chk input").forEach(i => {
+  i.addEventListener("change", () => {
+    const d = leer();
+    d[i.id] = i.checked;
+    guardar(d);
+    pintar();
+  });
+});
+pintar();
+
+/* Copiar al portapapeles con confirmación visible: sin el cambio de texto no
+   hay forma de saber si el clic hizo algo. */
+function avisar(btn, texto) {
+  const antes = btn.textContent;
+  btn.textContent = texto;
+  setTimeout(() => { btn.textContent = antes; }, 1400);
+}
+function copiar(btn, texto) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(texto).then(() => avisar(btn, "copiado"))
+      .catch(() => avisar(btn, "copialo a mano"));
+  } else {
+    avisar(btn, "copialo a mano");
+  }
+}
+function copiarMensaje(btn) {
+  copiar(btn, document.getElementById("msg").textContent);
+}
+</script>
+</body>
+</html>
