@@ -745,6 +745,116 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
    baja no se coma el pie. */
 #login-modal-overlay { flex-direction: column; gap: 13px; }
 #login-modal-overlay .modal-card { max-height: calc(92vh - 44px); }
+
+/* --------------------------------------------------------------------------
+   VIDA EN LA PANTALLA DE INGRESO
+
+   Lo que NO se hizo, y por qué: bordes de neón permanentes en las tres
+   opciones. Tres contornos encendidos al mismo tiempo, en violeta, naranja y
+   verde, terminan pareciendo un teclado gamer, y esto es una herramienta que
+   maneja plata. Peor todavía: si las tres brillan igual, ninguna se destaca y
+   se pierde la jerarquía que se acaba de construir.
+
+   Lo que sí: el brillo aparece al TOCAR. La vida viene de la interacción, no
+   de ruido constante, y de paso confirma cuál estás eligiendo.
+   -------------------------------------------------------------------------- */
+
+/* Filo de luz alrededor de la tarjeta, en degradado.
+   La regla general dibuja sólo una línea arriba; acá se reemplaza por un borde
+   completo hecho con una máscara: se pinta un rectángulo con degradado y se le
+   recorta el centro, así queda un hilo de un píxel que sigue las esquinas
+   redondeadas. Es lo que hace que la tarjeta se vea cara sin agregar color. */
+#login-modal-overlay .modal-card::before {
+  content: ''; position: absolute; inset: 0; top: 0; left: 0; right: 0;
+  height: auto; opacity: 1;
+  border-radius: inherit; padding: 1px;
+  background: linear-gradient(150deg,
+    rgba(255, 255, 255, .30) 0%,
+    color-mix(in srgb, var(--primary-color) 45%, transparent) 22%,
+    transparent 45%,
+    transparent 62%,
+    color-mix(in srgb, var(--secondary-color) 38%, transparent) 88%,
+    rgba(255, 255, 255, .16) 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Resplandor lento por detrás. Es lo único que se mueve solo, y se mueve tan
+   despacio que no se nota mirándolo: se nota si no está. Va con transform
+   sobre un pseudo-elemento y no animando el fondo, que obliga a repintar. */
+/* z-index 0 y no -1: con -1 queda detrás del fondo del propio contenedor y no
+   se ve. Y `position: absolute` es obligatorio acá, porque el contenedor es
+   flex y un pseudo-elemento en flujo se convertiría en un ítem más de la
+   columna, empujando la tarjeta. */
+#login-modal-overlay::before {
+  content: ''; position: absolute; z-index: 0;
+  /* `inset: 0` con `margin: auto` y medidas fijas centra en los dos ejes. La
+     primera versión usaba 130% de ancho desplazado a la izquierda: el
+     resplandor terminaba en los bordes de la pantalla, tiñendo las esquinas en
+     lugar de hacer brillar la tarjeta. Concentrado detrás del cuadro se lee
+     como un halo del propio cuadro, que era la intención. */
+  inset: 0; margin: auto;
+  width: min(760px, 94vw); height: min(560px, 66vh);
+  background:
+    radial-gradient(42% 52% at 26% 32%, color-mix(in srgb, var(--primary-color) 30%, transparent), transparent 70%),
+    radial-gradient(40% 48% at 76% 68%, color-mix(in srgb, var(--secondary-color) 26%, transparent), transparent 72%);
+  filter: blur(52px);
+  animation: auroraDrift 26s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+@keyframes auroraDrift {
+  from { transform: translate3d(-14px, -10px, 0) scale(1); }
+  to   { transform: translate3d(14px, 12px, 0) scale(1.07); }
+}
+
+/* El logo del gimnasio, con un halo de su propio color de marca. */
+#login-modal-overlay .login-logo-img {
+  border-radius: 17px;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--primary-color) 30%, transparent),
+    0 0 22px -4px var(--primary-glow),
+    0 6px 18px -6px rgba(0, 0, 0, .6);
+}
+
+/* Las opciones entran en cascada, no todas de golpe. Dura poco y pasa una
+   sola vez: es vida en la llegada, no decoración permanente. */
+.portal-list .role-login-card-btn {
+  opacity: 0;
+  animation: portalIn .5s var(--ease-out) forwards;
+}
+.portal-list .role-login-card-btn:nth-child(1) { animation-delay: .06s; }
+.portal-list .role-login-card-btn:nth-child(2) { animation-delay: .13s; }
+.portal-list .role-login-card-btn:nth-child(3) { animation-delay: .20s; }
+@keyframes portalIn {
+  from { opacity: 0; transform: translateY(9px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Al pasar el mouse o apretar, la opción se enciende completa con SU color.
+   Acá sí va el neón, porque hay una sola encendida a la vez. */
+.portal-staff:hover, .portal-staff:focus-visible {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--secondary-color) 55%, transparent),
+              0 0 24px -6px var(--secondary-glow), var(--shadow-md), var(--sheen-strong);
+}
+.portal-recepcion:hover, .portal-recepcion:focus-visible {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-warm) 55%, transparent),
+              0 0 24px -6px rgba(251, 146, 60, .45), var(--shadow-md), var(--sheen-strong);
+}
+.portal-socio:hover, .portal-socio:focus-visible {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary-color) 55%, transparent),
+              0 0 24px -6px var(--primary-glow), var(--shadow-md), var(--sheen-strong);
+}
+
+/* En pantallas sin mouse el hover no existe, así que el encendido va al toque:
+   sin esto, en el celular las opciones no responden visualmente a nada. */
+@media (hover: none) {
+  .portal-staff:active     { box-shadow: 0 0 0 1px color-mix(in srgb, var(--secondary-color) 60%, transparent), 0 0 22px -6px var(--secondary-glow); }
+  .portal-recepcion:active { box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-warm) 60%, transparent), 0 0 22px -6px rgba(251,146,60,.5); }
+  .portal-socio:active     { box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary-color) 60%, transparent), 0 0 22px -6px var(--primary-glow); }
+}
 /* El crédito no se estira al ancho de la tarjeta, así que sin esto queda
    sujeto a lo que diga align-items del contenedor, que en celular vale
    flex-end para las hojas deslizables y lo empujaba contra el borde. */
