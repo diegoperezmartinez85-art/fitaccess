@@ -21,7 +21,7 @@
  *    error en la página. Ahora siempre se devuelve una Response.
  */
 
-const VERSION = "fitaccess-v2.5.0";
+const VERSION = "fitaccess-v2.6.0";
 const SHELL_CACHE = `${VERSION}-shell`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 
