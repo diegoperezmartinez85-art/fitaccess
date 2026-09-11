@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FitAccess · Tu primer día como dueño</title>
+<link rel="stylesheet" href="guia.css">
+</head>
+<body>
+
+<div class="top">
+  <strong>Tu primer día con FitAccess</strong>
+  <a href="index.html">Todas las guías</a>
+  <span class="prog"><b id="cuenta">0</b> de 7 pasos</span>
+  <button onclick="window.print()">Imprimir</button>
+</div>
+<div class="barra"><i id="barra"></i></div>
+
+<div class="sheet">
+
+  <h1>Tu primer día como dueño</h1>
+  <p class="lede">
+    Siete pasos, en este orden. Cada uno con el dibujo de la pantalla y un número rojo
+    marcando dónde tocar.
+  </p>
+  <p class="lede"><strong>En una hora tenés el gimnasio funcionando.</strong></p>
+
+  <div class="box warn">
+    <span class="t">Hacelos en orden</span>
+    <p>
+      Los primeros tres son configuración y hay que hacerlos <b>antes</b> de cargar el primer socio.
+      Si cargás socios primero, después tenés que corregirlos de a uno.
+    </p>
+  </div>
+
+  <!-- ======================= 1 ======================= -->
+  <div class="paso">
+    <header><span class="num">1</span><h2>Entrar</h2></header>
+    <div class="cuerpo">
+      <p>Abrí el link que te pasaron. Vas a ver tres opciones grandes:</p>
+
+      <div class="app">
+        <div class="cab"><b>FitAccess</b> · pantalla de ingreso</div>
+        <div class="cuerpo">
+          <div style="text-align:center; font-weight:800; margin-bottom:11px;">¿Cómo vas a entrar?</div>
+          <div class="card" style="border-left:3px solid #6366f1;">
+            <div class="t"><span class="marca">1</span> Administro el gimnasio</div>
+            <div class="d">Socios, cobros, caja y configuración</div>
+          </div>
+          <div class="card" style="border-left:3px solid #fb923c;">
+            <div class="t">Estoy en el mostrador</div>
+            <div class="d">Controlar quién entra y cobrar cuotas</div>
+          </div>
+          <div class="card" style="border-left:3px solid #14b8a6;">
+            <div class="t">Soy socio</div>
+            <div class="d">Mi credencial, mis pagos y mi apto médico</div>
+          </div>
+        </div>
+      </div>
+
+      <p><span class="marca">1</span> &nbsp;Tocá <strong>Administro el gimnasio</strong>. Ésa es tu puerta, siempre.</p>
+      <p>Poné el correo y la clave que te dieron.</p>
+
+      <div class="box">
+        <span class="t">Lo primero al entrar</span>
+        <p>Cambiá la clave provisoria por una tuya. Y fijate que arriba diga <b>Nube</b>: eso significa que tus datos están guardados en internet y que todos tus dispositivos ven lo mismo.</p>
+      </div>
+
+      <div class="box bad">
+        <span class="t">Si te da error</span>
+        <p>Nueve de cada diez veces es que tocaste la opción equivocada. Fijate que hayas tocado <b>Administro el gimnasio</b> y no otra.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================= 2 ======================= -->
+  <div class="paso">
+    <header><span class="num">2</span><h2>Tus planes y sus precios</h2></header>
+    <div class="cuerpo">
+      <p>Andá a <strong>Panel Gimnasio</strong> y buscá la tarjeta <strong>Mi Gimnasio</strong>.</p>
+      <p>Primero corregí el <strong>nombre de tu sede</strong> (viene como "Sede Principal"). Después los planes:</p>
+
+      <div class="app">
+        <div class="cab"><b>Panel Gimnasio</b> · Mi Gimnasio · Planes y Precios</div>
+        <div class="cuerpo">
+          <div class="card" style="display:flex; justify-content:space-between; align-items:center; gap:9px;">
+            <span>Plan Mensual <span style="color:#7c8798;">· mensual · 0 socios</span></span>
+            <b style="color:#2dd4bf;">$ 20.000</b>
+          </div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-top:10px;">
+            <span class="campo" style="flex:1; min-width:110px; margin:0;"><span class="marca">1</span> Nombre del plan</span>
+            <span class="campo" style="width:84px; margin:0;"><span class="marca">2</span> Precio</span>
+            <span class="campo" style="width:110px; margin:0;"><span class="marca">3</span> Mensual</span>
+            <span class="boton gris"><span class="marca">4</span> +</span>
+          </div>
+        </div>
+      </div>
+
+      <ol>
+        <li><span class="marca">1</span> &nbsp;El nombre, como lo llamás vos: "Musculación", "Full Crossfit", "Pase del día"</li>
+        <li><span class="marca">2</span> &nbsp;El precio</li>
+        <li><span class="marca">3</span> &nbsp;<strong>La duración</strong>: Mensual, Trimestral, Anual, Por día…</li>
+        <li><span class="marca">4</span> &nbsp;El botón <strong>+</strong> para agregarlo</li>
+      </ol>
+
+      <div class="box bad">
+        <span class="t">El error que más plata cuesta</span>
+        <p>
+          La duración define <b>cuántos días se le acreditan al socio cuando le cobrás</b>.
+        </p>
+        <p>
+          Si cargás un plan trimestral pero le dejás duración "Mensual", vas a cobrar tres meses
+          y habilitarlo un mes. Revisá la duración de cada plan antes de seguir.
+        </p>
+      </div>
+
+      <div class="bienmal">
+        <div class="bm ok">
+          <div class="et"><span class="icono"></span> Así va</div>
+          <p style="margin:0;">Trimestral Libre · $49.500 · <b>Trimestral</b></p>
+          <p style="margin:6px 0 0; font-size:.8rem;">Cobrás y le acredita 90 días.</p>
+        </div>
+        <div class="bm no">
+          <div class="et"><span class="icono"></span> Así NO</div>
+          <p style="margin:0;">Trimestral Libre · $49.500 · <b>Mensual</b></p>
+          <p style="margin:6px 0 0; font-size:.8rem;">Cobrás 3 meses y le da 30 días.</p>
+        </div>
+      </div>
+
+      <div class="box">
+        <span class="t">Si vendés entradas sueltas</span>
+        <p>Creá un plan con duración <b>Por día</b>. Con eso, el precio del pase diario se completa solo en el mostrador.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================= 3 ======================= -->
+  <div class="paso">
+    <header><span class="num">3</span><h2>Las reglas de tu gimnasio</h2></header>
+    <div class="cuerpo">
+      <p>Un poco más abajo, en la misma tarjeta, hay varias decisiones. Éstas son las que importan:</p>
+
+      <table>
+        <tr><th style="width:38%">Ajuste</th><th>Qué poner</th></tr>
+        <tr><td><strong>Aviso previo de vencimiento</strong></td>
+          <td><code>3</code> días está bien. Es cuántos días antes el socio empieza a dar amarillo.</td></tr>
+        <tr><td><strong>Apto médico obligatorio</strong></td>
+          <td><em>Sí</em>: sin apto no entra. <em>No</em>: entra con aviso. Decisión tuya y de tu seguro.</td></tr>
+        <tr><td><strong>Link de pago de Mercado Pago</strong></td>
+          <td>El link que le va a abrir al socio cuando toque "Pagar". Lo saco de tu cuenta de Mercado Pago.</td></tr>
+        <tr><td><strong>Capacidad máxima</strong></td>
+          <td>Cuánta gente entra cómoda. <code>0</code> si no querés controlarlo.</td></tr>
+      </table>
+
+      <h3>Cómo conseguir el link de pago</h3>
+      <ol>
+        <li>Entrá a tu cuenta de Mercado Pago</li>
+        <li>Buscá <strong>Cobrar</strong>, y ahí <strong>Link de pago</strong></li>
+        <li>Creá un link con el monto de tu cuota</li>
+        <li>Copiá la dirección y pegala en FitAccess</li>
+      </ol>
+
+      <div class="box warn">
+        <span class="t">El pago no se acredita solo</span>
+        <p>
+          Mercado Pago no le avisa a FitAccess. El socio paga, <b>sube una foto del comprobante</b>,
+          y vos lo confirmás con un clic. Es un paso manual de tres segundos, y es tu control:
+          nadie se renueva la cuota sin que vos lo apruebes.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================= 4 ======================= -->
+  <div class="paso">
+    <header><span class="num">4</span><h2>Cargar tus socios</h2></header>
+    <div class="cuerpo">
+      <p>Bajá hasta <strong>Padrón de Socios</strong>. Hay dos caminos:</p>
+
+      <div class="app">
+        <div class="cab"><b>Panel Gimnasio</b> · Padrón de Socios</div>
+        <div class="cuerpo">
+          <div style="display:flex; gap:7px; flex-wrap:wrap;">
+            <span class="boton"><span class="marca">1</span> Nuevo Socio</span>
+            <span class="boton gris">Credenciales</span>
+            <span class="boton gris">CSV</span>
+            <span class="boton gris"><span class="marca">2</span> Importar</span>
+          </div>
+        </div>
+      </div>
+
+      <h3><span class="marca">1</span> &nbsp;De a uno: Nuevo Socio</h3>
+      <p>Para los que van llegando. Lo que importa:</p>
+      <ul>
+        <li><strong>Nombre y apellido</strong> — obligatorio, es lo que sale en la credencial</li>
+        <li><strong>DNI</strong> — para encontrarlo rápido si se olvidó la credencial</li>
+        <li><strong>Teléfono</strong> — <b>cargalo siempre</b>, es a ese número que le mandás la credencial</li>
+        <li><strong>Foto</strong> — se saca con la cámara ahí mismo. Es lo que hace que la credencial sirva de verdad</li>
+      </ul>
+
+      <div class="box bad">
+        <span class="t">No marques esta casilla</span>
+        <p>
+          Abajo del formulario hay una que dice <b>"Crear también su acceso al carnet digital"</b>.
+          <b>Dejala sin marcar.</b> Es de una versión anterior y crea un usuario que no puede entrar.
+        </p>
+        <p>La forma correcta es la credencial por WhatsApp, que está en el paso 5.</p>
+      </div>
+
+      <h3><span class="marca">2</span> &nbsp;Muchos de una vez: Importar</h3>
+      <p>Si ya tenés el padrón en un Excel, <strong>no lo tipees</strong>:</p>
+      <ol>
+        <li>Tocá <strong>Descargar plantilla de ejemplo</strong> para ver el formato</li>
+        <li>Abrila en Excel y reemplazá los ejemplos por tus socios</li>
+        <li>Guardala como <strong>CSV</strong> (Archivo, Guardar como, CSV)</li>
+        <li>Tocá <strong>Importar</strong> y elegí el archivo</li>
+      </ol>
+      <p>
+        Te dice cuántos va a cargar antes de hacerlo, y después qué fila falló y por qué,
+        con el número de línea.
+      </p>
+
+      <div class="box good">
+        <span class="t">Podés importar el mismo archivo dos veces</span>
+        <p>
+          Si un socio ya está cargado con el mismo DNI, lo saltea en lugar de duplicarlo.
+          Así que si te quedaste a mitad de camino, volvé a importar sin miedo.
+        </p>
+      </div>
+
+      <div class="box">
+        <span class="t">Consejo para arrancar</span>
+        <p>
+          No cargues 200 socios el primer día. Cargá 5, probá todo el circuito con ellos
+          —credencial, escaneo, cobro— y cuando entendiste cómo funciona, cargá el resto.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================= 5 ======================= -->
+  <div class="paso">
+    <header><span class="num">5</span><h2>Mandarles la credencial</h2></header>
+    <div class="cuerpo">
+      <p>
+        En la fila de cada socio hay botones chiquitos, sólo con un dibujo. Si dejás el mouse
+        encima aparece el nombre de cada uno.
+      </p>
+
+      <div class="app">
+        <div class="cab"><b>Padrón</b> · fila de un socio</div>
+        <div class="cuerpo">
+          <div class="card" style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+            <span><b>Juan Pérez</b> <span style="color:#7c8798;">· DNI 35999888 · al día</span></span>
+            <span style="display:flex; gap:6px; align-items:center;">
+              <span class="boton gris" style="padding:5px 9px;">carnet</span>
+              <span class="boton gris" style="padding:5px 9px;"><span class="marca">1</span> globo</span>
+              <span class="boton gris" style="padding:5px 9px;">impresora</span>
+              <span class="boton gris" style="padding:5px 9px;">llave</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <p><span class="marca">1</span> &nbsp;El botón del <strong>globo de diálogo</strong> es el de WhatsApp. Tocalo y:</p>
+      <ol>
+        <li>Se abre una vista previa de la credencial ya armada</li>
+        <li>Tocás <strong>Enviar por WhatsApp</strong></li>
+        <li>Elegís el contacto y mandás</li>
+      </ol>
+
+      <p>El socio recibe la imagen de la credencial más un mensaje con <strong>dos cosas</strong>:</p>
+      <table>
+        <tr><th style="width:30%">Qué recibe</th><th>Para qué</th></tr>
+        <tr><td>Un <strong>enlace largo</strong></td><td>El camino fácil: lo toca y se activa la app solo</td></tr>
+        <tr><td>Un <strong>código de 8 letras</strong></td><td>El respaldo, si el enlace no le funciona</td></tr>
+      </table>
+
+      <div class="box">
+        <span class="t">Los otros dos botones</span>
+        <p>
+          La <b>impresora</b> imprime esa credencial en papel, para los socios sin celular.
+          La <b>llave</b> genera un código nuevo, si el que le mandaste ya se usó o se perdió.
+        </p>
+      </div>
+
+      <div class="box warn">
+        <span class="t">La credencial impresa no vence nunca</span>
+        <p>
+          El QR de papel sirve para siempre. Si un socio se va y se queda con la tarjeta, ese QR
+          sigue identificándolo. <b>Lo que lo frena es el semáforo</b>: al escanearlo va a dar rojo
+          por cuota vencida. Por eso importa mantener el padrón al día.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================= 6 ======================= -->
+  <div class="paso">
+    <header><span class="num">6</span><h2>Cobrar y cerrar la caja</h2></header>
+    <div class="cuerpo">
+      <p>Cuando cobrás —vos o tu recepción— se abre esta ventana:</p>
+
+      <div class="app">
+        <div class="cab"><b>Registrar cobro</b></div>
+        <div class="cuerpo">
+          <div class="card"><b>Juan Pérez</b><div class="d">SOC-1005 · Full Crossfit · mensual</div></div>
+          <div class="campo"><span class="marca">1</span> ¿Cómo pagó? &nbsp;Efectivo</div>
+          <div style="display:flex; gap:7px;">
+            <div class="campo" style="flex:1;"><span class="marca">2</span> Importe: 26000</div>
+            <div class="campo" style="flex:1;"><span class="marca">3</span> Días: 30</div>
+          </div>
+          <div class="card" style="background:rgba(20,184,166,.1); border-color:#14b8a6;">
+            Queda habilitado hasta el <b>10 de noviembre de 2026</b>
+          </div>
+          <span class="boton">Confirmar cobro</span>
+        </div>
+      </div>
+
+      <ol>
+        <li><span class="marca">1</span> &nbsp;<strong>Cómo pagó</strong> — efectivo, débito, transferencia… <b>Esto es lo que te deja cerrar la caja</b></li>
+        <li><span class="marca">2</span> &nbsp;<strong>Importe</strong> — viene el del plan. Cambialo si hiciste un descuento</li>
+        <li><span class="marca">3</span> &nbsp;<strong>Días</strong> — vienen los del plan. Casi nunca hay que tocarlos</li>
+      </ol>
+      <p>Abajo te muestra en letras hasta cuándo queda habilitado, <strong>antes</strong> de que confirmes.</p>
+
+      <h3>Cerrar la caja al final del día</h3>
+      <p>En el Panel, la tarjeta <strong>Caja del día</strong> te muestra:</p>
+      <ul>
+        <li>El <strong>total cobrado</strong></li>
+        <li>Cuánto entró por <strong>cada medio de pago</strong></li>
+        <li>El detalle de cada cobro, con la hora y <strong>quién lo cobró</strong></li>
+      </ul>
+      <p>
+        El renglón de <strong>Efectivo</strong> tiene que coincidir con la plata del cajón, y el de
+        <strong>Débito</strong> con el cierre del posnet. Si no coincide, el detalle te dice cobro por
+        cobro dónde buscar.
+      </p>
+
+      <div class="box good">
+        <span class="t">Si cobraste mal</span>
+        <p>
+          Cada cobro tiene un botón <b>Anular</b>. Te pide el motivo, le devuelve el vencimiento
+          exacto que tenía antes y lo saca del total. Queda tachado y a la vista, con el motivo y
+          quién lo anuló.
+        </p>
+        <p>Recepción no puede anular: quien cobra no es quien corrige. Eso lo hacés vos.</p>
+      </div>
+
+      <div class="box">
+        <span class="t">El total del mes</span>
+        <p>
+          Arriba de la tarjeta hay dos botones, <b>Día</b> y <b>Mes</b>. En Mes te suma todo el mes
+          y agrega cuánto cobró cada persona del mostrador. Es la vista que le pasás a tu contador.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================= 7 ======================= -->
+  <div class="paso">
+    <header><span class="num">7</span><h2>Tu rutina de todos los días</h2></header>
+    <div class="cuerpo">
+      <p>Cuando ya está todo configurado, tu día son cinco minutos:</p>
+
+      <div class="app">
+        <div class="cab"><b>Panel Gimnasio</b> · lo que mirás cada día</div>
+        <div class="cuerpo">
+          <div class="card">
+            <div class="t">Pendientes de revisión <span class="chip a">3 pendientes</span></div>
+            <div class="d">Comprobantes de pago y aptos que mandaron los socios. Los confirmás con un clic.</div>
+          </div>
+          <div class="card">
+            <div class="t">A quién avisarle hoy <span class="chip a">5 por avisar</span></div>
+            <div class="d">Cuotas vencidas y por vencer. El mensaje de WhatsApp ya viene escrito.</div>
+          </div>
+          <div class="card">
+            <div class="t">Caja del día <span class="chip v">$ 87.500</span></div>
+            <div class="d">Al cerrar, comparás el efectivo con el cajón.</div>
+          </div>
+        </div>
+      </div>
+
+      <table>
+        <tr><th style="width:26%">Cuándo</th><th>Qué</th></tr>
+        <tr><td><strong>Todos los días</strong><br><span style="color:var(--soft); font-size:.82rem;">5 minutos</span></td>
+          <td>Revisá <strong>Pendientes</strong>. Mandá los avisos de <strong>A quién avisarle hoy</strong> (son dos clics por socio). Al cerrar, mirá la <strong>Caja</strong>.</td></tr>
+        <tr><td><strong>Una vez por semana</strong><br><span style="color:var(--soft); font-size:.82rem;">10 minutos</span></td>
+          <td>Bajá el <strong>CSV</strong> del padrón y guardalo: es tu respaldo. Mirá quién está en rojo hace varios días y llamalos. Mandá la credencial a los socios nuevos.</td></tr>
+        <tr><td><strong>Una vez por mes</strong></td>
+          <td>Revisá precios. Mirá los aptos por vencer. Chequeá que en <strong>Usuarios</strong> no quede nadie que ya no trabaja con vos.</td></tr>
+      </table>
+
+      <div class="box warn">
+        <span class="t">Cuando se va un empleado</span>
+        <p>
+          Avisá el mismo día para que le den de baja el acceso. Mientras la cuenta siga activa, puede
+          entrar desde cualquier lugar y ver el padrón de tus socios.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <h2>Lista de puesta en marcha</h2>
+  <p>Marcá cada punto. Se guardan solos, así que podés cerrar la página y seguir después.</p>
+  <ul class="chk">
+    <li><input type="checkbox" id="d1"><label for="d1">Entré, cambié mi clave provisoria y vi la insignia <strong>Nube</strong></label></li>
+    <li><input type="checkbox" id="d2"><label for="d2">Le puse el nombre real a mi sede</label></li>
+    <li><input type="checkbox" id="d3"><label for="d3">Cargué mis planes con el precio <strong>y la duración correcta de cada uno</strong></label></li>
+    <li><input type="checkbox" id="d4"><label for="d4">Definí si el apto médico es obligatorio</label></li>
+    <li><input type="checkbox" id="d5"><label for="d5">Pegué mi link de pago de Mercado Pago</label></li>
+    <li><input type="checkbox" id="d6"><label for="d6">Cargué socios (de a uno o importando el Excel)</label></li>
+    <li><input type="checkbox" id="d7"><label for="d7">Le mandé la credencial a uno por WhatsApp y la recibió bien</label></li>
+    <li><input type="checkbox" id="d8"><label for="d8">Cobré una cuota de prueba y la vi en <strong>Caja del día</strong></label></li>
+    <li><input type="checkbox" id="d9"><label for="d9">Mi recepcionista tiene su propia cuenta y sabe leer los tres colores</label></li>
+    <li><input type="checkbox" id="d10"><label for="d10">Bajé el CSV del padrón como respaldo</label></li>
+  </ul>
+
+  <hr class="soft">
+
+  <h2>Cuándo se cierra tu sesión</h2>
+  <p>
+    Por seguridad la app no deja la sesión abierta para siempre, y no trata a todos igual:
+  </p>
+  <table>
+    <tr><th style="width:30%">Quién</th><th>Qué pasa</th></tr>
+    <tr><td><strong>Vos</strong></td><td>Se cierra a los <strong>30 minutos</strong> sin uso. Un minuto antes te avisa con un botón <strong>Sigo acá</strong>, así no perdés lo que estabas cargando.</td></tr>
+    <tr><td><strong>Recepción</strong></td><td><strong>Se bloquea, no se cierra.</strong> Se tapa la pantalla y pide la clave. El escáner sigue andando por debajo.</td></tr>
+    <tr><td><strong>Socios</strong></td><td>Nada. Abren la app y muestran el QR.</td></tr>
+  </table>
+  <p>
+    Además, <strong>cada 12 horas</strong> hay que poner la clave de nuevo aunque estés trabajando.
+    Eso es lo que te protege si perdés el teléfono.
+  </p>
+  <p>Los tres tiempos se cambian en <strong>Mi Gimnasio</strong>.</p>
+
+  <p class="meta">
+    FitAccess · Tu primer día como dueño.<br>
+    Las tildes se guardan en tu navegador: podés cerrar la página y seguir después.
+  </p>
+</div>
+
+<script src="guia.js"></script>
+<script>iniciarProgreso(["d1","d2","d3","d4","d5","d6","d7"]);</script>
+</body>
+</html>
