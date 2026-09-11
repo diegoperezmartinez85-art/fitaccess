@@ -6123,6 +6123,51 @@ Object.assign(FitApp, {
     if (d) d.textContent = ROLES[role] ? ROLES[role].desc : "";
   },
 
+  /* Alta de un socio cuando NO hay Cloud Functions (plan Spark). No se puede
+     crear el login desde el navegador, pero no hace falta: se carga la ficha y
+     el socio activa su propia cuenta con el código de la credencial. Esto es
+     exactamente el flujo de "Nuevo Socio", reusado desde el modal de usuario
+     para que quien eligió el camino equivocado termine igual bien parado. */
+  async altaSocioSinBlaze({ name, email, branchId, existingMemberSel }) {
+    const gym = this.activeGym();
+    if (!gym) return;
+
+    // Si estaba vinculando a una ficha que ya existe, no se crea otra.
+    const yaExiste = existingMemberSel && existingMemberSel !== "__new__"
+      ? this.findMember(existingMemberSel) : null;
+
+    let member = yaExiste;
+    if (!member) {
+      if (email && this.scopedMembers().some(m => (m.email || "").toLowerCase() === email.toLowerCase())) {
+        return this.showToast(`Ya hay un socio con el email ${email} en ${gym.name}.`, "warn");
+      }
+      member = {
+        id: this.nextMemberId(gym),
+        gymId: gym.id,
+        branchId: branchId || (gym.branches[0] && gym.branches[0].id),
+        name, dni: "", phone: "", email,
+        planId: (gym.plans[0] && gym.plans[0].id) || null,
+        photo: null,
+        subscriptionStatus: "vencido",
+        dueDate: dPlus(30),
+        aptoMedico: "pendiente", aptoDueDate: null, aptoFile: null,
+        claimCode: randomClaimCode(), claimedUid: null, claimedAt: null,
+        pendingPayment: null, payments: [],
+        createdAt: new Date().toISOString(),
+        createdBy: this.session.userId
+      };
+      this.members.push(member);
+      this.persist("members");
+      this.pushCloud("member", member);
+      this.logAudit("member:create", `Alta de socio ${name} (${member.id})`, "member", member.id);
+    }
+
+    this.renderAll();
+    this.showToast(`${member.name} quedó en el padrón. Mandale la credencial con el código para que active su cuenta.`, "success");
+    // Abre la credencial lista para enviar por WhatsApp, con el código adentro.
+    this.previewCredential(member.id);
+  },
+
   async saveNewUser() {
     if (!this.can("users:create")) return;
     const gym = this.activeGym();
@@ -6205,7 +6250,25 @@ Object.assign(FitApp, {
        el navegador es imposible, y las reglas lo bloquean a propósito. */
     if (this.cloudOn()) {
       const res = await FirebaseSaaS.createUser({ gymId: gym.id, name, email, role, memberId, branchId });
-      if (!res.ok) return this.showToast(`🚫 ${res.message}`);
+      if (!res.ok) {
+        /* Sin plan Blaze no hay Cloud Function que cree el Auth user. Para un
+           SOCIO no hace falta: se carga la ficha y él activa su cuenta con el
+           código de la credencial (gratis en Spark). Se lo redirige a ese
+           camino en vez de dejarlo contra la pared con un error. */
+        if (res.noBlaze && role === "socio") {
+          this.hideModal("modal-create-user");
+          return this.altaSocioSinBlaze({ name, email, branchId, memberId, existingMemberSel: memberId });
+        }
+        /* Para staff (recepción, entrenador, admin) el alta de un login SÍ
+           necesita Blaze o crearse a mano en la consola de Firebase. Se explica,
+           no se esconde detrás de "internal". */
+        if (res.noBlaze) {
+          return this.showToast(
+            `Para crear el acceso de ${ROLES[role].label} hace falta el plan de pago de Firebase, o cargar el usuario a mano en la consola. Escribime y te paso los pasos.`,
+            "warn");
+        }
+        return this.showToast(`🚫 ${res.message}`);
+      }
 
       const created = res.data || {};
       this.users.push({
@@ -9622,6 +9685,16 @@ document.addEventListener("DOMContentLoaded", () => FitApp.init());
           const res = await fn(payload);
           return { ok: true, data: res.data };
         } catch (e) {
+          const code = (e && e.code) || "";
+          /* "internal" / "not-found" con este alta = la Cloud Function no está
+             desplegada, que es lo normal en plan Spark (gratis). El mensaje
+             crudo de Firebase ("internal") no le dice nada a nadie; se traduce
+             a algo accionable y se marca noBlaze para que la app ofrezca el
+             camino que SÍ funciona sin plan pago. */
+          if (code.includes("internal") || code.includes("not-found") || code.includes("functions/")) {
+            return { ok: false, noBlaze: true,
+              message: "Este alta necesita el plan de pago de Firebase (Cloud Functions), que tu cuenta no tiene." };
+          }
           return { ok: false, message: (e && e.message) || `Falló ${name}.` };
         }
       },
