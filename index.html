@@ -1485,7 +1485,7 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
               <div id="portal-subtitle" style="font-size: 0.76rem; color: var(--text-muted);">Ingresá tu correo y contraseña</div>
             </div>
           </div>
-          <button type="button" class="btn btn-secondary btn-tiny" onclick="FitApp.backToPortalSelector()">← Cambiar</button>
+          <button type="button" class="btn btn-secondary btn-tiny" onclick="FitApp.backToPortalSelector()"><svg class="ico" aria-hidden="true"><use href="#i-chevron-left"/></svg> Cambiar</button>
         </div>
 
         <form id="portal-login-form" onsubmit="event.preventDefault(); FitApp.submitPortalLogin();" style="display: flex; flex-direction: column; gap: 12px;">
@@ -1554,7 +1554,7 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
   <!-- Barra de contexto de tenant (impersonación del superadmin) -->
   <div id="tenant-context-bar" class="tenant-bar">
     <span><svg class="ico" aria-hidden="true"><use href="#i-globe"/></svg> <strong>Modo plataforma</strong> — estás operando dentro de <strong id="tenant-bar-gym">—</strong> como Super Admin. Todo queda auditado.</span>
-    <button class="btn btn-secondary btn-tiny" onclick="FitApp.exitGymContext()">← Volver a la consola</button>
+    <button class="btn btn-secondary btn-tiny" onclick="FitApp.exitGymContext()"><svg class="ico" aria-hidden="true"><use href="#i-chevron-left"/></svg> Volver a la consola</button>
   </div>
 
   <!-- Header -->
@@ -2094,7 +2094,10 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
           <a class="btn btn-secondary" href="./guias/socio-visual.html" target="_blank" rel="noopener">
             <svg class="ico" aria-hidden="true"><use href="#i-card"/></svg> Para mandarle al socio
           </a>
-          <a class="btn btn-secondary" data-cap="users:create" href="./guias/alta-visual.html" target="_blank" rel="noopener">
+          <!-- Sólo el operador de la plataforma: esta guía explica la Firebase
+               Console, no le sirve al dueño de un gimnasio. Estaba filtrada por
+               users:create, que el dueño SÍ tiene porque crea recepcionistas. -->
+          <a class="btn btn-secondary" data-cap="tenants:manage" href="./guias/alta-visual.html" target="_blank" rel="noopener">
             <svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg> Dar de alta un gimnasio
           </a>
         </div>
@@ -3623,7 +3626,7 @@ const Store = {
             createdAt: m.createdAt || acc.createdAt, ...cred
           });
         } else {
-          dropped.push(`${acc.email} → ${m.gymId} (${m.role})`);
+          dropped.push(`${acc.email} en ${m.gymId} (${m.role})`);
         }
       });
     });
@@ -3761,7 +3764,7 @@ const FitApp = {
 
     if (ok.includes(false)) {
       const uso = Store.usage();
-      alert(`⚠️ NO SE PUDO GUARDAR\n\nEl almacenamiento de este navegador está lleno (${uso.mb.toFixed(1)} MB).\n\nLo último que cargaste NO quedó guardado. Descargá un backup ahora y liberá espacio, o pasá la app a Firebase.`);
+      alert(`NO SE PUDO GUARDAR\n\nEl almacenamiento de este navegador está lleno (${uso.mb.toFixed(1)} MB).\n\nLo último que cargaste NO quedó guardado. Descargá un backup ahora y liberá espacio, o pasá la app a Firebase.`);
       const bar = document.getElementById("backup-bar");
       const txt = document.getElementById("backup-bar-text");
       if (txt) txt.innerHTML = `${ic("alert")} <strong>El almacenamiento está lleno y los cambios no se están guardando.</strong>`;
@@ -4077,6 +4080,50 @@ const FitApp = {
     this._toastT = setTimeout(() => { el.style.display = "none"; }, 3600);
   },
 
+  /* Aviso fijo DENTRO de una pantalla: el renglón debajo del login, el de la
+     activación del socio y el del alta guiada. No es el aviso flotante.
+
+     Existe por el mismo motivo que la limpieza de showToast: estos mensajes
+     traían el emoji escrito a mano y acá nadie lo sacaba, porque no pasan por
+     showToast sino que se escriben derecho en el elemento. El resultado era un
+     cuadrado vacío en la pantalla de ingreso de cualquier equipo viejo, que es
+     justo donde no se puede fallar.
+
+     Por defecto ESCAPA el texto: antes esto era un innerHTML pelado y algunos
+     mensajes interpolan lo que la persona tipeó. Los tres mensajes que traen
+     <code> o <br> a propósito piden html = true. */
+  setStatus(el, texto, tipo = "info", html = false) {
+    if (!el) return;
+    const iconos = {
+      error: "ban", warn: "alert", success: "check-circle",
+      info: "bolt", espera: "clock", mail: "mail"
+    };
+    const colores = {
+      error: "--status-red", warn: "--status-yellow", success: "--status-green",
+      info: "--text-muted", espera: "--text-muted", mail: "--status-green"
+    };
+    const cuerpo = String(texto == null ? "" : texto);
+    el.innerHTML = `${ic(iconos[tipo] || "bolt")} <span>${html ? cuerpo : esc(cuerpo)}</span>`;
+    el.style.color = `var(${colores[tipo] || "--text-muted"})`;
+
+    /* Un aviso que cae fuera de la pantalla no sirve de nada. Este renglón está
+       al final de la tarjeta, debajo de las cuentas de prueba: en un celular de
+       390x780 queda casi 300 px por debajo del borde, a 484 px del botón. La
+       persona ponía mal la contraseña, tocaba Iniciar Sesión y no veía NADA.
+       Sin scroll automático, todo el trabajo de estos mensajes es invisible. */
+    const caja = el.getBoundingClientRect();
+    if (caja.top < 0 || caja.bottom > (window.innerHeight || 0)) {
+      el.scrollIntoView({ block: "center" });
+    }
+  },
+
+  /* Deja el renglón en blanco sin dejar el icono colgado. */
+  clearStatus(el) {
+    if (!el) return;
+    el.innerHTML = "";
+    el.style.color = "";
+  },
+
   /* ==================================================================
      6. AUTENTICACIÓN
      ================================================================== */
@@ -4102,7 +4149,7 @@ const FitApp = {
     document.getElementById("portal-subtitle").textContent = meta.subtitle;
 
     const status = document.getElementById("portal-auth-status");
-    if (status) { status.textContent = ""; }
+    this.clearStatus(status);
 
     const email = document.getElementById("portal-login-email");
     const pass = document.getElementById("portal-login-password");
@@ -4171,30 +4218,29 @@ const FitApp = {
     const password = passEl.value || "";
     const portal = this.selectedPortal || "staff";
 
-    const fail = (msg) => {
-      if (statusEl) { statusEl.innerHTML = msg; statusEl.style.color = "var(--status-red)"; }
-    };
+    const fail = (msg, html) => this.setStatus(statusEl, msg, "error", html);
 
     if (!email || !password) {
-      if (statusEl) { statusEl.textContent = "⚠️ Completá correo y contraseña."; statusEl.style.color = "var(--status-yellow)"; }
+      this.setStatus(statusEl, "Completá correo y contraseña.", "warn");
       return;
     }
 
-    if (statusEl) { statusEl.textContent = "⏳ Verificando credenciales…"; statusEl.style.color = "var(--text-muted)"; }
+    this.setStatus(statusEl, "Verificando credenciales…", "espera");
 
     /* Un email = un usuario. Si Firebase está configurado, la verificación la
        hace Auth y el rol viene firmado en el token; si no, se valida contra el
        hash local (modo demo). */
     if (this.cloudOn()) {
       const cloud = await FirebaseSaaS.signIn(email, password);
-      if (!cloud.ok) return fail("❌ " + cloud.message);
+      if (!cloud.ok) return fail(cloud.message);
 
       const local = this.applyCloudIdentity(cloud.identity);
-      if (!local.ok) return fail(local.message);
+      // Este mensaje trae <code> y <br> a propósito: nombra el documento que falta.
+      if (!local.ok) return fail(local.message, true);
 
       // Los datos se traen ANTES de validar el tenant, porque en modo nube el
       // gimnasio vive en Firestore, no en este navegador.
-      if (statusEl) statusEl.textContent = "⏳ Trayendo los datos del gimnasio…";
+      this.setStatus(statusEl, "Trayendo los datos del gimnasio…", "espera");
       if (local.user.gymId) {
         await this.pullTenant(local.user.gymId);
         this.activeGymId = local.user.gymId;
@@ -4209,25 +4255,26 @@ const FitApp = {
     const user = this.users.find(u => (u.email || "").toLowerCase() === email);
     const ok = await Security.verify(user, password);
     // Mensaje genérico: no revelamos si el email existe.
-    if (!user || !ok) return fail("❌ Correo o contraseña incorrectos.");
+    if (!user || !ok) return fail("Correo o contraseña incorrectos.");
     return this.finishPortalLogin(user, portal, fail);
   },
 
   /* Validaciones comunes a los dos modos, después de autenticar. */
   finishPortalLogin(user, portal, fail) {
-    if (!user.active) return fail("🚫 Tu usuario está desactivado. Contactá al administrador del gimnasio.");
+    if (!user.active) return fail("Tu usuario está desactivado. Contactá al administrador del gimnasio.");
 
     // El portal NO define el rol: se valida que el rol real pueda entrar ahí.
     const allowedRoles = PORTAL_ROLES[portal] || [];
     if (!allowedRoles.includes(user.role)) {
-      return fail(`${ic("alert")} Tu cuenta tiene rol <strong>${esc(ROLES[user.role].label)}</strong> y no puede ingresar por este portal.`);
+      // El icono lo pone setStatus; acá el <strong> es a propósito.
+      return fail(`Tu cuenta tiene rol <strong>${esc(ROLES[user.role].label)}</strong> y no puede ingresar por este portal.`, true);
     }
 
     // El tenant tiene que existir y no estar suspendido por impago.
     if (user.role !== "superadmin") {
       const gym = this.gymById(user.gymId);
-      if (!gym) return fail("❌ Tu usuario no está asociado a ningún gimnasio. Avisale al soporte.");
-      if (!gym.active) return fail(`${ic("ban")} <strong>${esc(gym.name)}</strong> está suspendido. Contactá a FitAccess.`);
+      if (!gym) return fail("Tu usuario no está asociado a ningún gimnasio. Avisale al soporte.");
+      if (!gym.active) return fail(`<strong>${esc(gym.name)}</strong> está suspendido. Contactá a FitAccess.`, true);
     }
 
     return this.completeLogin(user, portal);
@@ -4246,7 +4293,7 @@ const FitApp = {
         : `El documento <code>users/${esc(uid)}</code> existe pero no tiene <code>role</code> ni <code>gymId</code>.`;
       return {
         ok: false,
-        message: `❌ Tu cuenta no tiene permisos asignados. ${detalle}<br>` +
+        message: `Tu cuenta no tiene permisos asignados. ${detalle}<br>` +
                  `<span style="font-size:.78rem">Revisá que el ID del documento sea exactamente <code>${esc(uid)}</code>.</span>`
       };
     }
@@ -4296,7 +4343,7 @@ const FitApp = {
     this.impersonating = false;
 
     const statusEl = document.getElementById("portal-auth-status");
-    if (statusEl) statusEl.textContent = "";
+    this.clearStatus(statusEl);
     this.hideLoginModal();
     this.afterLogin(portal);
   },
@@ -4994,7 +5041,7 @@ const FitApp = {
       this.renderConsole();
       this.showCredentials(
         `Gimnasio: ${name}\nDueño: ${ownerEmail}\nRol: Dueño\n\n` +
-        `📧 Se le envió una invitación para que elija su contraseña.` +
+        `Se le envió una invitación para que elija su contraseña.` +
         (res.data && res.data.inviteLink ? `\n\nLink directo:\n${res.data.inviteLink}` : ""));
       ["gym-new-name", "gym-new-branch", "gym-new-owner-name", "gym-new-owner-email"].forEach(id => document.getElementById(id).value = "");
       return;
@@ -5054,7 +5101,9 @@ const FitApp = {
     this.persistGym();
     this.logAudit(g.active ? "tenant:reactivate" : "tenant:suspend", `${g.active ? "Reactivó" : "Suspendió"} ${g.name}`, "gym", g.id, g.id);
     this.renderConsole();
-    this.showToast(`${g.active ? "▶" : "⏸"} ${g.name} ${g.active ? "reactivado" : "suspendido"}.`);
+    // Sin símbolo adelante: el texto ya dice qué pasó, y el ▶ no entraba en los
+    // rangos que limpia showToast, así que se veía el triángulo pelado.
+    this.showToast(`${g.name} ${g.active ? "reactivado" : "suspendido"}.`, g.active ? "success" : "warn");
   },
 
   deleteGym(gymId) {
@@ -5753,7 +5802,7 @@ Object.assign(FitApp, {
       `<option value="${r}">${ROLES[r].label} — ${ROLES[r].desc.slice(0, 60)}…</option>`).join("");
 
     const memberSel = document.getElementById("user-new-member-id");
-    memberSel.innerHTML = `<option value="__new__">✨ Crear una ficha de socio nueva con estos datos</option>` +
+    memberSel.innerHTML = `<option value="__new__">Crear una ficha de socio nueva con estos datos</option>` +
       (this.scopedMembers().length
         ? `<optgroup label="O vincular a un socio existente de ${esc(gym.name)}">` +
           this.scopedMembers().map(m => `<option value="${m.id}">${esc(m.name)} · DNI ${esc(m.dni)} · ${esc(m.id)}</option>`).join("") +
@@ -5889,7 +5938,7 @@ Object.assign(FitApp, {
       this.renderAll();
       this.showCredentials(
         `Gimnasio: ${gym.name}\nPortal: ${portal}\nUsuario: ${email}\nRol: ${ROLES[role].label}\n\n` +
-        `📧 Se le envió una invitación a ${email} para que elija su contraseña.` +
+        `Se le envió una invitación a ${email} para que elija su contraseña.` +
         (created.inviteLink ? `\n\nLink directo:\n${created.inviteLink}` : ""));
       return;
     }
@@ -5928,7 +5977,7 @@ Object.assign(FitApp, {
         u.active = !u.active;
         this.persist("users");
         this.renderUsersTable();
-        this.showToast(`${u.active ? "▶" : "⏸"} ${u.email} ${u.active ? "reactivado" : "desactivado"}.`);
+        this.showToast(`${u.email} ${u.active ? "reactivado" : "desactivado"}.`, u.active ? "success" : "warn");
       });
       return;
     }
@@ -5937,7 +5986,7 @@ Object.assign(FitApp, {
     this.persist("users");
     this.logAudit("user:toggle", `${u.active ? "Reactivó" : "Desactivó"} a ${u.email}`, "user", u.id);
     this.renderUsersTable();
-    this.showToast(`${u.active ? "▶" : "⏸"} ${u.email} ${u.active ? "reactivado" : "desactivado"}.`);
+    this.showToast(`${u.email} ${u.active ? "reactivado" : "desactivado"}.`, u.active ? "success" : "warn");
   },
 
   async resetUserPassword(userId) {
@@ -6201,7 +6250,7 @@ Object.assign(FitApp, {
     }
     this.persist("members");
     this.pushCloud("member", m, m.gymId);
-    this.logAudit("member:apto_upload", `Certificado médico de ${m.name} → ${m.aptoMedico}`, "member", m.id, m.gymId);
+    this.logAudit("member:apto_upload", `Certificado médico de ${m.name} pasó a ${m.aptoMedico}`, "member", m.id, m.gymId);
     this.renderMemberView(m.id);
 
     const box = document.getElementById("socio-apto-preview-box");
@@ -6378,7 +6427,7 @@ Object.assign(FitApp, {
       (enNube
         ? `IMPORTANTE: la cuenta anterior (${m.email || "sin correo"}) NO se borra desde acá y ` +
           `va a seguir viendo esta ficha. Para cerrarla del todo hay que borrarla en\n` +
-          `Firebase Console → Authentication.\n\n`
+          `Firebase Console, en la sección Authentication.\n\n`
         : "") +
       `¿Continuar?`;
     if (!confirm(aviso)) return;
@@ -6712,7 +6761,7 @@ Object.assign(FitApp, {
             <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">
               ${fechaHora} · ${esc(this.paymentMethodLabel(p.method))} · ${p.days || 30} día${(p.days || 30) === 1 ? "" : "s"}${quien}
             </div>
-            ${p.discountName ? `<div style="font-size:0.74rem; color:var(--status-yellow); margin-top:2px;">${esc(p.discountName)} · −${this.money(p.discountAmount || 0)}</div>` : ""}
+            ${p.discountName ? `<div style="font-size:0.74rem; color:var(--status-yellow); margin-top:2px;">${esc(p.discountName)} · -${this.money(p.discountAmount || 0)}</div>` : ""}
             ${nota}
             ${p.voided ? `<div style="font-size:0.74rem; color:var(--status-red); margin-top:3px;">
                 ANULADO · ${esc(p.voidReason || "sin motivo")}${p.voidedByName ? ` · por ${esc(p.voidedByName)}` : ""}
@@ -8198,8 +8247,7 @@ Object.assign(FitApp, {
       info.textContent = gym ? `Gimnasio: ${gym.name}` : "";
       info.style.display = gym ? "block" : "none";
     }
-    const st = document.getElementById("act-status");
-    if (st) st.textContent = "";
+    this.clearStatus(document.getElementById("act-status"));
     document.getElementById("modal-activation").style.display = "flex";
   },
 
@@ -8211,7 +8259,7 @@ Object.assign(FitApp, {
   async submitActivation() {
     const val = id => (document.getElementById(id).value || "").trim();
     const st = document.getElementById("act-status");
-    const fail = (m) => { if (st) { st.textContent = m; st.style.color = "var(--status-red)"; } };
+    const fail = (m) => this.setStatus(st, m, "error");
     const code = val("act-code").toUpperCase();
     const memberId = val("act-member").toUpperCase();
     const email = val("act-email").toLowerCase();
@@ -8223,7 +8271,7 @@ Object.assign(FitApp, {
     if (pass.length < 8) return fail("La contraseña necesita al menos 8 caracteres.");
     if (!email) return fail("Escribí un correo.");
 
-    if (st) { st.textContent = "Verificando el código…"; st.style.color = "var(--text-muted)"; }
+    this.setStatus(st, "Verificando el código…", "espera");
 
     /* Modo nube: la validación real la hacen las reglas de Firestore.
        Modo local: se valida contra la ficha guardada en el dispositivo. */
@@ -8680,7 +8728,7 @@ Object.assign(FitApp, {
   async runSetup() {
     const val = id => (document.getElementById(id).value || "").trim();
     const status = document.getElementById("su-status");
-    const fail = m => { if (status) { status.textContent = m; status.style.color = "var(--status-red)"; } };
+    const fail = m => this.setStatus(status, m, "error");
 
     const gymName = val("su-gym-name");
     const branchName = val("su-branch");
@@ -8689,11 +8737,11 @@ Object.assign(FitApp, {
     const pass = document.getElementById("su-owner-pass").value;
     const pass2 = document.getElementById("su-owner-pass2").value;
 
-    if (pass !== pass2) return fail("❌ Las contraseñas no coinciden.");
-    if (pass.length < 10) return fail("❌ La contraseña necesita al menos 10 caracteres.");
-    if (pass === DEMO_PASSWORD) return fail("❌ Esa es la clave pública de la demo. Elegí otra.");
+    if (pass !== pass2) return fail("Las contraseñas no coinciden.");
+    if (pass.length < 10) return fail("La contraseña necesita al menos 10 caracteres.");
+    if (pass === DEMO_PASSWORD) return fail("Esa es la clave pública de la demo. Elegí otra.");
     if (Security.strength(pass) !== "ok") {
-      return fail("❌ Mezclá mayúsculas, minúsculas y números o símbolos.");
+      return fail("Mezclá mayúsculas, minúsculas y números o símbolos.");
     }
 
     // Planes cargados en el formulario
@@ -8703,9 +8751,9 @@ Object.assign(FitApp, {
       .map((n, i) => ({ name: n, price: prices[i] }))
       .filter(p => p.name && !Number.isNaN(p.price))
       .map((p, i) => ({ id: `pl-${Date.now().toString(36)}-${i}`, name: p.name, price: p.price }));
-    if (!plans.length) return fail("❌ Cargá al menos un plan con su precio.");
+    if (!plans.length) return fail("Cargá al menos un plan con su precio.");
 
-    if (status) { status.textContent = "⏳ Creando…"; status.style.color = "var(--text-muted)"; }
+    this.setStatus(status, "Creando…", "espera");
 
     const branchId = `br-${Date.now().toString(36)}`;
     const gym = {
@@ -8892,7 +8940,7 @@ Object.assign(FitApp, {
       const esIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
       alert(esIOS
         ? "En iPhone o iPad: tocá el botón Compartir y elegí «Agregar a inicio»."
-        : "Tu navegador no ofrece instalación automática.\n\nEn Chrome o Edge de escritorio: menú ⋮ → «Instalar FitAccess».\nEn Firefox no está disponible: usá Chrome o Edge.");
+        : "Tu navegador no ofrece instalación automática.\n\nEn Chrome o Edge de escritorio: abrí el menú de los tres puntos y elegí «Instalar FitAccess».\nEn Firefox no está disponible: usá Chrome o Edge.");
       return;
     }
     this.installEvent.prompt();
@@ -8919,23 +8967,16 @@ Object.assign(FitApp, {
     const email = (document.getElementById("portal-login-email").value || "").trim();
     const statusEl = document.getElementById("portal-auth-status");
     if (!email) {
-      if (statusEl) { statusEl.textContent = "⚠️ Escribí tu correo primero."; statusEl.style.color = "var(--status-yellow)"; }
+      this.setStatus(statusEl, "Escribí tu correo primero.", "warn");
       return;
     }
     if (!this.cloudOn()) {
-      if (statusEl) {
-        statusEl.textContent = "ℹ️ En modo local no hay envío de mails: pedile al admin del gimnasio que te resetee la clave.";
-        statusEl.style.color = "var(--text-muted)";
-      }
+      this.setStatus(statusEl, "En modo local no hay envío de mails: pedile al admin del gimnasio que te resetee la clave.", "info");
       return;
     }
     const res = await window.FirebaseSaaS.sendReset(email);
-    if (statusEl) {
-      statusEl.textContent = res.ok
-        ? "📧 Si el correo existe, te llega un link para cambiar la contraseña."
-        : `❌ ${res.message}`;
-      statusEl.style.color = res.ok ? "var(--status-green)" : "var(--status-red)";
-    }
+    if (res.ok) this.setStatus(statusEl, "Si el correo existe, te llega un link para cambiar la contraseña.", "mail");
+    else this.setStatus(statusEl, res.message, "error");
   }
 });
 
@@ -9056,7 +9097,7 @@ document.addEventListener("DOMContentLoaded", () => FitApp.init());
 
       /* --------------------------------------------------------- auth */
       async signIn(email, password) {
-        if (!this.auth) return { ok: false, message: "❌ Firebase no está inicializado." };
+        if (!this.auth) return { ok: false, message: "Firebase no está inicializado." };
         try {
           const cred = await signInWithEmailAndPassword(this.auth, email, password);
           const identity = await this.identityOf(cred.user);
