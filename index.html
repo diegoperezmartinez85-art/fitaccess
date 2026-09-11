@@ -738,6 +738,10 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
    baja no se coma el pie. */
 #login-modal-overlay { flex-direction: column; gap: 13px; }
 #login-modal-overlay .modal-card { max-height: calc(92vh - 44px); }
+/* El crédito no se estira al ancho de la tarjeta, así que sin esto queda
+   sujeto a lo que diga align-items del contenedor, que en celular vale
+   flex-end para las hojas deslizables y lo empujaba contra el borde. */
+.nexos-credit { align-self: center; }
 
 .nexos-credit {
   display: flex; align-items: center; justify-content: center; gap: 7px;
@@ -1078,6 +1082,35 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
     width: 40px; height: 4px; border-radius: 3px; background: var(--hairline-3);
   }
   @keyframes sheetIn { from { transform: translateY(100%); } to { transform: none; } }
+
+  /* ------------------------------------------------------------------
+     EL INGRESO NO ES UNA HOJA
+     Las reglas de arriba convierten cualquier modal en una hoja que sube
+     desde abajo, y eso está bien para cobrar o congelar: son cosas que se
+     abren sobre la app y se cierran. Pero el ingreso es la puerta de
+     entrada, no algo que se descarta, y quedaba tratado como hoja: pegado
+     al borde inferior, con las esquinas de abajo cuadradas, la barrita de
+     agarre arriba —que invita a arrastrarla para cerrar, cuando no hay nada
+     detrás— y el crédito de Nexos empujado contra el borde derecho.
+
+     Acá vuelve a ser una tarjeta centrada con aire alrededor. Y el que
+     scrollea es el contenedor, no la tarjeta: en un teléfono un panel con
+     scroll propio adentro de una pantalla fija se siente trabado.
+     ------------------------------------------------------------------ */
+  #login-modal-overlay {
+    align-items: center;
+    justify-content: center;
+    overflow-y: auto;
+    padding: 16px 13px calc(16px + env(safe-area-inset-bottom));
+  }
+  #login-modal-overlay .modal-card {
+    max-height: none;
+    border-radius: var(--radius-lg);
+    border-bottom: 1px solid var(--hairline-2);
+    padding: 26px 20px;
+    animation: modalIn .42s var(--ease-out);
+  }
+  #login-modal-overlay .modal-card::after { display: none; }   /* sin barrita de agarre */
 
   /* Tablas convertidas en fichas: nada de scroll horizontal */
   .log-table thead { display: none; }
