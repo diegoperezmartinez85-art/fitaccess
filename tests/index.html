@@ -300,6 +300,122 @@ grupo("Importar planilla", () => {
   });
 });
 
+grupo("Caducidad de la sesión", () => {
+  /* La decisión está separada del temporizador justamente para poder probarla
+     con fechas inventadas. Si hubiera que esperar los treinta minutos reales,
+     esto no se probaría nunca. */
+  const min = n => n * 60000;
+  const hs  = n => n * 3600000;
+  const sesion = (inactivoMs, edadMs) => ({
+    startedAt: new Date(Date.now() - edadMs).toISOString(),
+    lastActivityAt: new Date(Date.now() - inactivoMs).toISOString()
+  });
+
+  test("el dueño se cierra por inactividad", async () => {
+    await entrarComo("staff", "dueno@powerhousegym.com");
+    const p = App.sessionPolicyFor("owner");
+    igual(p.action, "logout", "la política del dueño debería cerrar");
+    igual(App.sessionVerdict(Date.now(), sesion(min(31), min(31)), p).action, "logout",
+      "no cerró después del tiempo de inactividad");
+  });
+
+  test("el dueño NO se cierra si estuvo usando la app", async () => {
+    const p = App.sessionPolicyFor("owner");
+    igual(App.sessionVerdict(Date.now(), sesion(min(2), min(30)), p).action, "none",
+      "cerró una sesión que estaba en uso");
+  });
+
+  test("avisa antes de cerrar, no de golpe", async () => {
+    const p = App.sessionPolicyFor("owner");
+    const v = App.sessionVerdict(Date.now(), sesion(min(29) + 30000, min(29)), p, 60);
+    igual(v.action, "warn", "no avisó antes de cerrar");
+    cierto(v.secondsLeft > 0 && v.secondsLeft <= 60, "el tiempo restante del aviso no tiene sentido");
+  });
+
+  test("recepción se BLOQUEA, no se cierra", async () => {
+    const p = App.sessionPolicyFor("recepcion");
+    igual(p.action, "lock", "recepción no debería cerrarse nunca");
+    igual(App.sessionVerdict(Date.now(), sesion(min(11), min(11)), p).action, "lock",
+      "no bloqueó la terminal");
+  });
+
+  test("a recepción no se le interrumpe con avisos", async () => {
+    const p = App.sessionPolicyFor("recepcion");
+    const v = App.sessionVerdict(Date.now(), sesion(min(9) + 40000, min(9)), p, 60);
+    falso(v.action === "warn", "avisó de un cierre que no va a pasar");
+  });
+
+  test("el socio no caduca nunca", async () => {
+    const p = App.sessionPolicyFor("socio");
+    igual(p.action, "none", "el socio no debería caducar");
+    igual(App.sessionVerdict(Date.now(), sesion(hs(48), hs(48)), p).action, "none",
+      "le cerró la sesión a un socio");
+  });
+
+  test("la caducidad absoluta gana aunque se esté usando", async () => {
+    const p = App.sessionPolicyFor("owner");
+    const v = App.sessionVerdict(Date.now(), sesion(1000, hs(13)), p);
+    igual(v.action, "logout", "una sesión de 13 horas siguió viva");
+    igual(v.reason, "max", "el motivo debería ser la caducidad absoluta");
+  });
+
+  test("el operador de la plataforma es el más estricto", async () => {
+    const sa = App.sessionPolicyFor("superadmin");
+    const ow = App.sessionPolicyFor("owner");
+    cierto(sa.idleMin < ow.idleMin, "el operador debería cerrar antes que el dueño");
+    cierto(sa.maxHours < ow.maxHours, "el operador debería caducar antes que el dueño");
+  });
+
+  test("los ajustes del gimnasio pisan los valores por defecto", async () => {
+    await entrarComo("staff", "dueno@powerhousegym.com");
+    const gym = App.activeGym();
+    gym.settings.session = { idleMinutes: 5, lockMinutes: 3, maxHours: 2 };
+    igual(App.sessionPolicyFor("owner").idleMin, 5, "no tomó el ajuste del gimnasio");
+    igual(App.sessionPolicyFor("recepcion").idleMin, 3, "recepción no tomó su propio ajuste");
+    igual(App.sessionPolicyFor("owner").maxHours, 2, "no tomó la caducidad configurada");
+    delete gym.settings.session;
+  });
+
+  test("no se acepta un tiempo absurdo que deje al gimnasio sin trabajar", async () => {
+    const gym = App.activeGym();
+    App.updateSessionSetting("idleMinutes", "0");
+    cierto(gym.settings.session.idleMinutes >= 5, "aceptó cerrar la sesión a los 0 minutos");
+    App.updateSessionSetting("idleMinutes", "99999");
+    cierto(gym.settings.session.idleMinutes <= 480, "aceptó un tiempo sin tope");
+    delete gym.settings.session;
+  });
+
+  test("marcar actividad evita el cierre", async () => {
+    App.session.lastActivityAt = new Date(Date.now() - min(45)).toISOString();
+    App.touchSession();
+    const p = App.sessionPolicyFor(App.session.role);
+    igual(App.sessionVerdict(Date.now(), App.session, p).action, "none",
+      "siguió queriendo cerrar después de registrar actividad");
+  });
+
+  test("al desbloquear se reinicia el reloj de la caducidad", async () => {
+    await entrarComo("recepcion", "recepcion@powerhousegym.com");
+    App.session.startedAt = new Date(Date.now() - hs(20)).toISOString();
+    App.lockSession("prueba");
+    cierto(App.sessionLocked, "no quedó bloqueada");
+    W.document.getElementById("lock-password").value = "FitAccess123!";
+    await App.submitUnlock();
+    falso(App.sessionLocked, "no se pudo desbloquear con la contraseña correcta");
+    const p = App.sessionPolicyFor("recepcion");
+    igual(App.sessionVerdict(Date.now(), App.session, p).action, "none",
+      "siguió vencida después de desbloquear");
+  });
+
+  test("no se desbloquea con la contraseña equivocada", async () => {
+    App.lockSession("prueba");
+    W.document.getElementById("lock-password").value = "cualquiera";
+    await App.submitUnlock();
+    cierto(App.sessionLocked, "se desbloqueó con una contraseña incorrecta");
+    W.document.getElementById("lock-password").value = "FitAccess123!";
+    await App.submitUnlock();
+  });
+});
+
 grupo("Interfaz", () => {
   test("los avisos convierten el emoji en icono y no se comen el signo peso", async () => {
     App.showToast("🚫 sin permiso");
