@@ -1059,6 +1059,7 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
 .credential-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 22px; }
 .credential-gym { font-size: 1.1rem; font-weight: 800; letter-spacing: -.02em; line-height: 1.2; }
 .credential-subtitle { font-size: .64rem; font-weight: 700; text-transform: uppercase; letter-spacing: .16em; color: var(--text-muted); margin-top: 3px; }
+.credential-logo { width: 40px; height: 40px; border-radius: 10px; object-fit: cover; flex: none; background: rgba(255,255,255,.06); }
 
 .member-avatar {
   display: block; width: 92px; height: 92px; margin: 0 auto 14px;
@@ -1765,11 +1766,18 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
 
         <div class="digital-credential-card">
           <div class="credential-header">
-            <div style="text-align: left;">
-              <div class="credential-gym" id="credential-gym-name">—</div>
-              <div class="credential-subtitle" id="credential-branch-name">Credencial Digital</div>
+            <div style="display:flex; align-items:center; gap:11px; text-align:left; min-width:0;">
+              <!-- Logo del gimnasio en la credencial: es lo que el socio mira
+                   todos los días, así se siente del gimnasio y no genérico. Si
+                   no carga, se oculta y queda sólo el nombre, como antes. -->
+              <img id="credential-logo" alt="" class="credential-logo"
+                   onerror="this.style.display='none'" style="display:none;">
+              <div style="min-width:0;">
+                <div class="credential-gym" id="credential-gym-name">—</div>
+                <div class="credential-subtitle" id="credential-branch-name">Credencial Digital</div>
+              </div>
             </div>
-            <span class="status-badge badge-green" style="font-size: 0.7rem;">PWA Activa</span>
+            <span class="status-badge badge-green" style="font-size: 0.7rem; flex:none;">PWA Activa</span>
           </div>
 
           <img id="m-avatar" src="" alt="Foto Socio" class="member-avatar">
@@ -2425,11 +2433,41 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
           <button class="btn btn-secondary" onclick="FitApp.exportBrandingJSON()"><svg class="ico" aria-hidden="true"><use href="#i-database"/></svg> Exportar Branding</button>
         </div>
 
-        <div class="grid-3" style="margin-bottom: 20px;">
-          <div class="form-group">
-            <label class="form-label">URL del logotipo:</label>
-            <input type="text" id="wl-logo-url" class="form-input" oninput="FitApp.updateBranding('logoUrl', this.value)">
+        <!-- Logo: previsualización + subir archivo + quitar. Antes sólo había un
+             campo de URL, inservible para un dueño que tiene el logo en el
+             celular. La imagen se comprime al subirla, igual que la foto del
+             socio, para no pasar el límite de 1 MB por documento de Firebase. -->
+        <div style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap; margin-bottom:20px;">
+          <div style="text-align:center;">
+            <div style="font-size:.72rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.1em; margin-bottom:8px;">Logo actual</div>
+            <img id="wl-logo-preview" alt="Logo del gimnasio"
+                 style="width:96px; height:96px; border-radius:16px; object-fit:cover; background:var(--surface-2); border:1px solid var(--hairline);">
           </div>
+          <div style="flex:1; min-width:230px; display:flex; flex-direction:column; gap:10px;">
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <label class="btn" style="cursor:pointer;">
+                <svg class="ico" aria-hidden="true"><use href="#i-upload"/></svg> Subir imagen
+                <input type="file" id="wl-logo-file" accept="image/*" style="display:none;" onchange="FitApp.uploadLogo(this)">
+              </label>
+              <button type="button" class="btn btn-secondary" id="wl-logo-remove" onclick="FitApp.removeLogo()">
+                <svg class="ico" aria-hidden="true"><use href="#i-trash"/></svg> Quitar
+              </button>
+            </div>
+            <p class="section-note" style="margin:0;">
+              Elegí el logo desde tu celular o computadora. Se guarda achicado, así no llena tu cuenta de Firebase.
+            </p>
+            <details>
+              <summary class="quiet-link" style="font-size:.82rem;">¿Preferís pegar un link de internet?</summary>
+              <div class="form-group" style="margin-top:8px; margin-bottom:0;">
+                <label class="form-label" for="wl-logo-url">URL del logotipo:</label>
+                <input type="text" id="wl-logo-url" class="form-input" placeholder="https://..." onchange="FitApp.setLogoFromUrl(this.value)">
+                <p class="section-note" style="margin:6px 0 0;">Tiene que ser el link directo a la imagen. Los de Google Drive o Dropbox no funcionan: subí el archivo con el botón de arriba.</p>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <div class="grid-2" style="margin-bottom: 20px;">
           <div class="form-group">
             <label class="form-label">Color primario:</label>
             <div style="display: flex; gap: 10px; align-items: center;">
@@ -4809,6 +4847,11 @@ const FitApp = {
     const btn = document.getElementById(`nav-${view}`);
     if (btn) btn.classList.add("active");
 
+    /* Cambiar de vista vuelve al tope. Sin esto, si venías scrolleado abajo
+       (por ejemplo en el padrón) y entrabas a "Mi Carnet", la credencial
+       aparecía tapada a medias por el encabezado fijo. */
+    window.scrollTo({ top: 0, behavior: "auto" });
+
     if (view === "reception") {
       this.renderReceptionPanel();
       // Se entra siempre en reposo: si quedó el resultado de un escaneo
@@ -4866,6 +4909,75 @@ const FitApp = {
     this.applyTheme();
     this.renderGymSettings();
     this.logAudit("gym:branding", `Cambió ${field} a ${value}`, "gym", gym.id);
+  },
+
+  /* Toma el archivo elegido, lo comprime (reusa el mismo helper que la foto del
+     socio) y lo guarda como logo. El logo se muestra chico —96px en el panel,
+     más chico en el encabezado y la credencial— así que 256px de lado alcanza
+     de sobra y mantiene el documento de Firebase bien por debajo de 1 MB. */
+  async uploadLogo(input) {
+    if (!this.can("gym:branding")) return;
+    const gym = this.activeGym();
+    if (!gym || !input || !input.files || !input.files[0]) return;
+
+    const file = input.files[0];
+    if (!file.type || !file.type.startsWith("image/")) {
+      input.value = "";
+      return this.showToast("Ese archivo no es una imagen. Elegí un PNG o un JPG.", "warn");
+    }
+
+    const dataUrl = await this.shrinkImage(file, 256, 0.82);
+    input.value = "";   // permite volver a elegir el mismo archivo
+    if (!dataUrl) return this.showToast("No se pudo leer la imagen. Probá con otra.", "error");
+    if (dataUrl.length > 900000) {
+      return this.showToast("La imagen es demasiado pesada. Elegí una más chica o con menos detalle.", "warn");
+    }
+
+    gym.branding.logoUrl = dataUrl;
+    this.persistGym();
+    this.applyTheme();
+    this.renderGymSettings();
+    this.logAudit("gym:branding", "Subió un logo nuevo", "gym", gym.id);
+    this.showToast("Logo actualizado.", "success");
+  },
+
+  /* Pegar una URL. Se separa de updateBranding porque valida el formato y
+     avisa del caso Drive/Dropbox, que es el error típico de un no técnico. */
+  setLogoFromUrl(url) {
+    if (!this.can("gym:branding")) return;
+    const gym = this.activeGym();
+    if (!gym) return;
+    const v = (url || "").trim();
+    if (!v) return;   // vacío se maneja con "Quitar", no borrando el campo
+    if (!/^https:\/\//i.test(v)) {
+      return this.showToast("El link tiene que empezar con https://", "warn");
+    }
+    if (/drive\.google\.|dropbox\.com\/|docs\.google\./i.test(v)) {
+      return this.showToast("Ese link abre una página, no la imagen. Mejor subí el archivo con el botón.", "warn");
+    }
+    gym.branding.logoUrl = v;
+    this.persistGym();
+    this.applyTheme();
+    this.renderGymSettings();
+    this.logAudit("gym:branding", "Cambió el logo por URL", "gym", gym.id);
+    this.showToast("Logo actualizado.", "success");
+  },
+
+  /* Vuelve al logo por defecto. updateBranding ignora el valor vacío a propósito
+     (para no borrar sin querer al tipear), así que quitar el logo va por acá. */
+  removeLogo() {
+    if (!this.can("gym:branding")) return;
+    const gym = this.activeGym();
+    if (!gym) return;
+    if (!gym.branding.logoUrl || gym.branding.logoUrl === BRAND_MARK) {
+      return this.showToast("Este gimnasio ya usa el logo por defecto.", "info");
+    }
+    gym.branding.logoUrl = BRAND_MARK;
+    this.persistGym();
+    this.applyTheme();
+    this.renderGymSettings();
+    this.logAudit("gym:branding", "Quitó el logo (volvió al de FitAccess)", "gym", gym.id);
+    this.showToast("Logo quitado. Volviste al logo por defecto.", "success");
   },
 
   applyPreset(key) {
@@ -5258,7 +5370,16 @@ const FitApp = {
     set("gym-session-max", ses.maxHours || SESSION_POLICY.owner.maxHours);
     set("gym-cross-branch", String(gym.settings.crossBranchAccess !== false));
     set("gym-payment-link", (gym.settings && gym.settings.paymentLink) || "");
-    set("wl-logo-url", gym.branding.logoUrl || "");
+    /* La previsualización refleja el logo real. Si es un data URI (subido) el
+       campo de URL queda vacío: no tiene sentido mostrar 100 KB de base64 en un
+       input de texto. Sólo se muestra ahí una URL http de verdad. */
+    const logo = gym.branding.logoUrl || BRAND_MARK;
+    const esPorDefecto = !gym.branding.logoUrl || logo === BRAND_MARK;
+    const preview = document.getElementById("wl-logo-preview");
+    if (preview) preview.src = logo;
+    set("wl-logo-url", /^https?:\/\//i.test(logo) ? logo : "");
+    const remove = document.getElementById("wl-logo-remove");
+    if (remove) remove.disabled = esPorDefecto;
     set("wl-color-primary", gym.branding.primaryColor);
     set("wl-color-primary-text", gym.branding.primaryColor);
     set("wl-color-secondary", gym.branding.secondaryColor);
@@ -6260,6 +6381,16 @@ Object.assign(FitApp, {
     // Ahora sale del gimnasio y la sede reales del socio.
     setText("socio-sede-label", branch ? `${branch.name} · ${gym.name}` : gym.name);
     setText("credential-gym-name", gym.name);
+
+    /* Logo del gimnasio en la credencial. Sólo se muestra si el gimnasio subió
+       uno propio: con el logo por defecto de FitAccess se oculta, para no meterle
+       nuestra marca a la credencial de un socio de otro gimnasio. */
+    const credLogo = document.getElementById("credential-logo");
+    if (credLogo) {
+      const url = gym.branding && gym.branding.logoUrl;
+      if (url && url !== BRAND_MARK) { credLogo.src = url; credLogo.style.display = ""; }
+      else { credLogo.style.display = "none"; credLogo.removeAttribute("src"); }
+    }
     setText("credential-branch-name", branch ? branch.name : "Credencial Digital");
     setText("socio-profile-gym", gym.name);
     setText("socio-profile-branch", branch ? branch.name : "—");
