@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FitAccess · Guía de recepción</title>
+<link rel="stylesheet" href="guia.css">
+<style>
+  /* Esta guía está pensada para IMPRIMIRSE y pegarse en el mostrador, así que
+     lo importante entra en la primera hoja y el resto queda como consulta. */
+  .hoja1 { border:2px solid var(--teal); border-radius:14px; padding:22px 24px; margin:22px 0 8px;
+    background:#fbfefe; }
+  .hoja1 h2 { border:0; padding:0; margin:0 0 4px; }
+  .cortar { text-align:center; color:#9aa5a3; font-size:.74rem; letter-spacing:.1em;
+    text-transform:uppercase; margin:0 0 26px; }
+  .grande { font-size:1.06rem; }
+  @media print {
+    .hoja1 { page-break-after:always; }
+  }
+</style>
+</head>
+<body>
+
+<div class="top">
+  <strong>Guía de recepción</strong>
+  <a href="index.html">Todas las guías</a>
+  <span class="prog"><b id="cuenta">0</b> de 7 aprendidos</span>
+  <button onclick="window.print()">Imprimir</button>
+</div>
+<div class="barra"><i id="barra"></i></div>
+
+<div class="sheet angosta">
+
+  <h1>Guía de recepción</h1>
+  <p class="lede">
+    Todo lo que hay que saber para atender la puerta. La primera hoja es la única que
+    necesitás de memoria: imprimila y pegala en el mostrador.
+  </p>
+
+  <!-- ================== LA HOJA PARA PEGAR ================== -->
+  <div class="hoja1">
+    <h2>Los tres colores</h2>
+    <p style="color:var(--soft); margin-bottom:16px;">
+      Pasás la credencial por la cámara y la pantalla se pinta de un color.
+      <strong>Eso es lo único que tenés que mirar.</strong>
+    </p>
+
+    <div class="luz">
+      <span class="punto v"></span>
+      <div>
+        <b class="grande">Verde: que pase</b>
+        <div class="por">Está todo bien. No hay nada que hacer, ni que decir.</div>
+      </div>
+    </div>
+
+    <div class="luz">
+      <span class="punto a"></span>
+      <div>
+        <b class="grande">Amarillo: que pase, y avisale</b>
+        <div class="por">
+          Entra igual. Es el momento de decirle: <em>"che, la semana que viene se te vence"</em>,
+          o <em>"traeme el apto"</em>. La pantalla te dice qué es.
+        </div>
+      </div>
+    </div>
+
+    <div class="luz">
+      <span class="punto r"></span>
+      <div>
+        <b class="grande">Rojo: no pasa</b>
+        <div class="por">
+          La pantalla te dice el motivo abajo del nombre. Si es por plata, aparece un botón
+          para cobrarle ahí mismo.
+        </div>
+      </div>
+    </div>
+
+    <h3>Y nada más</h3>
+    <p style="margin-bottom:0;">
+      Si dice <strong>SALIDA REGISTRADA</strong>, esa persona se está yendo: ya había entrado y
+      volvió a pasar la credencial. Está bien, es así.
+    </p>
+  </div>
+  <p class="cortar">— hasta acá lo que va en el mostrador —</p>
+
+  <!-- ======================= 1 ======================= -->
+  <div class="paso">
+    <header><span class="num">1</span><h2>Entrar</h2></header>
+    <div class="cuerpo">
+      <div class="app">
+        <div class="cab"><b>FitAccess</b> · pantalla de ingreso</div>
+        <div class="cuerpo">
+          <div style="text-align:center; font-weight:800; margin-bottom:11px;">¿Cómo vas a entrar?</div>
+          <div class="card" style="border-left:3px solid #6366f1;">
+            <div class="t">Administro el gimnasio</div>
+          </div>
+          <div class="card" style="border-left:3px solid #fb923c;">
+            <div class="t"><span class="marca">1</span> Estoy en el mostrador</div>
+            <div class="d">Controlar quién entra y cobrar cuotas</div>
+          </div>
+          <div class="card" style="border-left:3px solid #14b8a6;">
+            <div class="t">Soy socio</div>
+          </div>
+        </div>
+      </div>
+
+      <p><span class="marca">1</span> &nbsp;Tocá <strong>Estoy en el mostrador</strong>. Siempre ésa.</p>
+      <p>Poné el correo y la clave que te dio el dueño.</p>
+
+      <div class="box bad">
+        <span class="t">Si te da error</span>
+        <p>Casi siempre es que tocaste la opción equivocada. Fijate que sea <b>Estoy en el mostrador</b>.</p>
+      </div>
+
+      <h3>Encender la cámara</h3>
+      <p>
+        La primera vez, tocá <strong>Iniciar Cámara</strong>. El navegador te va a pedir permiso:
+        elegí <strong>Permitir</strong>. Se hace una sola vez por equipo.
+      </p>
+      <div class="box warn">
+        <span class="t">Si dice "Modo Manual (sin cámara)"</span>
+        <p>
+          Es que no le diste permiso, o que otro programa está usando la cámara. Igual podés
+          trabajar: buscás al socio por nombre o DNI y funciona todo lo demás.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================= 2 ======================= -->
+  <div class="paso">
+    <header><span class="num">2</span><h2>La pantalla</h2></header>
+    <div class="cuerpo">
+      <p>Cuando no hay nadie, se ve así:</p>
+
+      <div class="app">
+        <div class="cab"><b>Recepción</b></div>
+        <div class="cuerpo">
+          <div class="sem n">
+            <div class="tit"><span class="marca">1</span> LISTO PARA ESCANEAR</div>
+            <div class="sub">Pasá la credencial por la cámara, o buscá al socio a mano.</div>
+          </div>
+          <div style="display:flex; gap:9px; flex-wrap:wrap;">
+            <div class="card" style="flex:1; min-width:150px;">
+              <div class="t"><span class="marca">2</span> Escáner de credenciales</div>
+              <div class="d">La cámara. Acá pasan las credenciales.</div>
+            </div>
+            <div class="card" style="flex:1; min-width:150px;">
+              <div class="t"><span class="marca">3</span> Buscar a mano</div>
+              <div class="d">Si se olvidó la credencial.</div>
+              <div class="campo">DNI, nombre o N° de socio</div>
+              <span class="boton gris"><span class="marca">4</span> Cobrar pase diario</span>
+            </div>
+          </div>
+          <div class="pest" style="margin-top:10px;">
+            <span class="on"><span class="marca">5</span> Pendientes 3</span>
+            <span>Adentro 12</span>
+            <span>Caja del turno</span>
+            <span>Registro</span>
+          </div>
+        </div>
+      </div>
+
+      <table>
+        <tr><th style="width:8%"></th><th>Qué es</th></tr>
+        <tr><td><span class="marca">1</span></td><td><strong>El semáforo.</strong> Es lo grande de arriba y lo único que mirás cuando alguien entra.</td></tr>
+        <tr><td><span class="marca">2</span></td><td><strong>La cámara.</strong> Ahí pasan la credencial, del celular o de papel.</td></tr>
+        <tr><td><span class="marca">3</span></td><td><strong>Buscar a mano.</strong> Para el que se olvidó la credencial: escribís el DNI o el nombre y apretás Buscar.</td></tr>
+        <tr><td><span class="marca">4</span></td><td><strong>Pase diario.</strong> Para alguien que viene una sola vez.</td></tr>
+        <tr><td><span class="marca">5</span></td><td><strong>Las cuatro pestañas.</strong> Se consultan cuando no hay cola. Se abre una sola a la vez.</td></tr>
+      </table>
+
+      <div class="box">
+        <span class="t">El semáforo se apaga solo</span>
+        <p>
+          Después de unos segundos vuelve a <b>Listo para escanear</b>. Es a propósito: si el verde
+          de la persona anterior se quedara en pantalla, es fácil hacer pasar al siguiente sin
+          escanear creyendo que ese verde es suyo.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================= 3 ======================= -->
+  <div class="paso">
+    <header><span class="num">3</span><h2>Qué ves cuando alguien entra</h2></header>
+    <div class="cuerpo">
+
+      <div class="app">
+        <div class="cuerpo">
+          <div class="sem v">
+            <div class="tit">ACCESO PERMITIDO</div>
+            <div class="sub">¡Bienvenido, Juan Pérez! Full Crossfit</div>
+          </div>
+        </div>
+      </div>
+      <p><strong>Que pase.</strong> Nada que hacer.</p>
+
+      <div class="app">
+        <div class="cuerpo">
+          <div class="sem a">
+            <div class="tit">ACCESO CON ADVERTENCIA</div>
+            <div class="sub">La cuota vence en 2 días</div>
+          </div>
+        </div>
+      </div>
+      <p><strong>Que pase, y avisale.</strong> Si quiere pagar ahora, aparece el botón para cobrarle.</p>
+
+      <div class="app">
+        <div class="cuerpo">
+          <div class="sem r">
+            <div class="tit">ACCESO DENEGADO</div>
+            <div class="sub">Cuota vencida hace 11 días</div>
+          </div>
+          <div class="card" style="margin-top:9px;">
+            <b>Juan Pérez</b> <span class="d">· DNI 35999888</span>
+            <div style="margin-top:8px;"><span class="boton"><span class="marca">1</span> Cobrar $ 26.000 ahora</span></div>
+          </div>
+        </div>
+      </div>
+      <p><strong>No pasa.</strong> <span class="marca">1</span> &nbsp;Si es por plata, le cobrás ahí mismo y queda habilitado.</p>
+
+      <h3>Otros carteles que vas a ver</h3>
+      <table>
+        <tr><th style="width:34%">Dice</th><th>Significa</th></tr>
+        <tr><td><strong>SALIDA REGISTRADA</strong></td><td>Se está yendo. Ya había entrado y volvió a pasar la credencial. Todo bien.</td></tr>
+        <tr><td><strong>YA INGRESÓ HOY</strong></td><td>Es la segunda vez que entra hoy. Puede pasar, sólo te lo avisa.</td></tr>
+        <tr><td><strong>SOCIO NO ENCONTRADO</strong></td><td>Esa credencial no es de este gimnasio, o el DNI no está en el padrón.</td></tr>
+        <tr><td><strong>SALA COMPLETA</strong></td><td>Se llegó al máximo de gente. <b>No lo bloquea</b>: mirás la sala y decidís vos.</td></tr>
+        <tr><td><strong>Cuota congelada</strong></td><td>El dueño le pausó la cuota (vacaciones, lesión). No entra hasta la fecha que dice.</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- ======================= 4 ======================= -->
+  <div class="paso">
+    <header><span class="num">4</span><h2>Cobrar</h2></header>
+    <div class="cuerpo">
+      <p>Se abre esta ventana. Lo importante es el primer campo:</p>
+
+      <div class="app">
+        <div class="cab"><b>Registrar cobro</b></div>
+        <div class="cuerpo">
+          <div class="card"><b>Juan Pérez</b><div class="d">SOC-1005 · Full Crossfit · mensual</div></div>
+          <div class="campo"><span class="marca">1</span> ¿Cómo pagó? &nbsp;Efectivo</div>
+          <div style="display:flex; gap:7px;">
+            <div class="campo" style="flex:1;">Importe: 26000</div>
+            <div class="campo" style="flex:1;">Días: 30</div>
+          </div>
+          <div class="card" style="background:rgba(20,184,166,.1); border-color:#14b8a6;">
+            Queda habilitado hasta el <b>10 de noviembre de 2026</b>
+          </div>
+          <span class="boton"><span class="marca">2</span> Confirmar cobro</span>
+        </div>
+      </div>
+
+      <ol>
+        <li><span class="marca">1</span> &nbsp;<strong>Elegí cómo pagó</strong>: efectivo, débito, transferencia, Mercado Pago. Esto es lo que después permite cerrar la caja</li>
+        <li><span class="marca">2</span> &nbsp;<strong>Confirmar cobro</strong></li>
+      </ol>
+      <p>El importe y los días vienen puestos. No los toques salvo que el dueño te lo indique.</p>
+
+      <div class="box bad">
+        <span class="t">Si te equivocaste</span>
+        <p>
+          <b>Avisale al dueño.</b> Vos no podés anular un cobro, y está bien que sea así: quien cobra
+          no es quien corrige. Él lo anula en un minuto.
+        </p>
+        <p>No intentes arreglarlo cobrando de nuevo ni cambiando fechas.</p>
+      </div>
+
+      <h3>Pase diario</h3>
+      <p>
+        Para alguien que viene una sola vez: un turista, el amigo de un socio. Tocás
+        <strong>Cobrar pase diario</strong>, pones el nombre, el importe y cómo pagó.
+      </p>
+      <p>No hace falta crearle ficha de socio.</p>
+    </div>
+  </div>
+
+  <!-- ======================= 5 ======================= -->
+  <div class="paso">
+    <header><span class="num">5</span><h2>Las cuatro pestañas</h2></header>
+    <div class="cuerpo">
+      <p>Están abajo. Se consultan cuando no hay gente esperando:</p>
+
+      <table>
+        <tr><th style="width:26%">Pestaña</th><th>Para qué</th></tr>
+        <tr><td><strong>Pendientes</strong></td>
+          <td>Los socios a los que hay que reclamarles algo. El número te dice cuántos son. Tocás uno y lo ves en el semáforo, listo para cobrarle. <strong>Es la que conviene dejar abierta.</strong></td></tr>
+        <tr><td><strong>Adentro</strong></td>
+          <td>Quiénes están en el gimnasio ahora. Sirve para saber si queda lugar, y para saber a quién buscar si hay que evacuar.</td></tr>
+        <tr><td><strong>Caja del turno</strong></td>
+          <td>Cuánto cobraste hoy y por qué medio. <strong>Es lo que mirás al cerrar</strong> para contar el cajón.</td></tr>
+        <tr><td><strong>Registro</strong></td>
+          <td>Todo lo que pasó por la puerta hoy.</td></tr>
+      </table>
+
+      <div class="box">
+        <span class="t">Marcar una salida a mano</span>
+        <p>
+          En <b>Adentro</b>, cada persona tiene un botón para registrar su salida. Se usa cuando
+          alguien se fue sin pasar la credencial.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================= 6 ======================= -->
+  <div class="paso">
+    <header><span class="num">6</span><h2>Terminal bloqueada y cambio de turno</h2></header>
+    <div class="cuerpo">
+      <p>Si la terminal queda un rato sin usarse, se tapa la pantalla:</p>
+
+      <div class="app">
+        <div class="cuerpo" style="text-align:center; padding:22px 14px;">
+          <div style="font-weight:900; font-size:1.15rem; margin-bottom:4px;">Terminal bloqueada</div>
+          <div class="d" style="margin-bottom:12px;">Sesión de Recepción Palermo</div>
+          <div class="campo" style="text-align:center;"><span class="marca">1</span> Tu contraseña para seguir</div>
+          <span class="boton">Desbloquear</span>
+          <div style="margin-top:12px; font-size:.76rem; color:#7c8798; text-decoration:underline;">
+            <span class="marca">2</span> Cambio de turno: cerrar sesión
+          </div>
+        </div>
+      </div>
+
+      <ol>
+        <li><span class="marca">1</span> &nbsp;Escribí tu contraseña y tocá <strong>Desbloquear</strong>. Sigue todo como estaba, la cámara incluida</li>
+        <li><span class="marca">2</span> &nbsp;Si termina tu turno y entra otra persona, usá <strong>Cambio de turno: cerrar sesión</strong></li>
+      </ol>
+
+      <div class="box good">
+        <span class="t">No es que se cerró la sesión</span>
+        <p>
+          Está sólo tapada. Al desbloquear el escáner vuelve exactamente donde estaba, sin volver a
+          pedir permiso para la cámara.
+        </p>
+      </div>
+
+      <div class="box warn">
+        <span class="t">Al cerrar tu turno</span>
+        <p>
+          Mirá la pestaña <b>Caja del turno</b> y compará el renglón de <b>Efectivo</b> con la plata
+          que hay en el cajón. Si no coincide, el detalle te muestra cobro por cobro.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <h2>Lo que no podés hacer, y está bien</h2>
+  <p>Si necesitás algo de esta lista, se lo pedís al dueño:</p>
+  <ul>
+    <li><strong>Anular un cobro</strong> mal hecho</li>
+    <li><strong>Congelar</strong> la cuota de un socio</li>
+    <li><strong>Cargar o editar</strong> socios del padrón</li>
+    <li><strong>Borrar</strong> el registro de ingresos</li>
+    <li>Ver <strong>reportes</strong> o cambiar precios</li>
+  </ul>
+  <p>
+    No es desconfianza: es que si algo sale mal, tiene que quedar claro quién lo hizo. Y te protege
+    a vos también.
+  </p>
+
+  <h2>Ya lo sé todo</h2>
+  <ul class="chk">
+    <li><input type="checkbox" id="r1"><label for="r1">Sé que entro por <strong>Estoy en el mostrador</strong></label></li>
+    <li><input type="checkbox" id="r2"><label for="r2">Le di permiso a la cámara y escaneé una credencial de prueba</label></li>
+    <li><input type="checkbox" id="r3"><label for="r3">Me acuerdo de los tres colores: verde pasa, amarillo pasa y aviso, rojo no pasa</label></li>
+    <li><input type="checkbox" id="r4"><label for="r4">Sé que al cobrar tengo que elegir <strong>cómo pagó</strong></label></li>
+    <li><input type="checkbox" id="r5"><label for="r5">Sé buscar a un socio por DNI si se olvidó la credencial</label></li>
+    <li><input type="checkbox" id="r6"><label for="r6">Sé desbloquear la terminal con mi contraseña</label></li>
+    <li><input type="checkbox" id="r7"><label for="r7">Sé que al cerrar el turno miro <strong>Caja del turno</strong></label></li>
+  </ul>
+
+  <p class="meta">
+    FitAccess · Guía de recepción. La primera hoja está pensada para imprimirse y pegarse en el mostrador.
+  </p>
+</div>
+
+<script src="guia.js"></script>
+<script>iniciarProgreso(["r1","r2","r3","r4","r5","r6","r7"]);</script>
+</body>
+</html>

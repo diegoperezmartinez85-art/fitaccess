@@ -1,0 +1,191 @@
+/* ==========================================================================
+   ESTILOS COMPARTIDOS DE LAS GUÍAS VISUALES
+
+   Las dos primeras guías (alta-de-gimnasios y manual-del-dueno) llevan el CSS
+   embebido, porque son documentos de texto y cada uno se bajaba suelto como
+   PDF. Las visuales son otra cosa: comparten un vocabulario —maquetas de
+   pantalla, marcadores numerados, comparaciones de bien y mal— y si el CSS
+   estuviera repetido en cada una, un ajuste de color habría que hacerlo tres
+   veces y quedarían distintas la primera vez que alguien se olvide de una.
+
+   Se imprimen desde el navegador, así que la hoja externa no molesta: al
+   guardar como PDF los estilos ya están aplicados.
+   ========================================================================== */
+
+:root {
+  --ink:#16211f; --soft:#55625f; --line:#dde5e3;
+  --teal:#0d9488; --tealbg:#effcf9;
+  --amber:#b45309; --amberbg:#fffaeb;
+  --red:#b91c1c; --redbg:#fef4f2;
+  --green:#15803d; --greenbg:#f0fdf5;
+  --violeta:#7c3aed; --violetabg:#f5f2ff;
+  --naranja:#c2410c; --naranjabg:#fff7ed;
+}
+* { box-sizing:border-box; }
+html { -webkit-text-size-adjust:100%; scroll-behavior:smooth; }
+body { margin:0; background:#eef3f2; color:var(--ink);
+  font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+
+/* ------------------------------------------------------------ barra de arriba */
+.top { position:sticky; top:0; z-index:50; background:#0f2b28; color:#fff; padding:9px 18px;
+  display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+.top strong { font-size:.92rem; }
+.top .prog { margin-left:auto; font-size:.8rem; color:#9fc9c2; }
+.top button { background:#14b8a6; color:#06201d; border:0; padding:8px 15px; border-radius:8px;
+  font:inherit; font-weight:800; font-size:.83rem; cursor:pointer; }
+.top a { color:#9fc9c2; font-size:.8rem; text-decoration:none; border-bottom:1px solid #24534a; }
+.top a:hover { color:#fff; }
+.barra { height:4px; background:#14352f; }
+.barra > i { display:block; height:100%; width:0; background:#2dd4bf; transition:width .4s ease; }
+
+/* ------------------------------------------------------------------- documento */
+.sheet { max-width:900px; margin:24px auto 70px; background:#fff; padding:44px 46px 60px;
+  border-radius:6px; box-shadow:0 1px 3px rgba(0,0,0,.12); }
+.sheet.angosta { max-width:760px; }
+h1 { font-size:2rem; line-height:1.15; margin:0 0 8px; letter-spacing:-.5px; }
+.lede { font-size:1.05rem; color:var(--soft); margin:0 0 4px; }
+h2 { font-size:1.3rem; margin:0; }
+.sheet > h2 { margin:36px 0 12px; padding-bottom:8px; border-bottom:2px solid var(--teal); }
+h3 { font-size:1rem; margin:22px 0 8px; }
+p { margin:0 0 12px; }
+ul,ol { margin:0 0 12px; padding-left:22px; } li { margin-bottom:6px; }
+code { background:#eef3f2; border:1px solid #dbe4e2; border-radius:4px; padding:1px 6px;
+  font-family:ui-monospace,Menlo,Consolas,monospace; font-size:.87em; color:#0b3f39; }
+hr.soft { border:0; border-top:1px solid var(--line); margin:32px 0; }
+
+/* ----------------------------------------------------------------------- pasos */
+.paso { border:1px solid var(--line); border-radius:12px; margin:26px 0; overflow:hidden;
+  break-inside:avoid; }
+.paso > header { display:flex; align-items:center; gap:14px; padding:14px 18px;
+  background:#f6faf9; border-bottom:1px solid var(--line); }
+.paso .num { flex:none; width:34px; height:34px; border-radius:50%; background:var(--teal);
+  color:#fff; display:grid; place-items:center; font-weight:900; font-size:1rem; }
+.paso .cuerpo { padding:20px 18px; }
+.paso .tag { font-size:.7rem; font-weight:800; letter-spacing:.9px; text-transform:uppercase;
+  padding:3px 9px; border-radius:20px; margin-left:auto; white-space:nowrap;
+  background:var(--tealbg); color:var(--teal); border:1px solid var(--teal); }
+
+/* Marcador rojo numerado que se apoya sobre las maquetas. */
+.marca { display:inline-grid; place-items:center; flex:none;
+  width:20px; height:20px; border-radius:50%; background:#dc2626; color:#fff;
+  font-size:.68rem; font-weight:900; box-shadow:0 0 0 3px rgba(220,38,38,.2); }
+
+/* ------------------------------------------------- maqueta de pantalla de la app */
+/* Reproduce el aspecto oscuro de FitAccess para que lo que se ve en la guía se
+   parezca a lo que la persona tiene delante. */
+.app { border:1px solid #24303f; border-radius:12px; overflow:hidden; margin:16px 0;
+  background:#0b0e18; color:#f5f7fb; font-size:.82rem; }
+.app .cab { background:#111524; padding:8px 13px; border-bottom:1px solid #24303f;
+  display:flex; align-items:center; gap:9px; font-size:.75rem; color:#98a2b7; }
+.app .cab b { color:#f5f7fb; }
+.app .cuerpo { padding:14px 13px; }
+.app .card { background:#141a2b; border:1px solid #24303f; border-radius:9px;
+  padding:11px 13px; margin-bottom:9px; }
+.app .card:last-child { margin-bottom:0; }
+.app .t { font-weight:800; margin-bottom:3px; display:flex; align-items:center; gap:8px; }
+.app .d { color:#98a2b7; font-size:.78rem; line-height:1.4; }
+.app .campo { background:#0d1220; border:1px solid #2c3a4d; border-radius:7px;
+  padding:8px 11px; color:#7c8798; margin:6px 0; }
+.app .boton { display:inline-block; background:#14b8a6; color:#06201d; font-weight:800;
+  border-radius:7px; padding:7px 13px; font-size:.79rem; }
+.app .boton.gris { background:#243244; color:#cbd5e1; }
+.app .pest { display:flex; gap:4px; background:#0d1220; border:1px solid #24303f;
+  border-radius:9px; padding:3px; margin-bottom:10px; flex-wrap:wrap; }
+.app .pest span { padding:6px 11px; border-radius:6px; color:#98a2b7; font-size:.76rem; font-weight:700; }
+.app .pest span.on { background:#243244; color:#fff; }
+.app .chip { display:inline-block; border-radius:20px; padding:2px 9px; font-size:.7rem; font-weight:800; }
+.app .chip.v { background:rgba(34,197,94,.18); color:#86efac; }
+.app .chip.a { background:rgba(245,158,11,.18); color:#fcd34d; }
+.app .chip.r { background:rgba(239,68,68,.18); color:#fca5a5; }
+
+/* Semáforo grande, como se ve en el mostrador. */
+.sem { border-radius:11px; padding:20px 16px; text-align:center; margin:14px 0; }
+.sem .tit { font-size:1.3rem; font-weight:900; letter-spacing:-.02em; margin-bottom:5px; }
+.sem .sub { font-size:.83rem; opacity:.92; }
+.sem.v { background:rgba(34,197,94,.15); border:1px solid #22c55e; color:#86efac; }
+.sem.a { background:rgba(245,158,11,.15); border:1px solid #f59e0b; color:#fcd34d; }
+.sem.r { background:rgba(239,68,68,.15); border:1px solid #ef4444; color:#fca5a5; }
+.sem.n { background:#141a2b; border:1px dashed #2c3a4d; color:#98a2b7; }
+
+/* --------------------------------------------------------------------- avisos */
+.box { border-left:4px solid var(--teal); background:var(--tealbg); padding:13px 16px;
+  margin:14px 0; border-radius:0 8px 8px 0; break-inside:avoid; }
+.box.warn { border-color:#d97706; background:var(--amberbg); }
+.box.bad { border-color:var(--red); background:var(--redbg); }
+.box.good { border-color:var(--green); background:var(--greenbg); }
+.box b { color:var(--ink); }
+.box .t { display:block; font-weight:800; font-size:.72rem; letter-spacing:.9px;
+  text-transform:uppercase; margin-bottom:5px; color:var(--teal); }
+.box.warn .t { color:var(--amber); } .box.bad .t { color:var(--red); } .box.good .t { color:var(--green); }
+.box p:last-child { margin-bottom:0; }
+
+/* ----------------------------------------------------------------- bien / mal */
+.bienmal { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:16px 0; }
+.bm { border:2px solid; border-radius:10px; padding:12px 14px; font-size:.86rem; }
+.bm.ok { border-color:var(--green); background:var(--greenbg); }
+.bm.no { border-color:var(--red); background:var(--redbg); }
+.bm .et { font-weight:900; font-size:.74rem; letter-spacing:.8px; text-transform:uppercase;
+  display:flex; align-items:center; gap:7px; margin-bottom:7px; }
+.bm.ok .et { color:var(--green); } .bm.no .et { color:var(--red); }
+/* El tilde y la cruz se dibujan con CSS: un carácter puede no existir en la
+   fuente del equipo y sale como cuadradito, justo en la marca que distingue lo
+   correcto de lo incorrecto. */
+.icono { width:17px; height:17px; position:relative; flex:none; }
+.ok .icono::before { content:''; position:absolute; left:4px; top:1px; width:6px; height:11px;
+  border-right:2.5px solid var(--green); border-bottom:2.5px solid var(--green); transform:rotate(42deg); }
+.no .icono::before, .no .icono::after { content:''; position:absolute; left:7px; top:2px;
+  width:2.5px; height:13px; border-radius:2px; background:var(--red); }
+.no .icono::before { transform:rotate(45deg); } .no .icono::after { transform:rotate(-45deg); }
+
+/* -------------------------------------------------------------------- tablas */
+table { width:100%; border-collapse:collapse; margin:14px 0; font-size:.87rem; }
+th,td { text-align:left; padding:9px 11px; border:1px solid var(--line); vertical-align:top; }
+th { background:#f5f9f8; font-size:.72rem; text-transform:uppercase; letter-spacing:.6px; color:var(--soft); }
+
+/* --------------------------------------------------------- lista con memoria */
+.chk { list-style:none; padding:0; }
+.chk li { display:flex; gap:11px; align-items:flex-start; padding:9px 0; border-top:1px solid var(--line); }
+.chk input { width:19px; height:19px; margin-top:2px; flex:none; accent-color:var(--teal); cursor:pointer; }
+.chk label { cursor:pointer; font-size:.92rem; }
+.chk li.hecho label { color:#9aa5a3; text-decoration:line-through; }
+
+/* ------------------------------------------------------------------ semáforo */
+.luz { display:flex; gap:14px; align-items:flex-start; padding:13px 15px; border:1px solid var(--line);
+  border-radius:10px; margin-bottom:10px; break-inside:avoid; }
+.punto { flex:none; width:22px; height:22px; border-radius:50%; margin-top:3px;
+  border:2px solid rgba(0,0,0,.14); }
+.punto.v { background:#16a34a; } .punto.a { background:#eab308; } .punto.r { background:#dc2626; }
+.luz b { display:block; margin-bottom:3px; }
+.luz .por { font-size:.86rem; color:var(--soft); }
+
+.meta { font-size:.8rem; color:#8b9895; border-top:1px solid var(--line); margin-top:30px; padding-top:12px; }
+.copiar { cursor:pointer; background:#0f2b28; color:#b9ece4; border:0; border-radius:5px;
+  padding:3px 9px; font:inherit; font-size:.74rem; font-weight:700; margin-left:6px; }
+
+@media (max-width:700px) {
+  .sheet { padding:24px 16px 40px; margin:10px 7px 30px; }
+  h1 { font-size:1.5rem; }
+  .bienmal { grid-template-columns:1fr; }
+  table { font-size:.82rem; } th,td { padding:7px 8px; }
+}
+@media print {
+  body { background:#fff; } .top,.barra,.copiar { display:none; }
+  .sheet { box-shadow:none; margin:0; max-width:none; padding:0; }
+  .paso, .luz, .box { page-break-inside:avoid; }
+  /* Las maquetas son oscuras: al imprimir sin fondos quedarían con texto claro
+     sobre papel blanco, ilegibles. Se invierten. */
+  .app { background:#fff; color:var(--ink); border-color:var(--line); }
+  .app .cab { background:#f5f9f8; color:var(--soft); }
+  .app .card { background:#fafcfc; border-color:var(--line); }
+  .app .d, .app .campo { color:var(--soft); }
+  .app .campo { background:#fff; border-color:var(--line); }
+  .app .boton { background:#fff; color:var(--ink); border:1px solid var(--ink); }
+  .app .pest { background:#fff; border-color:var(--line); }
+  .app .pest span { color:var(--soft); } .app .pest span.on { background:#e6f7f4; color:var(--teal); }
+  .sem { border:2px solid; }
+  .sem.v { background:none; color:var(--green); }
+  .sem.a { background:none; color:var(--amber); }
+  .sem.r { background:none; color:var(--red); }
+  .sem.n { background:none; color:var(--soft); }
+  @page { margin:14mm; }
+}

@@ -2075,14 +2075,28 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
             <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-clipboard"/></svg> Guías paso a paso</h3>
             <p class="section-note">Se abren en otra pestaña. Cada una tiene un botón para guardarla como PDF o imprimirla.</p>
           </div>
-          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <a class="btn btn-secondary" href="./guias/manual-del-dueno.html" target="_blank" rel="noopener">
-              <svg class="ico" aria-hidden="true"><use href="#i-building"/></svg> Manual del dueño
-            </a>
-            <a class="btn btn-secondary" data-cap="users:create" href="./guias/alta-visual.html" target="_blank" rel="noopener">
-              <svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg> Dar de alta un gimnasio
-            </a>
-          </div>
+          <a class="btn btn-secondary" href="./guias/index.html" target="_blank" rel="noopener">
+            <svg class="ico" aria-hidden="true"><use href="#i-list"/></svg> Todas las guías
+          </a>
+        </div>
+        <!-- Las dos primeras son para el dueño; las otras dos son para entregar:
+             la de recepción se imprime y la del socio se manda por WhatsApp. -->
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <a class="btn btn-secondary" href="./guias/dueno-visual.html" target="_blank" rel="noopener">
+            <svg class="ico" aria-hidden="true"><use href="#i-flag"/></svg> Tu primer día
+          </a>
+          <a class="btn btn-secondary" href="./guias/manual-del-dueno.html" target="_blank" rel="noopener">
+            <svg class="ico" aria-hidden="true"><use href="#i-building"/></svg> Manual del dueño
+          </a>
+          <a class="btn btn-secondary" href="./guias/recepcion-visual.html" target="_blank" rel="noopener">
+            <svg class="ico" aria-hidden="true"><use href="#i-scan"/></svg> Para el mostrador
+          </a>
+          <a class="btn btn-secondary" href="./guias/socio-visual.html" target="_blank" rel="noopener">
+            <svg class="ico" aria-hidden="true"><use href="#i-card"/></svg> Para mandarle al socio
+          </a>
+          <a class="btn btn-secondary" data-cap="users:create" href="./guias/alta-visual.html" target="_blank" rel="noopener">
+            <svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg> Dar de alta un gimnasio
+          </a>
         </div>
       </div>
 

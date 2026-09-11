@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tu credencial digital del gimnasio</title>
+<link rel="stylesheet" href="guia.css">
+<style>
+  /* Esta guía la lee un socio en el celular, así que arranca angosta y con el
+     texto un punto más grande. Es la única de las cinco que no se escribió para
+     leerse en una computadora. */
+  .sheet { max-width:620px; }
+  body { font-size:17px; }
+  .paso .cuerpo { padding:18px 16px; }
+  .app { font-size:.85rem; }
+  .telefono { max-width:290px; margin:14px auto; border:8px solid #1a1f2e; border-radius:26px;
+    overflow:hidden; box-shadow:0 8px 24px -10px rgba(0,0,0,.4); }
+  .telefono .app { margin:0; border:0; border-radius:0; }
+</style>
+</head>
+<body>
+
+<div class="top">
+  <strong>Tu credencial del gimnasio</strong>
+  <span class="prog"><b id="cuenta">0</b> de 4 pasos</span>
+  <button onclick="window.print()">Imprimir</button>
+</div>
+<div class="barra"><i id="barra"></i></div>
+
+<div class="sheet">
+
+  <h1>Tu credencial digital</h1>
+  <p class="lede">
+    Con el celular entrás al gimnasio, ves cuándo te vence la cuota, pagás y mandás
+    el apto médico. Son cuatro pasos y se hacen una sola vez.
+  </p>
+
+  <div class="box">
+    <span class="t">Antes de empezar</span>
+    <p>
+      Necesitás el <b>mensaje de WhatsApp</b> que te mandó el gimnasio. Ahí viene tu credencial
+      y el enlace para activarte. Si no lo tenés, pedíselo en el mostrador.
+    </p>
+  </div>
+
+  <!-- ======================= 1 ======================= -->
+  <div class="paso">
+    <header><span class="num">1</span><h2>Abrí el mensaje del gimnasio</h2></header>
+    <div class="cuerpo">
+      <p>Te llegó algo así:</p>
+
+      <div class="app">
+        <div class="cab"><b>WhatsApp</b> · mensaje del gimnasio</div>
+        <div class="cuerpo">
+          <div class="card">
+            <div class="d" style="margin-bottom:9px;">[ la imagen de tu credencial con tu foto y un código QR ]</div>
+            <div style="line-height:1.6;">
+              ¡Hola Juan! Ésta es tu credencial de Power House.<br><br>
+              Activá tu app acá:<br>
+              <span style="color:#5eead4; word-break:break-all;"><span class="marca">1</span> https://…/?a=xxxxx</span><br><br>
+              Tu código de activación: <b><span class="marca">2</span> K7M4PXQR</b>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p><span class="marca">1</span> &nbsp;<strong>Tocá el enlace largo.</strong> Es el camino fácil: se abre la app con tus datos ya cargados.</p>
+      <p><span class="marca">2</span> &nbsp;El <strong>código de 8 letras</strong> es el respaldo, para el caso de que el enlace no funcione.</p>
+
+      <div class="box good">
+        <span class="t">Guardá la imagen</span>
+        <p>
+          Bajá la imagen de la credencial a tu galería. Con eso solo ya podés entrar al gimnasio,
+          incluso antes de activar la app: la mostrás en la puerta y te la escanean.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================= 2 ======================= -->
+  <div class="paso">
+    <header><span class="num">2</span><h2>Elegí tu contraseña</h2></header>
+    <div class="cuerpo">
+      <p>Al tocar el enlace se abre esta pantalla, con tu nombre ya puesto:</p>
+
+      <div class="telefono">
+        <div class="app">
+          <div class="cab"><b>Activar mi cuenta</b></div>
+          <div class="cuerpo">
+            <div class="d" style="margin-bottom:10px;">Con el código que te mandó el gimnasio</div>
+            <div class="campo">Número de socio: SOC-1005</div>
+            <div class="campo">Código: K7M4PXQR</div>
+            <div class="campo"><span class="marca">1</span> Tu correo</div>
+            <div class="campo"><span class="marca">2</span> Contraseña</div>
+            <div class="campo">Repetir contraseña</div>
+            <span class="boton" style="width:100%; text-align:center;"><span class="marca">3</span> Activar</span>
+          </div>
+        </div>
+      </div>
+
+      <ol>
+        <li><span class="marca">1</span> &nbsp;Poné <strong>tu correo</strong>. Con ese correo vas a entrar de ahora en más</li>
+        <li><span class="marca">2</span> &nbsp;Elegí una <strong>contraseña</strong> y repetila</li>
+        <li><span class="marca">3</span> &nbsp;Tocá <strong>Activar</strong></li>
+      </ol>
+      <p>El número de socio y el código ya vienen completos. No los toques.</p>
+
+      <div class="box warn">
+        <span class="t">Si el enlace no te funciona</span>
+        <p>Entrá al sitio del gimnasio, tocá <b>Soy socio</b> y buscá la opción de activarte con código. Ahí escribís el código de 8 letras a mano.</p>
+      </div>
+
+      <div class="box bad">
+        <span class="t">Si dice que el código no es válido</span>
+        <p>
+          Ese código se usa una sola vez. Pedile al gimnasio que te mande uno nuevo: lo hacen en
+          diez segundos.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================= 3 ======================= -->
+  <div class="paso">
+    <header><span class="num">3</span><h2>Dejala a mano en tu celular</h2></header>
+    <div class="cuerpo">
+      <p>Para no tener que buscar el link cada vez, instalá la app. No ocupa casi nada:</p>
+
+      <table>
+        <tr><th style="width:26%">Si tenés</th><th>Qué hacer</th></tr>
+        <tr><td><strong>Android</strong></td>
+          <td>Abrila en Chrome, tocá el <strong>menú de tres puntitos</strong> arriba a la derecha y elegí <strong>Agregar a pantalla de inicio</strong>.</td></tr>
+        <tr><td><strong>iPhone</strong></td>
+          <td>Tiene que ser con <strong>Safari</strong>. Tocá el botón de <strong>Compartir</strong> (el cuadradito con la flecha hacia arriba) y elegí <strong>Agregar a inicio</strong>.</td></tr>
+      </table>
+
+      <p>Te queda el ícono junto al resto de tus apps.</p>
+    </div>
+  </div>
+
+  <!-- ======================= 4 ======================= -->
+  <div class="paso">
+    <header><span class="num">4</span><h2>Usarla</h2></header>
+    <div class="cuerpo">
+      <p>Al entrar ves tu carnet, con el QR grande arriba:</p>
+
+      <div class="telefono">
+        <div class="app">
+          <div class="cab"><b>Mi carnet</b></div>
+          <div class="cuerpo">
+            <div class="card" style="text-align:center;">
+              <div class="d">[ tu foto ]</div>
+              <div style="font-weight:800; margin:6px 0;">Juan Pérez</div>
+              <div class="card" style="background:#fff; color:#000; padding:20px; margin:8px 0;">
+                <span class="marca">1</span> [ código QR ]
+              </div>
+              <div class="d">Renueva en 30s</div>
+              <div style="margin-top:8px;">
+                <span class="chip v">Cuota al día</span> <span class="chip v">Apto vigente</span>
+              </div>
+            </div>
+            <div class="pest">
+              <span class="on"><span class="marca">2</span> Cuota &amp; Pagos</span>
+              <span><span class="marca">3</span> Apto Médico</span>
+              <span>Mi Perfil</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h3><span class="marca">1</span> &nbsp;Entrar al gimnasio</h3>
+      <p>
+        Mostrás el QR en la puerta y te lo escanean. <strong>Se renueva cada 30 segundos</strong>,
+        así que no sirve mandarle una captura a otra persona.
+      </p>
+      <div class="box">
+        <span class="t">Subí el brillo de la pantalla</span>
+        <p>Si la cámara no te lee el QR, casi siempre es porque tenés la pantalla muy oscura.</p>
+      </div>
+
+      <h3><span class="marca">2</span> &nbsp;Pagar la cuota</h3>
+      <p>En la pestaña <strong>Cuota &amp; Pagos</strong>:</p>
+      <ol>
+        <li>Tocás <strong>Pagar cuota</strong> y se abre el link de pago del gimnasio</li>
+        <li>Pagás</li>
+        <li><strong>Volvés a la app</strong> y subís una foto o captura del comprobante, donde dice <em>"Ya pagué — subir el comprobante"</em></li>
+      </ol>
+      <div class="box warn">
+        <span class="t">El paso 3 es obligatorio</span>
+        <p>
+          El gimnasio <b>no se entera solo</b> de que pagaste. Si no subís el comprobante, tu cuota
+          sigue figurando vencida y en la puerta te va a dar rojo.
+        </p>
+        <p>Después de subirlo, el gimnasio lo confirma y tu cuota se renueva.</p>
+      </div>
+
+      <h3><span class="marca">3</span> &nbsp;Mandar el apto médico</h3>
+      <p>
+        En la pestaña <strong>Apto Médico</strong> subís una foto o el PDF del certificado.
+        El gimnasio lo revisa y lo aprueba.
+      </p>
+      <p>Ahí mismo ves hasta cuándo te vale el que ya tenés.</p>
+    </div>
+  </div>
+
+  <h2>Si algo no anda</h2>
+  <table>
+    <tr><th style="width:40%">Lo que pasa</th><th>Qué hacer</th></tr>
+    <tr><td>No puedo entrar a la app</td>
+      <td>Fijate que estés tocando <strong>Soy socio</strong> y no otra opción. Es la causa más común.</td></tr>
+    <tr><td>Olvidé mi contraseña</td>
+      <td>Usá <strong>¿Olvidaste tu contraseña?</strong> en la pantalla de ingreso. Te llega un mail para cambiarla.</td></tr>
+    <tr><td>Cambié de correo y no puedo entrar</td>
+      <td>Pedile al gimnasio que <strong>desvincule tu cuenta</strong>. Te manda un código nuevo y te activás con el correo nuevo.</td></tr>
+    <tr><td>La cámara no lee mi QR</td>
+      <td>Subí el brillo de la pantalla. Si sigue, que te busquen por DNI.</td></tr>
+    <tr><td>Pagué pero sigo en rojo</td>
+      <td>¿Subiste el comprobante? Sin eso el gimnasio no se entera. Y una vez subido, alguien lo tiene que confirmar.</td></tr>
+    <tr><td>Dice "cuota congelada"</td>
+      <td>El gimnasio te pausó la cuota, por ejemplo por vacaciones. Consultá en el mostrador.</td></tr>
+  </table>
+
+  <h2>Listo</h2>
+  <ul class="chk">
+    <li><input type="checkbox" id="s1"><label for="s1">Guardé la imagen de mi credencial en la galería</label></li>
+    <li><input type="checkbox" id="s2"><label for="s2">Activé mi cuenta con mi correo y mi contraseña</label></li>
+    <li><input type="checkbox" id="s3"><label for="s3">Dejé la app en la pantalla de inicio del celular</label></li>
+    <li><input type="checkbox" id="s4"><label for="s4">Entré una vez al gimnasio mostrando el QR</label></li>
+  </ul>
+
+  <p class="meta">
+    FitAccess · Guía para socios.<br>
+    Tu credencial no vence: lo que vence es la cuota.
+  </p>
+</div>
+
+<script src="guia.js"></script>
+<script>iniciarProgreso(["s1","s2","s3","s4"]);</script>
+</body>
+</html>

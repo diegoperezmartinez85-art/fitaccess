@@ -15,21 +15,35 @@
   .wrap { max-width: 700px; width: 100%; }
   .eyebrow { font-size: .74rem; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: #2dd4bf; }
   h1 { font-size: 2rem; margin: 8px 0 10px; letter-spacing: -.5px; }
-  .sub { color: #9fc9c2; margin: 0 0 32px; }
+  .sub { color: #9fc9c2; margin: 0 0 30px; }
+
+  /* Las guías están agrupadas por quién las lee, no por número: el que vende
+     FitAccess necesita saber cuál le entrega a cada persona. */
+  .grupo { margin: 30px 0 14px; display: flex; align-items: center; gap: 10px; }
+  .grupo:first-of-type { margin-top: 0; }
+  .grupo h3 { font-size: .76rem; font-weight: 800; letter-spacing: 1.3px; text-transform: uppercase; margin: 0; color: #cfeae5; }
+  .grupo .linea { flex: 1; height: 1px; background: #24534a; }
+
   a.card {
     display: block; text-decoration: none; color: inherit;
     background: #14352f; border: 1px solid #24534a; border-radius: 12px;
-    padding: 22px 24px; margin-bottom: 16px; transition: border-color .15s, transform .15s;
+    border-left: 3px solid var(--ac, #2dd4bf);
+    padding: 20px 22px; margin-bottom: 14px; transition: border-color .15s, transform .15s, box-shadow .15s;
   }
-  a.card:hover { border-color: #2dd4bf; transform: translateY(-2px); }
-  /* La visual va destacada: es la que conviene abrir la primera vez. */
-  a.card.destacada { border-color: #2dd4bf; box-shadow: 0 0 24px -8px rgba(45,212,191,.45); }
-  a.card.destacada .n { color: #5eead4; }
-  .n { font-size: .72rem; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: #2dd4bf; }
-  h2 { font-size: 1.2rem; margin: 5px 0 7px; }
+  a.card:hover { border-color: #2dd4bf; border-left-color: var(--ac, #2dd4bf); transform: translateY(-2px); }
+  /* La visual de cada grupo va destacada: es la que conviene abrir primero.
+     La de referencia queda al lado, para cuando aparece una duda puntual. */
+  a.card.destacada { box-shadow: 0 0 24px -10px var(--ac, #2dd4bf); }
+  /* --ac es el color del portal, y sirve para el borde. Como texto sobre la
+     tarjeta oscura, el índigo del dueño queda en 2,98:1 y no llega a AA: por
+     eso el texto y la pastilla usan --act, la versión aclarada. */
+  .n { font-size: .72rem; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: var(--act, var(--ac, #2dd4bf)); }
+  h2 { font-size: 1.18rem; margin: 5px 0 7px; }
   p { margin: 0; color: #9fc9c2; font-size: .93rem; }
-  .who { display: inline-block; margin-top: 12px; font-size: .78rem; font-weight: 700; color: #06201d; background: #2dd4bf; padding: 3px 10px; border-radius: 20px; }
-  .foot { margin-top: 26px; font-size: .84rem; color: #6d938c; }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .pasos { font-size: .78rem; font-weight: 700; color: #cfeae5; background: rgba(255,255,255,.07); border: 1px solid #24534a; padding: 3px 10px; border-radius: 20px; }
+  .visual { font-size: .78rem; font-weight: 700; color: #06201d; background: var(--act, var(--ac, #2dd4bf)); padding: 3px 10px; border-radius: 20px; }
+  .foot { margin-top: 30px; font-size: .84rem; color: #6d938c; }
   .foot a { color: #2dd4bf; }
 </style>
 </head>
@@ -37,27 +51,58 @@
   <div class="wrap">
     <div class="eyebrow">FitAccess</div>
     <h1>Guías paso a paso</h1>
-    <p class="sub">Abrí la que necesites. Cada una tiene un botón arriba para guardarla como PDF o imprimirla.</p>
+    <p class="sub">
+      Las <b>visuales</b> dibujan cada pantalla y marcan con un número rojo dónde tocar; las tildes
+      se van guardando solas, así que podés cortar y seguir después. Todas tienen un botón arriba
+      para guardarlas como PDF o imprimirlas.
+    </p>
 
-    <a class="card destacada" href="alta-visual.html">
+    <div class="grupo"><h3>Vos, que vendés FitAccess</h3><div class="linea"></div></div>
+
+    <a class="card destacada" href="alta-visual.html" style="--ac:#a78bfa">
       <div class="n">Empezá por acá</div>
-      <h2>Dar de alta un gimnasio, paso a paso</h2>
-      <p>Con el dibujo de cada pantalla de Firebase y un número rojo marcando dónde tocar. Seis pasos, con las tildes que se van guardando solas.</p>
-      <span class="who">Para el operador de la plataforma</span>
+      <h2>Dar de alta un gimnasio</h2>
+      <p>Crear el gimnasio y el usuario del dueño en Firebase, con el dibujo de cada pantalla y dónde tocar exactamente.</p>
+      <div class="meta"><span class="visual">Visual</span><span class="pasos">6 pasos</span></div>
     </a>
 
-    <a class="card" href="alta-de-gimnasios-y-usuarios.html">
-      <div class="n">Guía 1 · referencia</div>
+    <a class="card" href="alta-de-gimnasios-y-usuarios.html" style="--ac:#a78bfa">
+      <div class="n">Referencia</div>
       <h2>Alta de gimnasios y usuarios</h2>
       <p>La versión completa: además del alta, cómo agregar recepcionistas y entrenadores, cómo dar de baja a alguien y la tabla de errores frecuentes.</p>
-      <span class="who">Para el operador de la plataforma</span>
     </a>
 
-    <a class="card" href="manual-del-dueno.html">
-      <div class="n">Guía 2</div>
+    <div class="grupo"><h3>Para entregarle al dueño</h3><div class="linea"></div></div>
+
+    <a class="card destacada" href="dueno-visual.html" style="--ac:#6366f1; --act:#a5b4fc">
+      <div class="n">Su primer día</div>
+      <h2>Tu primer día como dueño</h2>
+      <p>Planes y precios, reglas del gimnasio, cargar socios, mandar credenciales, cobrar y cerrar la caja. En una hora tiene el gimnasio funcionando.</p>
+      <div class="meta"><span class="visual">Visual</span><span class="pasos">7 pasos</span></div>
+    </a>
+
+    <a class="card" href="manual-del-dueno.html" style="--ac:#6366f1; --act:#a5b4fc">
+      <div class="n">Referencia</div>
       <h2>Manual del dueño de gimnasio</h2>
-      <p>Configurar el gimnasio, cargar socios, mandar credenciales por WhatsApp, controlar el acceso con el semáforo y cobrar las cuotas.</p>
-      <span class="who">Para entregarle a cada dueño</span>
+      <p>El detalle de cada pantalla: congelamientos, pases diarios, aforo, descuentos, historial de cobros e importar socios desde un Excel.</p>
+    </a>
+
+    <div class="grupo"><h3>Para el mostrador</h3><div class="linea"></div></div>
+
+    <a class="card destacada" href="recepcion-visual.html" style="--ac:#fb923c">
+      <div class="n">Imprimila y dejala en el mostrador</div>
+      <h2>Guía de recepción</h2>
+      <p>Los tres colores del semáforo y qué hacer con cada uno, cobrar una cuota, las cuatro pestañas y qué hacer cuando la terminal se bloquea.</p>
+      <div class="meta"><span class="visual">Visual</span><span class="pasos">6 pasos</span></div>
+    </a>
+
+    <div class="grupo"><h3>Para mandarle al socio</h3><div class="linea"></div></div>
+
+    <a class="card destacada" href="socio-visual.html" style="--ac:#14b8a6; --act:#5eead4">
+      <div class="n">Pasale el link por WhatsApp</div>
+      <h2>Tu credencial digital</h2>
+      <p>Cómo activar la cuenta con el código que le llegó, elegir contraseña, dejar la credencial a mano en el celular y usarla para entrar.</p>
+      <div class="meta"><span class="visual">Visual</span><span class="pasos">4 pasos</span></div>
     </a>
 
     <p class="foot"><a href="../index.html">Volver a la aplicación</a></p>

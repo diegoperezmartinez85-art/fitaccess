@@ -21,7 +21,7 @@
  *    error en la página. Ahora siempre se devuelve una Response.
  */
 
-const VERSION = "fitaccess-v2.3.0";
+const VERSION = "fitaccess-v2.4.0";
 const SHELL_CACHE = `${VERSION}-shell`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 
@@ -39,6 +39,14 @@ const SHELL_ASSETS = [
   "./guias/manual-del-dueno.html",
   "./guias/alta-de-gimnasios-y-usuarios.html",
   "./guias/alta-visual.html",
+  "./guias/dueno-visual.html",
+  "./guias/recepcion-visual.html",
+  "./guias/socio-visual.html",
+  /* Las guías visuales comparten hoja de estilos y script. Sin estos dos, la
+     guía abre sin diseño y sin las tildes que guardan el progreso: justo lo
+     que la hace seguible. */
+  "./guias/guia.css",
+  "./guias/guia.js",
   /* La tipografía ahora es propia y se precarga: era lo último que quedaba
      colgado de internet. Sin esto, el primer arranque sin conexión dibujaba
      la app con la fuente del sistema. */
