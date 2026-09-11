@@ -686,6 +686,25 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
 }
 .portal-icon .ico { width: 24px; height: 24px; stroke-width: 1.75; color: var(--primary-color); }
 
+/* Aviso del ingreso, debajo del botón.
+   Sin min-height y con :empty no ocupa nada mientras no hay mensaje, así que
+   no deja un hueco entre el botón y los links de abajo. Cuando aparece, el
+   salto de layout es justamente lo que llama la atención. */
+#portal-auth-status {
+  font-size: 0.82rem; line-height: 1.45; text-align: center;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+}
+#portal-auth-status:empty { display: none; }
+#portal-auth-status:not(:empty) {
+  margin-top: 12px; padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--glass-border);
+}
+/* El icono no se deforma cuando el texto ocupa dos o tres renglones. */
+#portal-auth-status .ico { flex: none; width: 17px; height: 17px; }
+#portal-auth-status span { text-align: left; }
+
 /* Color por rol.
    Antes el azulejo del ícono era gris en las tres opciones y el color estaba
    sólo en una línea al costado: las tres se veían iguales de reojo. Ahora el
@@ -1507,6 +1526,13 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
           </button>
         </form>
 
+        <!-- El aviso va PEGADO al botón, no al final de la tarjeta.
+             Antes estaba abajo de todo, después de las cuentas de prueba: en un
+             celular caía 286 px por debajo del borde de la pantalla, así que
+             quien erraba la contraseña no veía nada. Acá cae en el lugar donde
+             la persona ya está mirando, apenas apretó. -->
+        <div id="portal-auth-status" role="status" aria-live="polite"></div>
+
         <div style="margin-top: 12px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
           <button type="button" class="btn btn-secondary btn-tiny" onclick="FitApp.requestPasswordReset()">
             ¿Olvidaste tu contraseña?
@@ -1532,8 +1558,6 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
           </div>
         </div>
         <div id="cloud-mode-note" style="margin-top: 6px; font-size: 0.72rem; color: var(--text-dim); text-align: right;"></div>
-
-        <div id="portal-auth-status" style="margin-top: 10px; font-size: 0.82rem; text-align: center; min-height: 20px;"></div>
       </div>
 
     </div>
