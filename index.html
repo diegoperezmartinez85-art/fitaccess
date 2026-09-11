@@ -630,6 +630,13 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
   font-size: .86rem; font-weight: 600; line-height: 1.45;
   animation: toastIn .45s var(--ease-spring);
 }
+/* El aviso de cierre se apila arriba de los mensajes, que ocupan la esquina
+   inferior derecha en escritorio y todo el ancho abajo en celular. */
+.session-warning { bottom: 96px; }
+@media (max-width: 640px) {
+  .session-warning { bottom: calc(146px + env(safe-area-inset-bottom)); }
+}
+
 .toast-ico { display: grid; place-items: center; flex: none; margin-top: 1px; }
 .toast-ico .ico { width: 20px; height: 20px; stroke-width: 2; }
 .toast-info    { border-left-color: var(--primary-color); }
@@ -2062,6 +2069,21 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
             <input type="number" id="gym-qr-ttl" class="form-input" min="10" max="300" onchange="FitApp.updateGymSetting('qrTtlSeconds', parseInt(this.value,10))">
           </div>
           <div class="form-group">
+            <label class="form-label">Cerrar sesión sin uso (minutos):</label>
+            <input type="number" id="gym-session-idle" class="form-input" min="5" max="480" onchange="FitApp.updateSessionSetting('idleMinutes', this.value)">
+            <span class="form-hint">Para vos, administradores y entrenadores. Recomendado: 30.</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Bloquear el mostrador sin uso (minutos):</label>
+            <input type="number" id="gym-session-lock" class="form-input" min="2" max="240" onchange="FitApp.updateSessionSetting('lockMinutes', this.value)">
+            <span class="form-hint">Recepción no se cierra, se bloquea. Recomendado: 10.</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Volver a pedir la clave cada (horas):</label>
+            <input type="number" id="gym-session-max" class="form-input" min="1" max="72" onchange="FitApp.updateSessionSetting('maxHours', this.value)">
+            <span class="form-hint">Aunque se esté usando. Es lo que protege un equipo perdido. Recomendado: 12.</span>
+          </div>
+          <div class="form-group">
             <label class="form-label">Capacidad máxima (aforo):</label>
             <input type="number" id="gym-capacity" class="form-input" min="0" max="5000" onchange="FitApp.updateGymSetting('capacity', parseInt(this.value,10) || 0)">
             <span class="form-hint">Cuántas personas entran cómodas. Poné 0 si no querés controlarlo.</span>
@@ -2269,6 +2291,57 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
         <svg class="ico" aria-hidden="true"><use href="#i-chat"/></svg> Enviar por WhatsApp
       </button>
     </div>
+  </div>
+
+  <!-- ====================================================================
+       BLOQUEO DE TERMINAL
+       Tapa la pantalla sin cerrar la sesión. La cámara sigue autorizada y el
+       escáner vuelve donde estaba al desbloquear.
+       ==================================================================== -->
+  <div id="lock-overlay" class="modal-overlay" style="display:none; z-index:99990;">
+    <div class="modal-card" style="max-width:400px; text-align:center;">
+      <div class="portal-icon" style="margin:0 auto 14px; width:56px; height:56px;">
+        <svg class="ico ico-lg" aria-hidden="true"><use href="#i-lock"/></svg>
+      </div>
+      <h3 style="font-size:1.28rem; font-weight:900; margin-bottom:4px;">Terminal bloqueada</h3>
+      <p class="section-note" id="lock-reason" style="margin-bottom:2px;"></p>
+      <p style="font-size:.86rem; color:var(--text-muted); margin-bottom:18px;">
+        Sesión de <strong id="lock-who" style="color:var(--text-main);">—</strong>
+      </p>
+
+      <form onsubmit="event.preventDefault(); FitApp.submitUnlock();">
+        <div class="form-group">
+          <label class="form-label" for="lock-password">Tu contraseña para seguir:</label>
+          <input type="password" id="lock-password" class="form-input" autocomplete="current-password"
+                 style="text-align:center; font-size:1.05rem; padding:13px;">
+          <span id="lock-error" style="font-size:.82rem; display:block; min-height:18px; margin-top:6px;"></span>
+        </div>
+        <button type="submit" class="btn" style="width:100%; padding:13px; font-weight:800;">
+          <svg class="ico" aria-hidden="true"><use href="#i-check"/></svg> Desbloquear
+        </button>
+      </form>
+
+      <button type="button" class="quiet-link" style="margin-top:14px;" onclick="FitApp.lockLogout()">
+        Cambio de turno: cerrar sesión
+      </button>
+    </div>
+  </div>
+
+  <!-- Aviso antes de cerrar por inactividad.
+       Va por ENCIMA de la franja donde aparecen los mensajes de la app: los dos
+       viven abajo y con la pantalla angosta se superponían, tapando justamente
+       el botón de "Sigo acá". -->
+  <div id="session-warning" class="session-warning" style="display:none; position:fixed; z-index:99988; left:50%;
+       transform:translateX(-50%); align-items:center; gap:13px; flex-wrap:wrap; justify-content:center;
+       max-width:min(460px, calc(100vw - 26px));
+       background:linear-gradient(180deg, var(--ink-700), var(--ink-800));
+       border:1px solid var(--status-yellow); border-left-width:3px;
+       border-radius:14px; padding:13px 17px; box-shadow:var(--shadow-lg), var(--sheen);">
+    <svg class="ico ico-md" aria-hidden="true" style="color:var(--status-yellow);"><use href="#i-clock"/></svg>
+    <span style="font-size:.87rem; font-weight:600;">
+      Se va a cerrar la sesión en <strong id="session-warning-secs" class="tabular">60</strong> s por inactividad.
+    </span>
+    <button class="btn btn-tiny" onclick="FitApp.touchSession()">Sigo acá</button>
   </div>
 
   <!-- Pase diario: cobrar una entrada suelta sin crear un socio -->
@@ -2962,6 +3035,30 @@ const CAPS = {
   recepcion: ["gym:view", "members:view", "payments:charge", "access:scan"],
   entrenador: ["gym:view", "members:view"],
   socio: ["self:card", "self:pay", "self:apto"]
+};
+
+/* --------------------------------------------------------------------------
+   POLÍTICA DE SESIÓN POR ROL
+   `action` es lo que pasa al agotarse el tiempo sin uso:
+     logout -> se cierra la sesión
+     lock   -> se tapa la pantalla y se pide la contraseña, sin cerrar nada
+     none   -> no pasa nada
+
+   Recepción bloquea en lugar de cerrar porque cerrarle la sesión rompe la
+   operación: la cámara pierde el permiso y el próximo socio se encuentra un
+   formulario en vez del escáner.
+
+   `maxHours` es la caducidad absoluta, la que cubre el equipo perdido: por más
+   que se lo esté usando, a las N horas hay que identificarse de nuevo.
+   El gimnasio puede cambiar estos números desde Mi Gimnasio.
+   -------------------------------------------------------------------------- */
+const SESSION_POLICY = {
+  superadmin: { action: "logout", idleMin: 20, maxHours: 8 },   // ve todos los gimnasios
+  owner:      { action: "logout", idleMin: 30, maxHours: 12 },
+  admin:      { action: "logout", idleMin: 30, maxHours: 12 },
+  entrenador: { action: "logout", idleMin: 30, maxHours: 12 },
+  recepcion:  { action: "lock",   idleMin: 10, maxHours: 12 },
+  socio:      { action: "none" }
 };
 
 /* Qué roles pueden entrar por cada portal del login */
@@ -4064,7 +4161,9 @@ const FitApp = {
       email: user.email,
       memberId: user.memberId || null,
       branchId: user.branchId || null,
-      portal
+      portal,
+      startedAt: new Date().toISOString(),
+      lastActivityAt: new Date().toISOString()
     };
     Store.write(LS.session, this.session);
 
@@ -4084,6 +4183,7 @@ const FitApp = {
     if (this.activeGymId) {
       this.logAudit("auth:login", `Ingreso por portal ${portal}`, "user", this.session.userId);
     }
+    this.startSessionWatch();
     this.showToast(`👋 ${this.session.name} · ${ROLES[this.session.role].label}${this.activeGymId ? " · " + this.gymName() : ""}`);
   },
 
@@ -4100,13 +4200,35 @@ const FitApp = {
     this.activeBranchId = user.branchId || null;
     this.impersonating = !!(user.role === "superadmin" && this.activeGymId);
 
+    /* Se evalúa la política ANTES de mostrar nada: si la sesión guardada ya
+       venció, no se restaura. Éste es el camino que cubre el equipo perdido,
+       porque la app se abre de cero y el temporizador todavía no corrió. */
+    const politica = this.sessionPolicyFor(this.session.role);
+    const v = this.sessionVerdict(Date.now(), this.session, politica, 0);
+    if (v.action === "logout") {
+      this.logout(v.reason === "max"
+        ? "Tu sesión venció: volvé a entrar."
+        : "Se cerró la sesión por inactividad.");
+      return;
+    }
+
     this.hideLoginModal();
     this.applyTheme();
     this.applyRBAC(s.portal || "staff");
+    this.startSessionWatch();
+
+    // Recepción no se cierra, se bloquea: se restaura y se tapa.
+    if (v.action === "lock") {
+      this.lockSession("La terminal quedó sin uso desde la última vez.");
+    }
   },
 
-  logout() {
-    if (this.session && this.activeGymId) this.logAudit("auth:logout", "Cierre de sesión", "user", this.session.userId);
+  logout(motivo) {
+    if (this.session && this.activeGymId) this.logAudit("auth:logout", motivo || "Cierre de sesión", "user", this.session.userId);
+    this.stopSessionWatch();
+    this.sessionLocked = false;
+    const ov = document.getElementById("lock-overlay");
+    if (ov) ov.style.display = "none";
     this.session = null;
     this.activeGymId = null;
     this.activeBranchId = null;
@@ -4120,6 +4242,224 @@ const FitApp = {
     this.renderCloudBadge();
     this.showLoginModal();
     this.backToPortalSelector();
+  },
+
+  /* ==================================================================
+     6b. CADUCIDAD DE LA SESIÓN
+
+     Hasta acá la sesión no caducaba nunca: sobrevivía a cerrar el navegador
+     y a reiniciar el equipo. En el celular del dueño eso significa que un
+     teléfono perdido el viernes sigue abriendo la caja el sábado.
+
+     Pero un único tiempo para toda la app sería un error, y por eso hay una
+     política por rol:
+
+       Dueño, administrador, entrenador -> SE CIERRA
+         Esa sesión controla la plata, la configuración y los datos
+         personales de cientos de personas.
+
+       Recepción -> SE BLOQUEA, NO SE CIERRA
+         Cerrarla rompe la operación: la cámara pierde el permiso y el
+         próximo socio se encuentra un formulario en vez del escáner. Peor
+         todavía, la recepcionista termina anotando la contraseña en un papel
+         pegado al monitor, que es menos seguro que no tener bloqueo. Se tapa
+         la pantalla y se pide la contraseña, con la sesión viva por debajo:
+         al desbloquear el escáner sigue donde estaba. Es lo que hacen las
+         cajas de los comercios.
+
+       Socio -> NADA
+         Sólo ve sus propios datos, y quiere mostrar el QR en la puerta en dos
+         segundos. Cerrarle la sesión es molestia sin ganancia.
+
+       Operador de la plataforma -> EL MÁS ESTRICTO
+         Es el único que ve todos los gimnasios.
+
+     Además del tiempo sin uso hay una caducidad absoluta: pase lo que pase,
+     a las 12 horas hay que volver a identificarse. Eso es lo que cubre el
+     caso del equipo perdido, que el tiempo de inactividad solo no cubre.
+     ================================================================== */
+
+  /* Decidir y ejecutar están separados a propósito: la decisión es una
+     función pura que se puede probar con fechas inventadas, sin esperar
+     treinta minutos reales. */
+  sessionPolicyFor(role) {
+    const base = SESSION_POLICY[role] || SESSION_POLICY.socio;
+    const s = (this.activeGym() && this.activeGym().settings && this.activeGym().settings.session) || {};
+    const nEntero = (v, def) => {
+      const n = parseInt(v, 10);
+      return (Number.isFinite(n) && n > 0) ? n : def;
+    };
+    return {
+      action: base.action,
+      idleMin: base.action === "lock" ? nEntero(s.lockMinutes, base.idleMin) : nEntero(s.idleMinutes, base.idleMin),
+      maxHours: nEntero(s.maxHours, base.maxHours)
+    };
+  },
+
+  /* Devuelve qué corresponde hacer, sin hacerlo. */
+  sessionVerdict(ahora, sesion, politica, avisoSegundos = 60) {
+    if (!sesion || !politica || politica.action === "none") return { action: "none" };
+
+    const t = n => new Date(n).getTime();
+    const ultima = t(sesion.lastActivityAt || sesion.startedAt || ahora);
+    const inicio = t(sesion.startedAt || ahora);
+    const hoy = t(ahora);
+
+    /* La caducidad absoluta gana: no importa cuánto se usó, si la sesión es
+       vieja hay que volver a identificarse. */
+    if (politica.maxHours && (hoy - inicio) >= politica.maxHours * 3600000) {
+      return { action: politica.action, reason: "max" };
+    }
+
+    const inactivo = hoy - ultima;
+    const limite = politica.idleMin * 60000;
+    if (inactivo >= limite) return { action: politica.action, reason: "idle" };
+
+    /* El aviso previo sólo tiene sentido cuando se va a cerrar: si sólo se
+       bloquea no hay nada que perder, así que no se interrumpe. */
+    if (politica.action === "logout") {
+      const faltan = Math.ceil((limite - inactivo) / 1000);
+      if (faltan <= avisoSegundos) return { action: "warn", secondsLeft: faltan };
+    }
+    return { action: "none" };
+  },
+
+  /* Marca actividad. Se escribe a disco como máximo una vez cada 30 segundos:
+     guardar en cada movimiento del mouse castiga el almacenamiento sin ningún
+     beneficio. */
+  touchSession() {
+    if (!this.session) return;
+    const ahora = Date.now();
+    this.session.lastActivityAt = new Date(ahora).toISOString();
+    if (!this._lastTouchWrite || ahora - this._lastTouchWrite > 30000) {
+      this._lastTouchWrite = ahora;
+      Store.write(LS.session, this.session);
+    }
+    if (this._warnShown) this.hideSessionWarning();
+  },
+
+  startSessionWatch() {
+    this.stopSessionWatch();
+    if (!this.session) return;
+
+    const politica = this.sessionPolicyFor(this.session.role);
+    if (politica.action === "none") return;
+
+    const marcar = () => this.touchSession();
+    this._activityEvents = ["pointerdown", "keydown", "wheel", "touchstart"];
+    this._activityEvents.forEach(ev => document.addEventListener(ev, marcar, { passive: true }));
+    this._activityHandler = marcar;
+
+    this._sessionTimer = setInterval(() => this.checkSession(), 5000);
+  },
+
+  stopSessionWatch() {
+    clearInterval(this._sessionTimer);
+    this._sessionTimer = null;
+    if (this._activityHandler && this._activityEvents) {
+      this._activityEvents.forEach(ev => document.removeEventListener(ev, this._activityHandler));
+    }
+    this._activityHandler = null;
+    this.hideSessionWarning();
+  },
+
+  checkSession() {
+    if (!this.session || this.sessionLocked) return;
+    const politica = this.sessionPolicyFor(this.session.role);
+    const v = this.sessionVerdict(Date.now(), this.session, politica);
+
+    if (v.action === "warn") return this.showSessionWarning(v.secondsLeft);
+    this.hideSessionWarning();
+
+    if (v.action === "lock") {
+      this.lockSession(v.reason === "max"
+        ? "Pasaron 12 horas desde el último ingreso."
+        : "La terminal estuvo un rato sin uso.");
+    } else if (v.action === "logout") {
+      this.logout(v.reason === "max"
+        ? "Se cerró la sesión: pasaron 12 horas desde que entraste."
+        : "Se cerró la sesión por inactividad.");
+    }
+  },
+
+  showSessionWarning(segundos) {
+    const box = document.getElementById("session-warning");
+    if (!box) return;
+    this._warnShown = true;
+    box.style.display = "flex";
+    const n = document.getElementById("session-warning-secs");
+    if (n) n.textContent = segundos;
+  },
+
+  hideSessionWarning() {
+    this._warnShown = false;
+    const box = document.getElementById("session-warning");
+    if (box) box.style.display = "none";
+  },
+
+  /* ------------------------------------------------------------ bloqueo */
+
+  lockSession(motivo) {
+    if (!this.session || this.sessionLocked) return;
+    this.sessionLocked = true;
+    this.hideSessionWarning();
+
+    const ov = document.getElementById("lock-overlay");
+    if (ov) {
+      const quien = document.getElementById("lock-who");
+      if (quien) quien.textContent = `${this.session.name} · ${ROLES[this.session.role].label}`;
+      const por = document.getElementById("lock-reason");
+      if (por) por.textContent = motivo || "";
+      const err = document.getElementById("lock-error");
+      if (err) err.textContent = "";
+      const inp = document.getElementById("lock-password");
+      if (inp) inp.value = "";
+      ov.style.display = "flex";
+      setTimeout(() => { const i = document.getElementById("lock-password"); if (i) i.focus(); }, 80);
+    }
+    // La cámara se deja andando: reiniciarla pide el permiso de nuevo.
+    this.logAudit("auth:lock", `Terminal bloqueada (${motivo || "inactividad"})`, "user", this.session.userId);
+  },
+
+  async submitUnlock() {
+    if (!this.session) return;
+    const inp = document.getElementById("lock-password");
+    const err = document.getElementById("lock-error");
+    const pass = inp ? inp.value : "";
+    if (!pass) return;
+
+    const fallar = m => { if (err) { err.textContent = m; err.style.color = "var(--status-red)"; } if (inp) inp.value = ""; };
+
+    let ok = false;
+    if (this.cloudOn()) {
+      const r = await window.FirebaseSaaS.verifyPassword(this.session.email, pass);
+      ok = r.ok;
+      if (!ok && r.message) return fallar(r.message);
+    } else {
+      const user = this.users.find(u => u.id === this.session.userId);
+      ok = await Security.verify(user, pass);
+    }
+    if (!ok) return fallar("Contraseña incorrecta.");
+
+    this.sessionLocked = false;
+    const ov = document.getElementById("lock-overlay");
+    if (ov) ov.style.display = "none";
+
+    /* Se reinicia el reloj de la caducidad absoluta: la persona acaba de
+       identificarse, así que la sesión vuelve a ser fresca. */
+    this.session.startedAt = new Date().toISOString();
+    this.touchSession();
+    Store.write(LS.session, this.session);
+    this.logAudit("auth:unlock", "Terminal desbloqueada", "user", this.session.userId);
+    this.showToast("Terminal desbloqueada.", "success");
+  },
+
+  /* Salir del bloqueo cerrando sesión, para el cambio de turno. */
+  lockLogout() {
+    this.sessionLocked = false;
+    const ov = document.getElementById("lock-overlay");
+    if (ov) ov.style.display = "none";
+    this.logout();
   },
 
   /* ==================================================================
@@ -4625,6 +4965,10 @@ const FitApp = {
     set("gym-require-apto", String(gym.settings.requireApto));
     set("gym-qr-ttl", gym.settings.qrTtlSeconds);
     set("gym-capacity", gym.settings.capacity || 0);
+    const ses = gym.settings.session || {};
+    set("gym-session-idle", ses.idleMinutes || SESSION_POLICY.owner.idleMin);
+    set("gym-session-lock", ses.lockMinutes || SESSION_POLICY.recepcion.idleMin);
+    set("gym-session-max", ses.maxHours || SESSION_POLICY.owner.maxHours);
     set("gym-cross-branch", String(gym.settings.crossBranchAccess !== false));
     set("gym-payment-link", (gym.settings && gym.settings.paymentLink) || "");
     set("wl-logo-url", gym.branding.logoUrl || "");
@@ -4689,6 +5033,30 @@ const FitApp = {
       this.renderMemberView(this.currentActiveMember ? this.currentActiveMember.id : null);
       this.logAudit("gym:update", `Renombró el gimnasio a "${value}"`, "gym", gym.id);
     }
+  },
+
+  /* Los tres ajustes de sesión viven juntos en settings.session. Se validan
+     acá y no en el input: un `min` en el HTML lo saltea cualquiera, y un
+     "cerrar a los 0 minutos" dejaría al gimnasio sin poder trabajar. */
+  updateSessionSetting(campo, valor) {
+    if (!this.can("gym:settings")) return;
+    const gym = this.activeGym();
+    if (!gym) return;
+    const topes = { idleMinutes: [5, 480], lockMinutes: [2, 240], maxHours: [1, 72] };
+    const [min, max] = topes[campo] || [1, 999];
+    let n = parseInt(valor, 10);
+    if (!Number.isFinite(n)) n = min;
+    n = Math.min(max, Math.max(min, n));
+
+    gym.settings = gym.settings || {};
+    gym.settings.session = { ...(gym.settings.session || {}), [campo]: n };
+    this.persistGym();
+    this.pushCloud("gym", gym, gym.id);
+    this.renderGymSettings();
+    this.logAudit("gym:session_setting", `Cambió ${campo} a ${n}`, "gym", gym.id);
+    // Se aplica en el momento, sin esperar a que alguien vuelva a entrar.
+    this.startSessionWatch();
+    this.showToast("Ajuste de sesión guardado.", "success");
   },
 
   updateGymSetting(key, value) {
@@ -8620,6 +8988,31 @@ document.addEventListener("DOMContentLoaded", () => FitApp.init());
           return { ok: true };
         } catch (e) {
           return { ok: false, message: this.authErrorMessage(e) };
+        }
+      },
+
+      /* Verifica una contraseña sin alterar la sesión.
+         Vuelve a firmar al MISMO usuario, así que el uid no cambia y la app no
+         usa onAuthStateChanged, o sea que nada se reinicia. Sirve para el
+         desbloqueo de la terminal: se confirma quién está del otro lado sin
+         cerrar nada. */
+      async verifyPassword(email, password) {
+        if (!this.auth) return { ok: false, message: "Firebase no está inicializado." };
+        try {
+          await signInWithEmailAndPassword(this.auth, email, password);
+          return { ok: true };
+        } catch (e) {
+          const code = (e && e.code) || "";
+          if (code.includes("wrong-password") || code.includes("invalid-credential")) {
+            return { ok: false, message: "Contraseña incorrecta." };
+          }
+          if (code.includes("too-many-requests")) {
+            return { ok: false, message: "Demasiados intentos. Esperá un minuto." };
+          }
+          if (code.includes("network")) {
+            return { ok: false, message: "Sin conexión: no se puede verificar." };
+          }
+          return { ok: false, message: "No se pudo verificar la contraseña." };
         }
       },
 
