@@ -1794,6 +1794,11 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
             <span id="m-cuota-badge" class="status-badge badge-green">Cuota al Día</span>
             <span id="m-apto-badge" class="status-badge badge-green">Apto Vigente</span>
           </div>
+          <!-- Guía cuando algo no está en verde: le dice al socio QUÉ hacer,
+               no sólo que está en rojo. Se oculta si está todo al día. -->
+          <div id="m-guia-estado" style="display:none; margin-top:14px; font-size:.83rem; line-height:1.5;
+               background:rgba(255,255,255,.05); border:1px solid var(--glass-border);
+               border-radius:var(--radius-sm); padding:11px 14px;"></div>
         </div>
 
         <div class="glass-card" style="margin-top: 20px;">
@@ -2097,6 +2102,21 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
           <div id="stat-today-logs" class="metric-value">0</div>
           <div class="metric-trend">Socios que entraron</div>
         </div>
+      </div>
+
+      <!-- Primeros pasos: guía al dueño nuevo. Sólo aparece hasta que el
+           gimnasio arranca de verdad (tiene socios); después se oculta solo y
+           no vuelve a molestar. data-cap para que la vea sólo quien puede
+           configurar el gimnasio. -->
+      <div class="glass-card" id="onboarding-card" style="margin-bottom: 24px; display:none; border:1px solid color-mix(in srgb, var(--primary-color) 35%, var(--hairline));" data-cap="members:create">
+        <div class="glass-card-header">
+          <div>
+            <h3 class="card-title"><svg class="ico" aria-hidden="true"><use href="#i-flag"/></svg> Primeros pasos</h3>
+            <p class="section-note">Tres cosas para dejar tu gimnasio funcionando. Se completan solas a medida que avanzás.</p>
+          </div>
+          <span id="onboarding-progress" class="status-badge badge-neutral">0 de 3</span>
+        </div>
+        <div id="onboarding-steps" style="display:flex; flex-direction:column; gap:10px;"></div>
       </div>
 
       <!-- Consumo del plan gratuito de Firebase -->
@@ -4832,6 +4852,18 @@ const FitApp = {
       if (btn) btn.classList.toggle("visible", !!visible);
     });
 
+    /* El botón "Mi Carnet" es del socio. Para el staff que consulta el padrón
+       (entrenador, o el dueño mirando carnets) esa misma vista es "Socios":
+       están viendo la ficha de otro, no la propia. */
+    const navSocioBtn = document.getElementById("nav-socio");
+    if (navSocioBtn) {
+      const esConsulta = role !== "socio";
+      const full = navSocioBtn.querySelector(".nav-full");
+      const short = navSocioBtn.querySelector(".nav-short");
+      if (full) full.textContent = esConsulta ? "Socios" : "Mi Carnet";
+      if (short) short.textContent = esConsulta ? "Socios" : "Carnet";
+    }
+
     // Ocultar bloques por capability
     document.querySelectorAll("[data-cap]").forEach(el => {
       el.style.display = this.can(el.getAttribute("data-cap")) ? "" : "none";
@@ -4853,6 +4885,10 @@ const FitApp = {
     else if (!this.activeGymId) target = "console";
     else if (role === "recepcion") target = "reception";
     else if (preferredPortal === "recepcion") target = "reception";
+    /* El entrenador no gestiona: sólo consulta el padrón y los aptos. Mandarlo
+       al Panel del dueño lo dejaba en una pantalla con casi todo oculto por
+       permisos. Su vista útil es la consulta de socios (el carnet). */
+    else if (role === "entrenador") target = "socio";
     else target = "admin";
     this.switchView(target);
   },
@@ -5050,6 +5086,7 @@ const FitApp = {
     this.renderOccupancy();
     this.renderReminders();
     this.renderQuota();
+    this.renderOnboarding();
   },
 
   /* ============================================================
@@ -6593,6 +6630,27 @@ Object.assign(FitApp, {
     if (ap) {
       ap.className = `status-badge ${aptoOk ? "badge-green" : (m.aptoMedico === "pendiente" ? "badge-yellow" : "badge-red")}`;
       ap.textContent = aptoOk ? "Vigente" : (m.aptoMedico === "pendiente" ? "Pendiente" : "Vencido");
+    }
+
+    /* Guía de estado: un socio nuevo ve "Cuota Vencida / Apto Pendiente" en rojo
+       y no sabe qué hacer. Sólo se le muestra a él (no al staff que audita), y
+       le dice el próximo paso concreto en vez de dejarlo con dos badges. */
+    const guia = document.getElementById("m-guia-estado");
+    if (guia) {
+      const esSocioPropio = this.role() === "socio";
+      const avisos = [];
+      if (esSocioPropio) {
+        if (!okCuota) avisos.push(`${ic("credit")} <strong>Tu cuota está vencida.</strong> Pagá desde la pestaña <em>Cuota &amp; Pagos</em> para poder entrar al gimnasio.`);
+        if (m.aptoMedico === "pendiente") avisos.push(`${ic("pulse")} <strong>Falta tu apto médico.</strong> Subilo desde la pestaña <em>Apto Médico</em>.`);
+        else if (m.aptoMedico === "vencido") avisos.push(`${ic("pulse")} <strong>Tu apto médico venció.</strong> Subí uno nuevo desde la pestaña <em>Apto Médico</em>.`);
+      }
+      if (esSocioPropio && avisos.length) {
+        guia.innerHTML = avisos.join("<br>");
+        guia.style.display = "block";
+      } else {
+        guia.style.display = "none";
+        guia.innerHTML = "";
+      }
     }
 
     const payBtn = document.getElementById("socio-pay-btn");
@@ -9147,15 +9205,15 @@ Object.assign(FitApp, {
   },
 
   toggleCloudMode() {
-    if (!this.cloudConfigured()) return this.showToast("⚠️ Falta completar FIREBASE_CONFIG en el archivo.");
+    if (!this.cloudConfigured()) return this.showToast("Falta completar FIREBASE_CONFIG en el archivo.", "warn");
     const turningOn = !this.cloudOn();
     localStorage.setItem("fitaccess_cloud", turningOn ? "on" : "off");
     window.FirebaseSaaS.enabled = turningOn;
     this.renderCloudBadge();
     this.renderDemoAccounts(this.selectedPortal);
     this.showToast(turningOn
-      ? "☁️ Modo Firebase. Ingresá con una cuenta real del proyecto."
-      : "💾 Modo local. Podés usar las cuentas de prueba.");
+      ? "Modo Firebase. Ingresá con una cuenta real del proyecto."
+      : "Modo local. Podés usar las cuentas de prueba.", turningOn ? "success" : "info");
   },
 
   /* Completa un gimnasio que viene de Firestore al que le faltan campos.
@@ -9390,6 +9448,79 @@ Object.assign(FitApp, {
     bar.style.display = showing ? "flex" : "none";
   },
 
+  /* Primeros pasos del dueño nuevo. El tablero en cero no decía qué hacer; esto
+     le marca el camino y se apaga solo cuando el gimnasio ya tiene socios. */
+  renderOnboarding() {
+    const card = document.getElementById("onboarding-card");
+    if (!card) return;
+
+    // Sólo para quien configura el gimnasio, y sólo dentro de un gimnasio.
+    const gym = this.activeGym();
+    if (!gym || !this.can("members:create")) { card.style.display = "none"; return; }
+
+    const socios = this.scopedMembers();
+    const staff = this.scopedUsers().filter(u => u.role !== "socio" && u.role !== "owner");
+
+    /* Un plan "de verdad" es uno con nombre y precio. El gimnasio arranca con un
+       plan por defecto, así que se considera hecho si tiene al menos uno con
+       precio mayor a cero (o si el dueño ya cargó socios: ya lo usó). */
+    const planOk = (gym.plans || []).some(p => p.price > 0) || socios.length > 0;
+
+    const pasos = [
+      {
+        ok: planOk,
+        titulo: "Revisá tus planes y precios",
+        desc: "Poné el nombre y el precio real de tus cuotas.",
+        accion: "Ir a Mi Gimnasio", fn: "FitApp.scrollToGymSettings()"
+      },
+      {
+        ok: socios.length > 0,
+        titulo: "Cargá tu primer socio",
+        desc: "Después le mandás la credencial por WhatsApp.",
+        accion: "Nuevo socio", fn: "FitApp.showAddMemberModal()"
+      },
+      {
+        ok: staff.length > 0,
+        titulo: "Sumá a tu recepción (opcional)",
+        desc: "Creá el acceso de quien atiende el mostrador.",
+        accion: "Crear usuario", fn: "FitApp.showCreateUserModal()"
+      }
+    ];
+
+    const hechos = pasos.filter(p => p.ok).length;
+
+    /* Cuando ya cargó socios, el gimnasio está en marcha: el checklist deja de
+       tener sentido y se oculta para no ocupar la mejor parte del panel. */
+    if (socios.length > 0 && hechos >= 2) { card.style.display = "none"; return; }
+    card.style.display = "";
+
+    const prog = document.getElementById("onboarding-progress");
+    if (prog) {
+      prog.textContent = `${hechos} de ${pasos.length}`;
+      prog.className = `status-badge ${hechos === pasos.length ? "badge-green" : "badge-neutral"}`;
+    }
+
+    const cont = document.getElementById("onboarding-steps");
+    if (!cont) return;
+    cont.innerHTML = pasos.map(p => `
+      <div style="display:flex; align-items:center; gap:12px; padding:11px 14px; background:var(--surface-2); border-radius:var(--radius-sm); ${p.ok ? "opacity:.6;" : ""}">
+        <span style="flex:none; width:24px; height:24px; display:grid; place-items:center; border-radius:50%;
+              background:${p.ok ? "var(--status-green)" : "color-mix(in srgb, var(--primary-color) 22%, transparent)"};
+              color:${p.ok ? "#04231b" : "var(--primary-color)"};">${p.ok ? ic("check") : ""}</span>
+        <div style="flex:1; min-width:0;">
+          <div style="font-weight:700; font-size:.92rem; ${p.ok ? "text-decoration:line-through;" : ""}">${esc(p.titulo)}</div>
+          <div style="font-size:.8rem; color:var(--text-muted);">${esc(p.desc)}</div>
+        </div>
+        ${p.ok ? "" : `<button class="btn btn-tiny" style="flex:none;" onclick="${p.fn}">${esc(p.accion)}</button>`}
+      </div>`).join("");
+  },
+
+  /* Lleva a la tarjeta de configuración del gimnasio, para el checklist. */
+  scrollToGymSettings() {
+    const card = document.querySelector('[data-cap="gym:settings"]');
+    if (card) card.scrollIntoView({ behavior: "smooth", block: "start" });
+  },
+
   /* ---------------------------------------------------- respaldo de datos */
   backupAgeDays() {
     const last = localStorage.getItem("fitaccess_last_backup");
@@ -9617,9 +9748,12 @@ document.addEventListener("DOMContentLoaded", () => FitApp.init());
 
     const FirebaseSaaS = {
       configured,
-      // Arranca apagado a propósito: el modo nube necesita las reglas y las
-      // Cloud Functions desplegadas. Se prende desde el login.
-      enabled: configured && localStorage.getItem("fitaccess_cloud") === "on",
+      /* Si Firebase está configurado, arranca EN NUBE por defecto: es lo que
+         quiere un gimnasio real, y así el dueño no tiene que tocar "Cambiar"
+         cada vez. Sólo queda en local si el usuario lo apagó a mano alguna vez
+         (guardamos "off" explícito), que es el caso de quien quiere la demo.
+         Sin Firebase configurado, siempre local. */
+      enabled: configured && localStorage.getItem("fitaccess_cloud") !== "off",
       app: null, auth: null, db: null, fns: null,
 
       async init() {
