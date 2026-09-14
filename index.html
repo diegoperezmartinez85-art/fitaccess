@@ -859,7 +859,20 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
     0 0 0 1px color-mix(in srgb, var(--primary-color) 30%, transparent),
     0 0 22px -4px var(--primary-glow),
     0 6px 18px -6px rgba(0, 0, 0, .6);
+  transition: transform .18s var(--ease-out), box-shadow .25s;
 }
+/* Feedback de que el logo es tocable (vuelve al inicio): apenas más grande y con
+   el halo más encendido al pasar el mouse o enfocarlo con teclado. */
+.login-logo-img[role="button"]:hover,
+.login-logo-img[role="button"]:focus-visible {
+  transform: scale(1.05);
+  outline: none;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--primary-color) 55%, transparent),
+    0 0 30px -2px var(--primary-glow),
+    0 6px 18px -6px rgba(0, 0, 0, .6);
+}
+.login-logo-img[role="button"]:active { transform: scale(.99); }
 
 /* Las opciones entran en cascada, no todas de golpe. Dura poco y pasa una
    sola vez: es vida en la llegada, no decoración permanente. */
@@ -1525,7 +1538,14 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
     <div class="modal-card" style="max-width: 500px; width: 100%; padding: 32px 28px;">
 
       <div style="text-align: center; margin-bottom: 22px;">
-        <img alt="FitAccess" data-brand-mark="1" class="login-logo-img gym-logo-img" style="width:68px; height:68px; margin:0 auto 10px auto;">
+        <!-- El logo vuelve a la selección de tipo de ingreso, como el "volver al
+             inicio" que la gente espera de cualquier app. Sólo actúa cuando ya
+             se eligió un portal (si ya estás en la selección, no hace nada). -->
+        <img alt="FitAccess — volver al inicio" data-brand-mark="1" class="login-logo-img gym-logo-img"
+             style="width:68px; height:68px; margin:0 auto 10px auto; cursor:pointer;"
+             role="button" tabindex="0" title="Volver a la selección de ingreso"
+             onclick="FitApp.backToPortalSelector()"
+             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();FitApp.backToPortalSelector();}">
         <h2 style="font-size: 1.6rem; font-weight: 900; letter-spacing: -.02em;">FitAccess</h2>
         <p style="font-size: 0.84rem; color: var(--text-muted);">Plataforma de control de acceso y gestión para gimnasios</p>
       </div>
