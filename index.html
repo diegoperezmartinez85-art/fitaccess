@@ -161,10 +161,16 @@ body {
 body::before {
   content: '';
   position: fixed; inset: 0; z-index: -2;
+  /* Cuatro puntos de luz en vez de dos: los de arriba dan la bienvenida, y se
+     agrega uno abajo-centro y otro abajo-izquierda para que el fondo ENVUELVA
+     a la tarjeta de login en lugar de morir en negro liso en la mitad inferior
+     de la pantalla, que era lo que se veía "sin terminar" en desktop. */
   background:
-    radial-gradient(120% 80% at 15% -10%, color-mix(in srgb, var(--primary-color) 16%, transparent) 0%, transparent 55%),
-    radial-gradient(100% 70% at 100% 0%, color-mix(in srgb, var(--secondary-color) 13%, transparent) 0%, transparent 50%),
-    linear-gradient(180deg, var(--ink-800) 0%, var(--ink-900) 40%, var(--ink-950) 100%);
+    radial-gradient(120% 80% at 15% -10%, color-mix(in srgb, var(--primary-color) 20%, transparent) 0%, transparent 55%),
+    radial-gradient(100% 70% at 100% 0%, color-mix(in srgb, var(--secondary-color) 17%, transparent) 0%, transparent 50%),
+    radial-gradient(80% 60% at 50% 118%, color-mix(in srgb, var(--primary-color) 14%, transparent) 0%, transparent 60%),
+    radial-gradient(70% 60% at 0% 100%, color-mix(in srgb, var(--secondary-color) 11%, transparent) 0%, transparent 55%),
+    linear-gradient(180deg, var(--ink-800) 0%, var(--ink-900) 45%, var(--ink-950) 100%);
 }
 
 /* Grano finísimo: le quita el aspecto plano al degradado */
