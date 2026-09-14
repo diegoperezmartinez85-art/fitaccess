@@ -2134,7 +2134,7 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
                 aria-label="Ver los socios con la cuota vencida">
           <div class="metric-label">Cuotas Vencidas</div>
           <div id="stat-expired-members" class="metric-value" style="color: var(--status-red);">0</div>
-          <div class="metric-trend">Requieren seguimiento <span class="metric-hint">· ver lista</span></div>
+          <div class="metric-trend" id="stat-expired-trend">Requieren seguimiento <span class="metric-hint">· ver lista</span></div>
         </button>
         <div class="metric-card">
           <div class="metric-label">Accesos de Hoy</div>
@@ -5248,6 +5248,27 @@ const FitApp = {
     };
     setClickable("card-al-dia", active, "al_dia");
     setClickable("card-vencidas", expired, "vencido");
+
+    /* "Cuotas Vencidas" en 0 no es una tarjeta apagada: es una BUENA noticia.
+       En vez de dejarla en rojo y sin acción (que se lee como rota), se muestra
+       el 0 en verde con "Todo al día" y una tilde. Cuando hay vencidos, vuelve
+       al rojo con "Requieren seguimiento · ver lista", que sí es tocable. */
+    const vencValor = document.getElementById("stat-expired-members");
+    const vencTrend = document.getElementById("stat-expired-trend");
+    const vencCard = document.getElementById("card-vencidas");
+    const hayVencidos = expired > 0;
+    if (vencValor) vencValor.style.color = hayVencidos ? "var(--status-red)" : "var(--status-green)";
+    if (vencCard) {
+      // Se intercambia el tono para que el borde/degradado (si se enciende) y el
+      // check acompañen el color correcto. Sin quitar tone-red, ganaría por orden.
+      vencCard.classList.toggle("tone-red", hayVencidos);
+      vencCard.classList.toggle("tone-green", !hayVencidos);
+    }
+    if (vencTrend) {
+      vencTrend.innerHTML = hayVencidos
+        ? `Requieren seguimiento <span class="metric-hint">· ver lista</span>`
+        : `${ic("check")} Todo al día`;
+    }
 
     const gym = this.activeGym();
     const limitEl = document.getElementById("stat-members-limit");
