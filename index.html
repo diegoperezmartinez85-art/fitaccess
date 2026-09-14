@@ -503,6 +503,23 @@ input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary-
 .badge-neutral { background: var(--surface-2); color: var(--text-muted); border-color: var(--hairline); }
 .badge-neutral::before { box-shadow: none; opacity: .6; }
 
+/* Nubecita "conectado" del encabezado: sin el puntito del badge (sería ruido al
+   lado del icono) y con un halo neón que late despacio, para que se lea como
+   "vivo / sincronizando" sin distraer. El icono queda un poco más grande porque
+   va solo, sin texto que lo acompañe. */
+.cloud-live { padding: 4px 9px; }
+.cloud-live::before { display: none; }
+.cloud-live .ico {
+  width: 17px; height: 17px;
+  filter: drop-shadow(0 0 5px color-mix(in srgb, #4ade80 75%, transparent));
+  animation: cloudPulse 2.6s ease-in-out infinite;
+}
+@keyframes cloudPulse {
+  0%, 100% { filter: drop-shadow(0 0 4px color-mix(in srgb, #4ade80 55%, transparent)); }
+  50%      { filter: drop-shadow(0 0 9px color-mix(in srgb, #4ade80 95%, transparent)); }
+}
+@media (prefers-reduced-motion: reduce) { .cloud-live .ico { animation: none; } }
+
 /* ==========================================================================
    MÉTRICAS
    ========================================================================== */
@@ -9192,21 +9209,27 @@ Object.assign(FitApp, {
     const toggle = document.getElementById("cloud-mode-toggle");
 
     if (label) {
-      label.textContent = on ? "Firebase" : "Local (demo)";
+      // "Firebase" es el nombre del proveedor de Google: a un dueño de gimnasio
+      // no le dice nada. "En la nube" sí. La jerga queda sólo en los comentarios.
+      label.textContent = on ? "En la nube" : "Local (demo)";
       label.className = `status-badge ${on ? "badge-green" : "badge-neutral"}`;
     }
     if (badge) {
-      badge.innerHTML = on ? ic("cloud") + " Firebase" : ic("drive") + " Local";
-      badge.className = `status-badge ${on ? "badge-green" : "badge-neutral"}`;
+      /* En el encabezado, cuando está conectado, sólo la nubecita con un halo
+         neón —sin texto—: comunica "tus datos están guardados en internet" de
+         un vistazo, sin ocupar lugar ni nombrar tecnología. En local sí lleva
+         texto, porque ahí SÍ importa avisar que es demo. */
+      badge.innerHTML = on ? ic("cloud") : ic("drive") + " Local";
+      badge.className = `status-badge ${on ? "badge-green cloud-live" : "badge-neutral"}`;
       badge.title = on
-        ? "Los datos y los permisos vienen de Firebase. El rol está firmado en el token."
-        : "Datos en el navegador (localStorage). Modo demo: los permisos no son seguros.";
+        ? "Conectado: tus datos se guardan en la nube, seguros y sincronizados."
+        : "Modo demostración: los datos viven sólo en este dispositivo.";
     }
     if (toggle) toggle.style.display = this.cloudConfigured() ? "" : "none";
     if (note) {
       note.textContent = !this.cloudConfigured()
-        ? "Firebase sin configurar en este archivo."
-        : (on ? "Requiere reglas y Cloud Functions desplegadas." : "Las cuentas de prueba sólo funcionan en modo local.");
+        ? "La nube no está configurada en este archivo."
+        : (on ? "Tus datos se guardan en la nube y se sincronizan entre dispositivos." : "Las cuentas de prueba sólo funcionan en modo demostración.");
     }
   },
 
