@@ -3433,17 +3433,24 @@ const decodeActivation = (token) => {
 /* Link de invitación de STAFF. Lleva un prefijo "s" para distinguirlo del de
    socio (que no lo tiene), así el mismo parámetro ?a= sirve para los dos y los
    links de socio ya enviados siguen funcionando. */
-const encodeStaffInvite = (gymId, inviteId, code) => {
-  try { return btoa(`s|${gymId}|${inviteId}|${code}`).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
-  catch (e) { return ""; }
+/* El link lleva también el rol y el nombre, porque la regla de staffInvites no
+   deja que el invitado LEA la invitación (sólo el manager la lee). No son
+   secretos: el único secreto es el código. Y aunque alguien altere el rol del
+   link, la regla de Firestore igual exige que coincida con el de la invitación
+   guardada, así que no se puede subir de rango por acá. */
+const encodeStaffInvite = (gymId, inviteId, code, role, name) => {
+  try {
+    const payload = `s|${gymId}|${inviteId}|${code}|${role || ""}|${name || ""}`;
+    return btoa(unescape(encodeURIComponent(payload))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  } catch (e) { return ""; }
 };
 const decodeStaffInvite = (token) => {
   try {
-    const s = atob(String(token).replace(/-/g, "+").replace(/_/g, "/"));
+    const s = decodeURIComponent(escape(atob(String(token).replace(/-/g, "+").replace(/_/g, "/"))));
     const parts = s.split("|");
     if (parts[0] !== "s") return null;
-    const [, gymId, inviteId, code] = parts;
-    return gymId && inviteId && code ? { gymId, inviteId, code } : null;
+    const [, gymId, inviteId, code, role, name] = parts;
+    return gymId && inviteId && code ? { gymId, inviteId, code, role: role || "", name: name || "" } : null;
   } catch (e) { return null; }
 };
 const todayISO = () => new Date().toISOString().split("T")[0];
@@ -6249,7 +6256,7 @@ Object.assign(FitApp, {
   },
 
   staffInviteLink(invite) {
-    const token = encodeStaffInvite(invite.gymId, invite.id, invite.code);
+    const token = encodeStaffInvite(invite.gymId, invite.id, invite.code, invite.role, invite.name);
     const base = location.origin + location.pathname;
     return `${base}?a=${token}`;
   },
@@ -8710,8 +8717,9 @@ Object.assign(FitApp, {
     const staffInfo = document.getElementById("act-staff-info");
     if (staffInfo) {
       if (esStaff) {
-        const inv = this.staffInviteByToken(prefill);
-        const label = inv ? ROLES[inv.role].label : "Staff";
+        // El rol sale del link (prefill.role); si no vino, se intenta el espejo local.
+        const rolInv = (prefill && prefill.role) || (this.staffInviteByToken(prefill) || {}).role;
+        const label = (rolInv && ROLES[rolInv]) ? ROLES[rolInv].label : "Staff";
         staffInfo.textContent = `Activás tu cuenta de ${label}`;
         staffInfo.style.display = "flex";
       } else {
@@ -8768,9 +8776,11 @@ Object.assign(FitApp, {
 
     this.setStatus(st, "Verificando el código…", "espera");
 
-    /* Modo nube: la validación real la hacen las reglas de Firestore.
-       Modo local: se valida contra la ficha guardada en el dispositivo. */
-    if (this.cloudOn()) {
+    /* Nube si Firebase está configurado (no si el toggle manual está prendido):
+       quien activa por un link viene de un dispositivo nuevo con el modo nube
+       apagado, y su cuenta tiene que crearse contra el gimnasio real. Si sólo
+       hay modo local (sin Firebase), se valida contra la ficha del dispositivo. */
+    if (this.cloudConfigured()) {
       const res = await FirebaseSaaS.activateMember({
         gymId: this.activationGymId, memberId, code, email, password: pass
       });
@@ -8817,12 +8827,22 @@ Object.assign(FitApp, {
     const inv = this.activationInvite;
     this.setStatus(st, "Verificando el código…", "espera");
 
-    if (this.cloudOn()) {
+    /* Quien llega por un link de invitación viene a conectarse con el gimnasio
+       REAL, aunque su navegador tenga el modo nube apagado (que es lo normal en
+       un dispositivo nuevo). Por eso se decide por cloudConfigured() —Firebase
+       está disponible— y no por cloudOn() —el toggle manual—. Sin esto, la
+       activación caía en la rama local y no encontraba la invitación, que vive
+       en Firebase y en el navegador del dueño, no en el de quien activa. */
+    if (this.cloudConfigured()) {
+      // El rol y el nombre vienen del link (inv), no de una invitación local:
+      // quien activa está en otro dispositivo y no tiene el espejo local. La
+      // regla de Firestore igual valida que el rol coincida con la invitación.
+      const local = this.staffInviteByToken(inv) || {};
       const res = await FirebaseSaaS.activateStaff({
         gymId: inv.gymId, inviteId: inv.inviteId, code,
-        role: (this.staffInviteByToken(inv) || {}).role,
-        name: (this.staffInviteByToken(inv) || {}).name,
-        branchId: (this.staffInviteByToken(inv) || {}).branchId,
+        role: inv.role || local.role,
+        name: inv.name || local.name,
+        branchId: local.branchId || "",
         email, password: pass
       });
       if (!res.ok) return fail(res.message);
